@@ -31,19 +31,20 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        /* Animasi */
+        /* Animasi Bawaan */
         .animate-in { animation: fadeIn 0.2s ease-out forwards; }
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.95) translateY(-10px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
+        
         #lightbox-img { background-color: transparent; }
     </style>
 </head>
-<body class="font-sans transition-colors duration-300 bg-emerald-50/40 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-50">
+<body class="font-sans transition-colors duration-300 bg-emerald-50/40 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-50 overflow-x-hidden">
 
     <!-- ==================== WIDGETS & MODALS ==================== -->
-    
+
     <!-- Floating Contact Menu (Right) -->
     <div class="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4">
         <div id="fab-menu" class="flex flex-col gap-3 transition-all duration-300 opacity-0 translate-y-10 pointer-events-none origin-bottom">
@@ -77,12 +78,12 @@
         </button>
     </div>
 
-    <!-- Lightbox / Image Viewer Modal -->
+    <!-- Lightbox / Image Viewer -->
     <div id="lightbox-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4 sm:p-6">
         <div class="absolute inset-0 bg-emerald-950/90 backdrop-blur-md cursor-pointer" onclick="closeLightbox()"></div>
         <div class="relative z-20 flex flex-col items-center animate-in max-w-5xl w-full">
             <button onclick="closeLightbox()" class="absolute -top-12 right-0 md:-right-12 p-2 bg-white/20 hover:bg-white/40 text-white rounded-full transition-colors shadow-lg backdrop-blur-md"><i data-lucide="x" class="w-7 h-7"></i></button>
-            <img id="lightbox-img" src="" alt="Tampilan Penuh" class="w-full max-h-[85vh] object-contain drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] rounded-xl bg-transparent" />
+            <img id="lightbox-img" src="" alt="Tampilan Penuh" class="w-full max-h-[85vh] object-contain drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] rounded-xl bg-white" />
         </div>
     </div>
 
@@ -105,17 +106,147 @@
         </div>
     </div>
 
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 z-[140] hidden items-start sm:items-center justify-center pt-10 sm:pt-0 px-4 sm:px-6 opacity-0 transition-opacity duration-300 overflow-y-auto">
+        <div class="fixed inset-0 bg-emerald-950/80 backdrop-blur-sm cursor-pointer" onclick="closeLogin()"></div>
+        <div id="login-container" class="bg-white dark:bg-emerald-900 w-full max-w-md rounded-3xl shadow-2xl relative z-10 flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 border border-emerald-100 dark:border-emerald-800 mb-20 sm:mb-0">
+            <div class="px-6 py-5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white flex justify-between items-center shadow-md relative z-20 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"><i data-lucide="user" class="w-5 h-5"></i></div>
+                    <div>
+                        <h3 class="font-bold text-lg leading-tight">Login Santri</h3>
+                        <p class="text-xs text-emerald-100">Portal Sistem Informasi</p>
+                    </div>
+                </div>
+                <button onclick="closeLogin()" class="p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-6 sm:p-8 overflow-y-auto max-h-[75vh]">
+                <!-- Pesan Error dinamis akan muncul disini -->
+                <div id="login-error" class="hidden mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-200 font-medium">
+                </div>
+                
+                <form id="login-form" onsubmit="handleLogin(event)" class="space-y-5">
+                    <div>
+                        <label for="login-username" class="block text-sm font-semibold text-emerald-900 dark:text-emerald-100 mb-2">Username (Nama Lengkap)</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-emerald-500"><i data-lucide="user" class="w-5 h-5"></i></div>
+                            <input type="text" id="login-username" class="w-full pl-10 pr-4 py-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-emerald-950 dark:text-emerald-50 transition-all" placeholder="HURUF BESAR SEMUA" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="login-password" class="block text-sm font-semibold text-emerald-900 dark:text-emerald-100 mb-2">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-emerald-500"><i data-lucide="lock" class="w-5 h-5"></i></div>
+                            <input type="password" id="login-password" class="w-full pl-10 pr-4 py-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-emerald-950 dark:text-emerald-50 transition-all" placeholder="huruf kecil tanpa spasi" required>
+                        </div>
+                        <div class="mt-2 flex items-center gap-2">
+                            <input type="checkbox" id="toggle-password" class="w-4 h-4 text-emerald-600 bg-emerald-50 border-emerald-300 rounded focus:ring-emerald-500 cursor-pointer" onclick="togglePasswordVisibility()">
+                            <label for="toggle-password" class="text-sm font-medium text-emerald-700 dark:text-emerald-300 cursor-pointer select-none">Tampilkan Password</label>
+                        </div>
+                    </div>
+                    <div class="pt-2 pb-4">
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2">
+                            Masuk Sistem <i data-lucide="log-in" class="w-5 h-5"></i>
+                        </button>
+                        <p class="text-[11px] text-red-500 italic mt-4 text-center">
+                            NB: santri/alumni yang belum terdaftar mohon menghubungi bagian media al-falah.
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Santri Modal -->
+    <div id="dashboard-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4 sm:p-6 opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-emerald-950/90 backdrop-blur-sm cursor-pointer" onclick="closeDashboard()"></div>
+        <div id="dashboard-container" class="bg-white dark:bg-emerald-900 w-full max-w-2xl rounded-3xl shadow-2xl relative z-10 flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 border border-emerald-100 dark:border-emerald-800">
+            <!-- Header Dashboard -->
+            <div class="px-6 py-6 bg-gradient-to-br from-emerald-700 to-emerald-600 text-white flex justify-between items-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                <div class="relative z-10 flex items-center gap-4">
+                    <!-- Foto Profil (Inisial Santri) -->
+                    <div id="dash-avatar" class="w-14 h-14 bg-white/20 border-2 border-white/50 rounded-full flex items-center justify-center text-white shadow-inner font-bold text-xl tracking-widest uppercase">
+                        AZ
+                    </div>
+                    <div>
+                        <h2 class="font-extrabold text-xl md:text-2xl drop-shadow-md uppercase">BIODATA PENGGUNA</h2>
+                        <p class="text-emerald-100 text-sm font-medium uppercase">Sistem Informasi PPTQ Al-Falah</p>
+                    </div>
+                </div>
+                <button onclick="closeDashboard()" class="relative z-10 p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+            
+            <!-- Isi Tabel Biodata -->
+            <div class="p-6 sm:p-8 max-h-[70vh] overflow-y-auto">
+                <div class="bg-emerald-50/50 dark:bg-emerald-950/50 rounded-2xl border border-emerald-100 dark:border-emerald-800 overflow-hidden shadow-sm">
+                    <table class="w-full text-left border-collapse">
+                        <tbody>
+                            <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
+                                <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">NAMA</th>
+                                <td class="p-4 sm:p-5 font-bold text-emerald-950 dark:text-emerald-50 text-sm sm:text-base capitalize tracking-wide" id="dash-nama">-</td>
+                            </tr>
+                            <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
+                                <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">ALAMAT</th>
+                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base capitalize tracking-wide" id="dash-alamat">-</td>
+                            </tr>
+                            <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
+                                <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">TEMPAT, TANGGAL LAHIR</th>
+                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base capitalize tracking-wide" id="dash-ttl">-</td>
+                            </tr>
+                            <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
+                                <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">NAMA ORANG TUA</th>
+                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base capitalize tracking-wide" id="dash-ortu">-</td>
+                            </tr>
+                            <tr class="hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
+                                <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">STATUS</th>
+                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 text-sm sm:text-base capitalize">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-extrabold border border-emerald-300 dark:border-emerald-600 capitalize tracking-widest">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div> <span id="dash-status-text"></span>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-6 flex justify-end">
+                    <button onclick="handleLogout()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-6 rounded-xl transition-colors shadow-md flex items-center gap-2 text-sm">
+                        <i data-lucide="log-out" class="w-4 h-4"></i> LOGOUT AKUN
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Logout -->
+    <div id="logout-modal" class="fixed inset-0 z-[160] hidden items-center justify-center p-4 sm:p-6 opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-emerald-950/80 backdrop-blur-sm cursor-pointer" onclick="cancelLogout()"></div>
+        <div id="logout-container" class="bg-white dark:bg-emerald-900 w-full max-w-sm rounded-3xl shadow-2xl relative z-10 flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 border border-emerald-100 dark:border-emerald-800 p-6 sm:p-8 text-center">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+                <i data-lucide="log-out" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-bold text-emerald-950 dark:text-white mb-2">Konfirmasi Logout</h3>
+            <p class="text-slate-600 dark:text-emerald-100/70 mb-6 text-sm">Apakah Anda yakin ingin keluar dari sistem?</p>
+            <div class="flex gap-3 w-full">
+                <button onclick="cancelLogout()" class="flex-1 py-3 px-4 bg-emerald-50 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-700 transition-colors">Batal</button>
+                <button onclick="confirmLogout()" class="flex-1 py-3 px-4 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors shadow-lg shadow-red-500/30">Ya, Keluar</button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- ==================== NAVBAR ==================== -->
     <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 bg-transparent py-4 md:py-5">
         <div class="container mx-auto px-4 md:px-8">
             <div class="flex justify-between items-center">
-                <!-- Logo Navigasi -->
+                <!-- Logo -->
                 <div class="flex items-center gap-3">
                     <img 
-                        src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22grad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FCD34D%22%20%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23D97706%22%20%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2295%22%20fill%3D%22%23064E3B%22%20%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2288%22%20fill%3D%22none%22%20stroke%3D%22url%28%23grad%29%22%20stroke-width%3D%222%22%20%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2282%22%20fill%3D%22none%22%20stroke%3D%22url%28%23grad%29%22%20stroke-width%3D%221%22%20stroke-dasharray%3D%224%204%22%20%2F%3E%3Cpath%20d%3D%22M%2050%20130%20L%2050%20100%20Q%2050%2060%2C%20100%2040%20Q%20150%2060%2C%20150%20100%20L%20150%20130%22%20fill%3D%22none%22%20stroke%3D%22url%28%23grad%29%22%20stroke-width%3D%223%22%20%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22125%22%20font-family%3D%22%27Trebuchet%20MS%27%2C%20serif%22%20font-size%3D%2264%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%3E%3Ctspan%20fill%3D%22%23FFFFFF%22%3EA%3C%2Ftspan%3E%3Ctspan%20fill%3D%22url%28%23grad%29%22%3EF%3C%2Ftspan%3E%3C%2Ftext%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22145%22%20r%3D%223%22%20fill%3D%22url%28%23grad%29%22%20%2F%3E%3Ccircle%20cx%3D%2285%22%20cy%3D%22145%22%20r%3D%222%22%20fill%3D%22url%28%23grad%29%22%20%2F%3E%3Ccircle%20cx%3D%22115%22%20cy%3D%22145%22%20r%3D%222%22%20fill%3D%22url%28%23grad%29%22%20%2F%3E%3C%2Fsvg%3E" 
+                        src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%22100%22%20fill%3D%22%23022c22%22%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2295%22%20fill%3D%22%23064e3b%22%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2285%22%20fill%3D%22none%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%226%204%22%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2278%22%20fill%3D%22none%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%221%22%2F%3E%3Cpath%20d%3D%22M%2040%20140%20Q%2040%2070%2C%20100%2030%20Q%20160%2070%2C%20160%20140%22%20fill%3D%22none%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%223%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22135%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2275%22%20font-weight%3D%22900%22%20fill%3D%22%23ffffff%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%224%22%3EA%3Ctspan%20fill%3D%22%23fbbf24%22%3EF%3C%2Ftspan%3E%3C%2Ftext%3E%3Cpath%20d%3D%22M%2060%20155%20L%20140%20155%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M%2080%20165%20L%20120%20165%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E" 
                         alt="Logo PPTQ Al-Falah" 
                         onclick="openLightbox(this.src)"
-                        class="w-12 h-12 md:w-16 md:h-16 object-contain shrink-0 transition-transform duration-300 hover:scale-110 drop-shadow-md cursor-pointer rounded-full"
+                        class="w-12 h-12 md:w-16 md:h-16 object-contain shrink-0 transition-transform duration-300 hover:scale-110 drop-shadow-md cursor-pointer rounded-full bg-white border border-emerald-500 p-0.5"
                         title="Klik untuk memperbesar logo"
                     />
                     <div class="hidden sm:block">
@@ -125,28 +256,32 @@
                 </div>
 
                 <!-- Desktop Menu -->
-                <div id="desktop-menu" class="hidden xl:flex gap-6 2xl:gap-8 font-semibold items-center text-white transition-colors duration-300">
-                    <a href="#beranda" class="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">Beranda</a>
-                    <a href="#profil" class="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">Profil</a>
-                    <a href="#program" class="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">Program</a>
-                    <a href="#kegiatan" class="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">Fasilitas</a>
-                    <a href="#jadwal-kegiatan" class="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">Kegiatan</a>
+                <div id="desktop-menu" class="hidden xl:flex gap-5 2xl:gap-7 font-semibold items-center text-white transition-colors duration-300 text-sm 2xl:text-base">
+                    <a href="#beranda" class="hover:text-emerald-400 transition-colors">Beranda</a>
+                    <a href="#profil" class="hover:text-emerald-400 transition-colors">Profil</a>
+                    <a href="#program" class="hover:text-emerald-400 transition-colors">Program</a>
+                    <a href="#kegiatan" class="hover:text-emerald-400 transition-colors">Fasilitas & Jadwal</a>
+                    <a href="#faq" class="hover:text-emerald-400 transition-colors">FAQ</a>
                     
-                    <div class="flex items-center gap-2 border-l border-white/20 pl-6 dark:border-emerald-800">
-                        <button onclick="openSearch()" id="desktop-btn-search" class="flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors hover:bg-white/20 text-white bg-white/10 border border-white/20 backdrop-blur-sm group" aria-label="Cari">
+                    <div class="flex items-center gap-2 border-l border-white/20 pl-4 dark:border-emerald-800">
+                        <button onclick="checkAuthStatus()" id="desktop-btn-auth" class="flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors hover:bg-emerald-500/20 text-emerald-300 bg-emerald-500/10 border border-emerald-400/20 backdrop-blur-sm group" aria-label="Login Santri">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                            <span id="desktop-auth-text" class="text-xs font-bold opacity-80 group-hover:opacity-100 hidden 2xl:block">Login Santri</span>
+                        </button>
+                        <button onclick="openSearch()" id="desktop-btn-search" class="p-2 rounded-full transition-colors hover:bg-white/20 text-white bg-white/10 border border-white/20 backdrop-blur-sm" aria-label="Cari">
                             <i data-lucide="search" class="w-4 h-4"></i>
-                            <span class="text-xs font-normal opacity-80 group-hover:opacity-100">Cari (Ctrl+K)</span>
                         </button>
                         <button onclick="toggleDarkMode()" id="desktop-btn-dark" class="p-2 rounded-full transition-colors hover:bg-white/20 text-white" aria-label="Toggle Dark Mode">
                             <i data-lucide="sun" class="w-5 h-5 text-yellow-400 hidden dark:block"></i>
                             <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
                         </button>
                     </div>
-                    <a href="#pendaftaran" class="bg-emerald-600 text-white px-6 py-2.5 rounded-full hover:bg-emerald-500 transition-colors shadow-md shadow-emerald-600/20 flex items-center gap-2 whitespace-nowrap border border-emerald-500">Info Pendaftaran</a>
+                    <a href="#pendaftaran" class="bg-emerald-600 text-white px-5 py-2 rounded-full hover:bg-emerald-500 transition-colors shadow-md shadow-emerald-600/20 flex items-center gap-2 whitespace-nowrap border border-emerald-500">Daftar</a>
                 </div>
 
                 <!-- Mobile Menu Buttons -->
                 <div class="xl:hidden flex items-center gap-2">
+                    <button onclick="checkAuthStatus()" id="mobile-btn-auth" class="p-2 rounded-full transition-colors text-emerald-300 hover:bg-emerald-500/20" aria-label="Login Santri"><i data-lucide="user" class="w-6 h-6"></i></button>
                     <button onclick="openSearch()" id="mobile-btn-search" class="p-2 rounded-full transition-colors text-white hover:bg-white/20" aria-label="Cari"><i data-lucide="search" class="w-6 h-6"></i></button>
                     <button onclick="toggleDarkMode()" id="mobile-btn-dark" class="p-2 rounded-full transition-colors text-white hover:bg-white/20" aria-label="Toggle Dark Mode">
                         <i data-lucide="sun" class="w-6 h-6 text-yellow-400 hidden dark:block"></i>
@@ -161,12 +296,16 @@
         </div>
 
         <!-- Mobile Menu Panel -->
-        <div id="mobile-menu-panel" class="xl:hidden hidden absolute top-full left-0 w-full bg-white dark:bg-emerald-950 shadow-xl border-t border-emerald-100 dark:border-emerald-900 py-4 px-4 flex-col gap-4 text-emerald-900 dark:text-emerald-100 transition-colors duration-300">
+        <div id="mobile-menu-panel" class="xl:hidden hidden absolute top-full left-0 w-full bg-white dark:bg-emerald-950 shadow-xl border-t border-emerald-100 dark:border-emerald-900 py-4 px-4 flex-col gap-2 text-emerald-900 dark:text-emerald-100 transition-colors duration-300 h-[80vh] overflow-y-auto">
             <a href="#beranda" onclick="toggleMobileMenu()" class="font-semibold p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-xl">Beranda</a>
-            <a href="#profil" onclick="toggleMobileMenu()" class="font-semibold p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-xl">Profil</a>
-            <a href="#program" onclick="toggleMobileMenu()" class="font-semibold p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-xl">Program</a>
-            <a href="#kegiatan" onclick="toggleMobileMenu()" class="font-semibold p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-xl">Fasilitas</a>
-            <a href="#jadwal-kegiatan" onclick="toggleMobileMenu()" class="font-semibold p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-xl">Kegiatan</a>
+            <a href="#profil" onclick="toggleMobileMenu()" class="font-semibold p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-xl">Profil Pondok</a>
+            <a href="#program" onclick="toggleMobileMenu()" class="font-semibold p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-xl">Program Unggulan</a>
+            <a href="#kegiatan" onclick="toggleMobileMenu()" class="font-semibold p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-xl">Fasilitas & Jadwal</a>
+            <a href="#faq" onclick="toggleMobileMenu()" class="font-semibold p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-xl">Tanya Jawab (FAQ)</a>
+            <hr class="my-2 border-emerald-100 dark:border-emerald-800">
+            <button onclick="checkAuthStatus(); toggleMobileMenu();" id="mobile-panel-auth" class="font-bold p-3 bg-emerald-100 dark:bg-emerald-900 hover:bg-emerald-200 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-100 text-left rounded-xl flex items-center gap-3 transition-colors w-full">
+                <i data-lucide="user" class="w-5 h-5"></i> <span id="mobile-panel-auth-text">Login Santri</span>
+            </button>
             <a href="https://drive.google.com/drive/folders/1sIYBnArUwi8tHUZaxtYMplgcaXfl4Gwh" target="_blank" rel="noreferrer" class="font-bold p-3 bg-yellow-400 hover:bg-yellow-500 text-emerald-950 text-center rounded-xl flex items-center justify-center gap-2 shadow-sm transition-colors w-full"><i data-lucide="eye" class="w-5 h-5"></i> Lihat Brosur</a>
             <a href="#pendaftaran" onclick="toggleMobileMenu()" class="font-bold p-3 bg-emerald-600 hover:bg-emerald-500 text-white text-center rounded-xl shadow-md transition-colors block">Info Pendaftaran</a>
         </div>
@@ -175,55 +314,60 @@
     <!-- ==================== HERO SECTION ==================== -->
     <section id="beranda" class="relative h-screen flex items-center justify-center overflow-hidden">
         <div class="absolute inset-0 z-0 bg-emerald-950">
-            <div class="absolute inset-0 bg-gradient-to-b from-emerald-800 via-emerald-700 to-emerald-950 dark:from-emerald-950 dark:via-emerald-900 dark:to-emerald-950 transition-colors duration-500"></div>
+            <!-- Background Image Pattern Overlay -->
+            <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-emerald-800/90 via-emerald-700/90 to-emerald-950 dark:from-emerald-950 dark:via-emerald-900/90 dark:to-emerald-950 transition-colors duration-500"></div>
         </div>
+        
         <div class="container relative z-10 px-4 md:px-8 text-center flex flex-col items-center mt-16">
-            <span class="inline-block py-1.5 px-6 rounded-full bg-white/20 backdrop-blur-md text-white font-bold text-sm mb-6 border border-white/40 shadow-lg tracking-wide">PSB TAHUN 2026/2027</span>
+            <span class="inline-block py-1.5 px-6 rounded-full bg-white/20 backdrop-blur-md text-white font-bold text-sm mb-6 border border-white/40 shadow-lg tracking-wide animate-pulse">PSB TAHUN 2026/2027</span>
             <h1 class="text-4xl md:text-5xl lg:text-7xl font-extrabold text-white leading-tight mb-6 max-w-4xl drop-shadow-lg uppercase tracking-wide">
                 BUKA PELUANG UNTUK BEKAL <span class="text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]">MASA DEPAN UMMAT</span>
             </h1>
             <p class="text-lg md:text-xl text-emerald-50 mb-10 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
-                Pesantren Tahfidzul Qur'an Al Falah adalah tempat belajar untuk menunjang proses KBM agar lebih efektif, serta memberikan fasilitas tempat belajar yang cukup memadai dengan suasana khas pedesaan yang asri, bersih, dan nyaman.
+                Pesantren Tahfidzul Qur'an Al Falah adalah tempat belajar untuk menunjang proses KBM agar lebih efektif, serta memberikan fasilitas tempat belajar yang memadai dengan suasana asri, bersih, dan nyaman.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-2xl mx-auto">
-                <a href="#pendaftaran" class="w-full sm:w-auto bg-yellow-400 text-emerald-950 font-bold py-3.5 px-8 rounded-full hover:bg-yellow-300 transition-colors shadow-[0_0_20px_rgba(250,204,21,0.4)] flex items-center justify-center gap-2 text-lg">
+                <a href="#pendaftaran" class="w-full sm:w-auto flex-1 bg-yellow-400 text-emerald-950 font-bold py-3.5 px-8 rounded-full hover:bg-yellow-300 transition-transform hover:scale-105 shadow-[0_0_20px_rgba(250,204,21,0.4)] flex items-center justify-center gap-2 text-lg">
                     Info Pendaftaran <i data-lucide="chevron-right" class="w-5 h-5"></i>
                 </a>
+                <button onclick="checkAuthStatus()" class="w-full sm:w-auto flex-1 bg-white/10 backdrop-blur-md border border-white/30 text-white font-bold py-3.5 px-8 rounded-full hover:bg-white/20 transition-transform hover:scale-105 shadow-lg flex items-center justify-center gap-2 text-lg">
+                    <i data-lucide="user-check" class="w-5 h-5"></i> Login Santri
+                </button>
             </div>
-            <button onclick="openSearch()" class="mt-8 text-emerald-200/70 hover:text-white flex items-center gap-2 transition-colors sm:hidden border border-emerald-200/30 px-4 py-2 rounded-full backdrop-blur-sm bg-black/10">
-                <i data-lucide="search" class="w-4 h-4"></i> Cari informasi spesifik...
-            </button>
         </div>
     </section>
 
     <!-- ==================== PROFIL SINGKAT ==================== -->
-    <section id="profil" class="py-20 bg-white dark:bg-emerald-950 transition-colors duration-300">
-        <div class="container mx-auto px-4 md:px-8">
+    <section id="profil" class="py-20 bg-white dark:bg-emerald-950 transition-colors duration-300 relative overflow-hidden">
+        <!-- Dekorasi background -->
+        <div class="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-emerald-950 to-transparent opacity-10 dark:opacity-50"></div>
+        
+        <div class="container mx-auto px-4 md:px-8 relative z-10">
+            <!-- Profil Singkat -->
             <div class="max-w-5xl mx-auto">
-                <div class="w-full">
-                    <div class="mb-10 text-center md:text-left">
-                        <h2 class="text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center md:justify-start gap-3">
-                            <div class="w-10 h-1 bg-emerald-500 rounded-full"></div> Profil Singkat
-                        </h2>
-                        <h3 class="text-3xl md:text-4xl font-extrabold text-emerald-950 dark:text-white mb-6 transition-colors duration-300">Mencetak Generasi Bertaqwa dan Berilmu</h3>
-                        <p class="text-slate-600 dark:text-emerald-100/80 text-lg leading-relaxed border-l-4 border-emerald-400 pl-5 bg-emerald-50/50 dark:bg-emerald-900/20 p-5 rounded-r-2xl italic transition-colors duration-300">
-                            "Pesantren tahfidzul qur'an al falah adalah tempat belajar untuk menunjang proses KBM agar lebih efektif, serta memberikan fasilitas tempat belajar yang cukup memadai dengan suasana khas pedesaan yang asri, bersih, dan nyaman."
-                        </p>
-                    </div>
-                    <div class="space-y-6 sm:space-y-8 mt-8">
-                        <div class="flex items-start gap-4 sm:gap-5 bg-white dark:bg-emerald-900/40 p-5 sm:p-6 rounded-2xl shadow-lg shadow-emerald-100/50 dark:shadow-none border border-emerald-50 dark:border-emerald-800 transition-colors duration-300">
-                            <div class="bg-emerald-100 dark:bg-emerald-800 p-3 rounded-xl text-emerald-600 dark:text-emerald-300 shrink-0"><i data-lucide="building" class="w-6 h-6 sm:w-8 sm:h-8"></i></div>
-                            <div>
-                                <h4 class="font-bold text-lg sm:text-xl text-emerald-950 dark:text-emerald-50 mb-2">Visi</h4>
-                                <p class="text-slate-600 dark:text-emerald-100/70 text-sm sm:text-base leading-relaxed">Terwujudnya lembaga pendidikan islam yang mencetak generasi qur'ani serta memiliki pemahaman ilmu agama islam agar menjadi hamba alloh yang bertaqwa dan berilmu.</p>
-                            </div>
+                <div class="text-center md:text-left">
+                    <h2 class="text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center md:justify-start gap-3">
+                        <div class="w-10 h-1 bg-emerald-500 rounded-full"></div> Profil Singkat
+                    </h2>
+                    <h3 class="text-3xl md:text-4xl font-extrabold text-emerald-950 dark:text-white mb-6 transition-colors duration-300">Mencetak Generasi Bertaqwa dan Berilmu</h3>
+                    <p class="text-slate-600 dark:text-emerald-100/80 text-lg leading-relaxed border-l-4 border-emerald-400 pl-5 bg-emerald-50/50 dark:bg-emerald-900/20 p-5 rounded-r-2xl italic transition-colors duration-300">
+                        "Pesantren tahfidzul qur'an al falah adalah tempat belajar untuk menunjang proses KBM agar lebih efektif, serta memberikan fasilitas tempat belajar yang cukup memadai dengan suasana khas pedesaan yang asri, bersih, dan nyaman."
+                    </p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6 sm:gap-8 mt-8">
+                    <div class="flex items-start gap-4 sm:gap-5 bg-white dark:bg-emerald-900/40 p-5 sm:p-6 rounded-2xl shadow-lg shadow-emerald-100/50 dark:shadow-none border border-emerald-50 dark:border-emerald-800 transition-all hover:-translate-y-1">
+                        <div class="bg-emerald-100 dark:bg-emerald-800 p-3 rounded-xl text-emerald-600 dark:text-emerald-300 shrink-0"><i data-lucide="target" class="w-6 h-6 sm:w-8 sm:h-8"></i></div>
+                        <div>
+                            <h4 class="font-bold text-lg sm:text-xl text-emerald-950 dark:text-emerald-50 mb-2">Visi</h4>
+                            <p class="text-slate-600 dark:text-emerald-100/70 text-sm sm:text-base leading-relaxed">Terwujudnya lembaga pendidikan islam yang mencetak generasi qur'ani serta memiliki pemahaman ilmu agama islam agar menjadi hamba alloh yang bertaqwa dan berilmu.</p>
                         </div>
-                        <div class="flex items-start gap-4 sm:gap-5 bg-white dark:bg-emerald-900/40 p-5 sm:p-6 rounded-2xl shadow-lg shadow-emerald-100/50 dark:shadow-none border border-emerald-50 dark:border-emerald-800 transition-colors duration-300">
-                            <div class="bg-emerald-100 dark:bg-emerald-800 p-3 rounded-xl text-emerald-600 dark:text-emerald-300 shrink-0"><i data-lucide="users" class="w-6 h-6 sm:w-8 sm:h-8"></i></div>
-                            <div>
-                                <h4 class="font-bold text-lg sm:text-xl text-emerald-950 dark:text-emerald-50 mb-2">Misi</h4>
-                                <p class="text-slate-600 dark:text-emerald-100/70 text-sm sm:text-base leading-relaxed">Menyelenggarakan kegiatan pendidikan tahfidzul qur'an dan pembelajaran kitab kitab gundul berdasarkan ajaran ahlussunnah wal jama'ah.</p>
-                            </div>
+                    </div>
+                    <div class="flex items-start gap-4 sm:gap-5 bg-white dark:bg-emerald-900/40 p-5 sm:p-6 rounded-2xl shadow-lg shadow-emerald-100/50 dark:shadow-none border border-emerald-50 dark:border-emerald-800 transition-all hover:-translate-y-1">
+                        <div class="bg-emerald-100 dark:bg-emerald-800 p-3 rounded-xl text-emerald-600 dark:text-emerald-300 shrink-0"><i data-lucide="compass" class="w-6 h-6 sm:w-8 sm:h-8"></i></div>
+                        <div>
+                            <h4 class="font-bold text-lg sm:text-xl text-emerald-950 dark:text-emerald-50 mb-2">Misi</h4>
+                            <p class="text-slate-600 dark:text-emerald-100/70 text-sm sm:text-base leading-relaxed">Menyelenggarakan kegiatan pendidikan tahfidzul qur'an dan pembelajaran kitab kitab gundul berdasarkan ajaran ahlussunnah wal jama'ah.</p>
                         </div>
                     </div>
                 </div>
@@ -241,6 +385,7 @@
                 <h3 class="text-3xl md:text-5xl font-extrabold text-emerald-950 dark:text-white transition-colors duration-300">Program Unggulan</h3>
                 <div class="w-24 h-1.5 bg-yellow-400 mx-auto mt-6 rounded-full shadow-sm"></div>
             </div>
+            
             <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                 <div class="bg-white dark:bg-emerald-900 rounded-3xl p-8 shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border-b-4 border-emerald-500 dark:border-emerald-600 group text-center flex flex-col">
                     <div class="bg-emerald-50 dark:bg-emerald-800 w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-700"><i data-lucide="book-open" class="w-8 h-8 text-emerald-600 dark:text-emerald-400"></i></div>
@@ -268,25 +413,26 @@
             <div class="grid lg:grid-cols-2 gap-16 items-start">
                 <!-- Kolom Kiri: Biaya & Fasilitas -->
                 <div class="space-y-12">
-                    <div class="bg-emerald-700/80 dark:bg-emerald-950/80 backdrop-blur-md p-8 md:p-10 rounded-3xl border border-emerald-400/30 shadow-2xl relative overflow-hidden transition-colors duration-300">
+                    <div class="bg-emerald-700/80 dark:bg-emerald-950/80 backdrop-blur-md p-5 sm:p-8 md:p-10 rounded-3xl border border-emerald-400/30 shadow-2xl relative overflow-hidden transition-colors duration-300 hover:border-yellow-400/50 transition-all">
                         <div class="absolute -top-10 -right-10 w-32 h-32 bg-yellow-400/30 rounded-full blur-3xl"></div>
-                        <h3 class="text-2xl font-bold text-yellow-300 mb-8 flex items-center gap-3 relative z-10 drop-shadow-md">
-                            <span class="bg-yellow-400 text-emerald-900 p-2.5 rounded-xl shadow-lg"><i data-lucide="wallet" class="w-6 h-6"></i></span> 
+                        <h3 class="text-xl sm:text-2xl font-bold text-yellow-300 mb-6 sm:mb-8 flex items-center gap-3 relative z-10 drop-shadow-md">
+                            <span class="bg-yellow-400 text-emerald-900 p-2 sm:p-2.5 rounded-xl shadow-lg"><i data-lucide="wallet" class="w-5 h-5 sm:w-6 sm:h-6"></i></span> 
                             BIAYA PENDAFTARAN
                         </h3>
-                        <div class="space-y-6 relative z-10">
-                            <div class="flex items-end justify-between group">
-                                <div class="flex items-center gap-3 shrink-0"><div class="w-2 h-2 rounded-full bg-yellow-400 group-hover:scale-150 transition-transform"></div><span class="font-medium text-lg text-emerald-50 tracking-wide">Pendaftaran</span></div>
-                                <div class="flex-grow border-b-2 border-dotted border-emerald-400/60 dark:border-emerald-700/60 mx-4 mb-1.5 opacity-70"></div>
-                                <div class="font-bold text-2xl text-white shrink-0 drop-shadow-md"><span class="text-yellow-300 text-sm font-semibold mr-1.5">Rp.</span>100.000</div>
+                        <div class="space-y-4 sm:space-y-6 relative z-10 w-full overflow-hidden">
+                            <div class="flex items-end justify-between group w-full">
+                                <div class="flex items-center gap-2 sm:gap-3 shrink-0"><div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-yellow-400 group-hover:scale-150 transition-transform"></div><span class="font-medium text-sm sm:text-lg text-emerald-50 tracking-wide">Pendaftaran Awal</span></div>
+                                <div class="flex-grow border-b-2 border-dotted border-emerald-400/60 dark:border-emerald-700/60 mx-2 sm:mx-4 mb-1 sm:mb-1.5 opacity-70 min-w-[10px]"></div>
+                                <div class="font-bold text-base sm:text-2xl text-white shrink-0 drop-shadow-md whitespace-nowrap"><span class="text-yellow-300 text-xs sm:text-sm font-semibold mr-1 sm:mr-1.5">Rp.</span>100.000</div>
                             </div>
-                            <div class="flex items-end justify-between group">
-                                <div class="flex items-center gap-3 shrink-0"><div class="w-2 h-2 rounded-full bg-yellow-400 group-hover:scale-150 transition-transform"></div><span class="font-medium text-lg text-emerald-50 tracking-wide">Syahriah Bulanan</span></div>
-                                <div class="flex-grow border-b-2 border-dotted border-emerald-400/60 dark:border-emerald-700/60 mx-4 mb-1.5 opacity-70"></div>
-                                <div class="font-bold text-2xl text-white shrink-0 drop-shadow-md"><span class="text-yellow-300 text-sm font-semibold mr-1.5">Rp.</span>350.000</div>
+                            <div class="flex items-end justify-between group w-full">
+                                <div class="flex items-center gap-2 sm:gap-3 shrink-0"><div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-yellow-400 group-hover:scale-150 transition-transform"></div><span class="font-medium text-sm sm:text-lg text-emerald-50 tracking-wide">Syahriah Bulanan</span></div>
+                                <div class="flex-grow border-b-2 border-dotted border-emerald-400/60 dark:border-emerald-700/60 mx-2 sm:mx-4 mb-1 sm:mb-1.5 opacity-70 min-w-[10px]"></div>
+                                <div class="font-bold text-base sm:text-2xl text-white shrink-0 drop-shadow-md whitespace-nowrap"><span class="text-yellow-300 text-xs sm:text-sm font-semibold mr-1 sm:mr-1.5">Rp.</span>350.000</div>
                             </div>
                         </div>
                     </div>
+                    
                     <div>
                         <h3 class="text-3xl font-bold text-white mb-8 flex items-center gap-3 drop-shadow-md"><i data-lucide="building" class="w-8 h-8 text-yellow-300"></i> Fasilitas Pondok</h3>
                         <div class="grid sm:grid-cols-2 gap-4">
@@ -296,7 +442,7 @@
                             </div>
                             <div class="bg-emerald-700/60 dark:bg-emerald-950/60 p-5 rounded-2xl flex items-start gap-4 hover:bg-emerald-500/60 dark:hover:bg-emerald-800/60 transition-colors border border-emerald-500/30">
                                 <div class="bg-emerald-800 dark:bg-emerald-900 p-3 rounded-xl shrink-0 transition-colors duration-300 shadow-inner"><i data-lucide="home" class="w-6 h-6 text-emerald-500"></i></div>
-                                <div class="font-medium mt-1">Termasuk air, listrik, gedung</div>
+                                <div class="font-medium mt-1">Asrama, air & listrik</div>
                             </div>
                             <div class="bg-emerald-700/60 dark:bg-emerald-950/60 p-5 rounded-2xl flex items-start gap-4 hover:bg-emerald-500/60 dark:hover:bg-emerald-800/60 transition-colors border border-emerald-500/30">
                                 <div class="bg-emerald-800 dark:bg-emerald-900 p-3 rounded-xl shrink-0 transition-colors duration-300 shadow-inner"><i data-lucide="wifi" class="w-6 h-6 text-emerald-500"></i></div>
@@ -304,7 +450,7 @@
                             </div>
                             <div class="bg-emerald-700/60 dark:bg-emerald-950/60 p-5 rounded-2xl flex items-start gap-4 hover:bg-emerald-500/60 dark:hover:bg-emerald-800/60 transition-colors border border-emerald-500/30">
                                 <div class="bg-emerald-800 dark:bg-emerald-900 p-3 rounded-xl shrink-0 transition-colors duration-300 shadow-inner"><i data-lucide="car" class="w-6 h-6 text-emerald-500"></i></div>
-                                <div class="font-medium mt-1">Transportasi (diluar biaya pondok)</div>
+                                <div class="font-medium mt-1 text-sm">Transportasi (di luar biaya)</div>
                             </div>
                         </div>
                     </div>
@@ -313,61 +459,61 @@
                 <!-- Kolom Kanan: Jadwal Kegiatan -->
                 <div id="jadwal-kegiatan" class="bg-white dark:bg-emerald-950 text-emerald-950 dark:text-emerald-50 p-8 md:p-10 rounded-3xl shadow-2xl transition-colors duration-300 border border-emerald-100 dark:border-emerald-800">
                     <h3 class="text-2xl md:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mb-8 flex items-center gap-3 border-b-2 border-emerald-100 dark:border-emerald-900 pb-6 transition-colors duration-300">
-                        <i data-lucide="calendar-days" class="w-8 h-8"></i> KEGIATAN PONDOK
+                        <i data-lucide="calendar-days" class="w-8 h-8"></i> JADWAL KEGIATAN
                     </h3>
                     <div class="space-y-1">
                         <div class="flex items-start md:items-center gap-4 py-3 border-b border-emerald-50 dark:border-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 rounded-xl px-3 transition-colors">
                             <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5 md:mt-0"></i>
                             <div class="flex flex-col md:flex-row md:items-center w-full gap-1 md:gap-4">
-                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Setoran Qur'an</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Setiap hari kecuali Sabtu-Minggu</span>
+                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Setoran Qur'an</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Senin - Jum'at</span>
                             </div>
                         </div>
                         <div class="flex items-start md:items-center gap-4 py-3 border-b border-emerald-50 dark:border-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 rounded-xl px-3 transition-colors">
                             <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5 md:mt-0"></i>
                             <div class="flex flex-col md:flex-row md:items-center w-full gap-1 md:gap-4">
-                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Tahsin Qur'an Bersama</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Setiap Senin ba'da Maghrib</span>
+                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Tahsin Bersama</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Senin (Ba'da Maghrib)</span>
                             </div>
                         </div>
                         <div class="flex items-start md:items-center gap-4 py-3 border-b border-emerald-50 dark:border-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 rounded-xl px-3 transition-colors">
                             <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5 md:mt-0"></i>
                             <div class="flex flex-col md:flex-row md:items-center w-full gap-1 md:gap-4">
-                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Ngaji Kitab Fiqih</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Setiap Selasa ba'da Maghrib</span>
+                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Ngaji Kitab Fiqih</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Selasa (Ba'da Maghrib)</span>
                             </div>
                         </div>
                         <div class="flex items-start md:items-center gap-4 py-3 border-b border-emerald-50 dark:border-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 rounded-xl px-3 transition-colors">
                             <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5 md:mt-0"></i>
                             <div class="flex flex-col md:flex-row md:items-center w-full gap-1 md:gap-4">
-                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Ngaji Kitab Tasawuf</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Setiap Rabu ba'da Maghrib</span>
+                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Ngaji Kitab Tasawuf</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Rabu (Ba'da Maghrib)</span>
                             </div>
                         </div>
                         <div class="flex items-start md:items-center gap-4 py-3 border-b border-emerald-50 dark:border-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 rounded-xl px-3 transition-colors">
                             <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5 md:mt-0"></i>
                             <div class="flex flex-col md:flex-row md:items-center w-full gap-1 md:gap-4">
-                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Sholawat Diba'</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Setiap Malam Jum'at</span>
+                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Sholawat Diba'</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Malam Jum'at</span>
                             </div>
                         </div>
                         <div class="flex items-start md:items-center gap-4 py-3 border-b border-emerald-50 dark:border-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 rounded-xl px-3 transition-colors">
                             <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5 md:mt-0"></i>
                             <div class="flex flex-col md:flex-row md:items-center w-full gap-1 md:gap-4">
-                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Ngaji Kitab Hadist</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Setiap Jum'at ba'da Maghrib</span>
+                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Ngaji Kitab Hadist</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Jum'at (Ba'da Maghrib)</span>
                             </div>
                         </div>
                         <div class="flex items-start md:items-center gap-4 py-3 border-b border-emerald-50 dark:border-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 rounded-xl px-3 transition-colors">
                             <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5 md:mt-0"></i>
                             <div class="flex flex-col md:flex-row md:items-center w-full gap-1 md:gap-4">
-                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Sima'an Qur'an ¼ Juz Putra</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Setiap Sabtu ba'da Maghrib</span>
+                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Sima'an ¼ Juz Putra</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Sabtu (Ba'da Maghrib)</span>
                             </div>
                         </div>
                         <div class="flex items-start md:items-center gap-4 py-3 border-b border-emerald-50 dark:border-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 rounded-xl px-3 transition-colors">
                             <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5 md:mt-0"></i>
                             <div class="flex flex-col md:flex-row md:items-center w-full gap-1 md:gap-4">
-                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Sima'an Qur'an ¼ Juz Putri</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Setiap Minggu ba'da Maghrib</span>
+                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Sima'an ¼ Juz Putri</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Minggu (Ba'da Maghrib)</span>
                             </div>
                         </div>
-                        <div class="flex items-start md:items-center gap-4 py-3 border-b border-emerald-50 dark:border-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 rounded-xl px-3 transition-colors">
+                        <div class="flex items-start md:items-center gap-4 py-3 border-emerald-50 dark:border-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 rounded-xl px-3 transition-colors">
                             <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5 md:mt-0"></i>
                             <div class="flex flex-col md:flex-row md:items-center w-full gap-1 md:gap-4">
-                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Masak Bersama</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Setiap hari Minggu bergantian</span>
+                                <span class="font-bold text-emerald-900 dark:text-emerald-100 md:w-1/2 transition-colors duration-300">Masak Bersama</span><span class="hidden md:block text-emerald-200 dark:text-emerald-700">:</span><span class="text-slate-500 dark:text-emerald-300/80 text-sm md:text-base md:w-1/2 flex items-center gap-2 transition-colors duration-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500"></i> Minggu (Bergantian)</span>
                             </div>
                         </div>
                     </div>
@@ -376,15 +522,75 @@
         </div>
     </section>
 
+    <!-- ==================== FAQ (TANYA JAWAB) ==================== -->
+    <section id="faq" class="py-20 bg-emerald-50/30 dark:bg-emerald-900/10 transition-colors duration-300">
+        <div class="container mx-auto px-4 md:px-8 max-w-4xl">
+            <div class="text-center mb-12">
+                <h2 class="text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center gap-3"><div class="w-8 h-1 bg-emerald-500 rounded-full"></div> Informasi <div class="w-8 h-1 bg-emerald-500 rounded-full"></div></h2>
+                <h3 class="text-3xl md:text-4xl font-extrabold text-emerald-950 dark:text-white transition-colors duration-300">Pertanyaan Umum (FAQ)</h3>
+            </div>
+
+            <div class="space-y-4">
+                <!-- FAQ Item 1 -->
+                <div class="bg-white dark:bg-emerald-900 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 overflow-hidden">
+                    <button class="w-full px-6 py-5 flex items-center justify-between font-bold text-left text-emerald-900 dark:text-emerald-100 focus:outline-none" onclick="toggleFaq(this)">
+                        <span>Siapa saja yang bisa mendaftar di PPTQ Al-Falah?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-emerald-500 transition-transform duration-300 faq-icon"></i>
+                    </button>
+                    <div class="px-6 pb-5 hidden text-slate-600 dark:text-emerald-100/70 border-t border-emerald-50 dark:border-emerald-800/50 pt-4">
+                        Pondok kami menerima santri putra dan putri. Prioritas kami adalah calon santri yang memiliki tekad kuat untuk menghafal Al-Qur'an dan mempelajari ilmu agama ala Ahlussunnah wal Jama'ah. Untuk batasan umur spesifik, silakan hubungi kontak pendaftaran.
+                    </div>
+                </div>
+                <!-- FAQ Item 2 -->
+                <div class="bg-white dark:bg-emerald-900 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 overflow-hidden">
+                    <button class="w-full px-6 py-5 flex items-center justify-between font-bold text-left text-emerald-900 dark:text-emerald-100 focus:outline-none" onclick="toggleFaq(this)">
+                        <span>Apakah santri diperbolehkan membawa HP/Laptop?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-emerald-500 transition-transform duration-300 faq-icon"></i>
+                    </button>
+                    <div class="px-6 pb-5 hidden text-slate-600 dark:text-emerald-100/70 border-t border-emerald-50 dark:border-emerald-800/50 pt-4">
+                        Untuk menjaga kefokusan dalam menghafal Al-Qur'an, aturan membawa barang elektronik (HP/Laptop) disesuaikan dengan kebijakan pengurus. Biasanya ada waktu-waktu tertentu dimana santri diperbolehkan menggunakannya untuk keperluan tugas sekolah/kuliah jika mereka juga menempuh pendidikan formal.
+                    </div>
+                </div>
+                <!-- FAQ Item 3 -->
+                <div class="bg-white dark:bg-emerald-900 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 overflow-hidden">
+                    <button class="w-full px-6 py-5 flex items-center justify-between font-bold text-left text-emerald-900 dark:text-emerald-100 focus:outline-none" onclick="toggleFaq(this)">
+                        <span>Apakah biaya Rp 350.000 sudah termasuk semuanya?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-emerald-500 transition-transform duration-300 faq-icon"></i>
+                    </button>
+                    <div class="px-6 pb-5 hidden text-slate-600 dark:text-emerald-100/70 border-t border-emerald-50 dark:border-emerald-800/50 pt-4">
+                        Ya, biaya syahriah bulanan sebesar Rp 350.000 sudah mencakup makan 3x sehari, biaya listrik, air, dan fasilitas asrama. Biaya tersebut belum termasuk keperluan pribadi santri, alat tulis, dan transportasi luar pondok.
+                    </div>
+                </div>
+                <!-- FAQ Item 4 -->
+                <div class="bg-white dark:bg-emerald-900 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 overflow-hidden">
+                    <button class="w-full px-6 py-5 flex items-center justify-between font-bold text-left text-emerald-900 dark:text-emerald-100 focus:outline-none" onclick="toggleFaq(this)">
+                        <span>Bagaimana cara menuju lokasi pondok pesantren?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-emerald-500 transition-transform duration-300 faq-icon"></i>
+                    </button>
+                    <div class="px-6 pb-5 hidden text-slate-600 dark:text-emerald-100/70 border-t border-emerald-50 dark:border-emerald-800/50 pt-4">
+                        Pondok kami terletak di Babaan, Ngasem, Malang. Anda bisa menggunakan panduan Google Maps dengan mengklik tombol lokasi di pojok kanan bawah website ini. Lokasi kami mudah dijangkau dan memiliki suasana asri pedesaan.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- ==================== FOOTER ==================== -->
-    <footer id="pendaftaran" class="bg-emerald-950 dark:bg-black text-emerald-100/70 pt-16 pb-8 transition-colors duration-300">
+    <footer id="pendaftaran" class="bg-emerald-950 dark:bg-black text-emerald-100/70 pt-20 pb-8 transition-colors duration-300 relative">
+        <!-- SVG Wave top -->
+        <div class="absolute top-0 left-0 w-full overflow-hidden leading-none -translate-y-full">
+            <svg class="relative block w-full h-[50px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118,152.47,125.4,225.97,110.74,258.97,104.16,290.79,88.4,321.39,56.44Z" class="fill-emerald-950 dark:fill-black"></path>
+            </svg>
+        </div>
+
         <div class="container mx-auto px-4 md:px-8">
-            <div class="flex flex-col items-center text-center mb-12 border-b border-emerald-900 pb-12 max-w-3xl mx-auto">
+            <div class="flex flex-col items-center text-center mb-8 border-b border-emerald-900 pb-12 max-w-3xl mx-auto">
                 <img 
-                    src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22grad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FCD34D%22%20%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23D97706%22%20%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2295%22%20fill%3D%22%23064E3B%22%20%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2288%22%20fill%3D%22none%22%20stroke%3D%22url%28%23grad%29%22%20stroke-width%3D%222%22%20%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2282%22%20fill%3D%22none%22%20stroke%3D%22url%28%23grad%29%22%20stroke-width%3D%221%22%20stroke-dasharray%3D%224%204%22%20%2F%3E%3Cpath%20d%3D%22M%2050%20130%20L%2050%20100%20Q%2050%2060%2C%20100%2040%20Q%20150%2060%2C%20150%20100%20L%20150%20130%22%20fill%3D%22none%22%20stroke%3D%22url%28%23grad%29%22%20stroke-width%3D%223%22%20%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22125%22%20font-family%3D%22%27Trebuchet%20MS%27%2C%20serif%22%20font-size%3D%2264%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%3E%3Ctspan%20fill%3D%22%23FFFFFF%22%3EA%3C%2Ftspan%3E%3Ctspan%20fill%3D%22url%28%23grad%29%22%3EF%3C%2Ftspan%3E%3C%2Ftext%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22145%22%20r%3D%223%22%20fill%3D%22url%28%23grad%29%22%20%2F%3E%3Ccircle%20cx%3D%2285%22%20cy%3D%22145%22%20r%3D%222%22%20fill%3D%22url%28%23grad%29%22%20%2F%3E%3Ccircle%20cx%3D%22115%22%20cy%3D%22145%22%20r%3D%222%22%20fill%3D%22url%28%23grad%29%22%20%2F%3E%3C%2Fsvg%3E" 
+                    src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%22100%22%20fill%3D%22%23022c22%22%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2295%22%20fill%3D%22%23064e3b%22%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2285%22%20fill%3D%22none%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%226%204%22%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2278%22%20fill%3D%22none%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%221%22%2F%3E%3Cpath%20d%3D%22M%2040%20140%20Q%2040%2070%2C%20100%2030%20Q%20160%2070%2C%20160%20140%22%20fill%3D%22none%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%223%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22135%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2275%22%20font-weight%3D%22900%22%20fill%3D%22%23ffffff%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%224%22%3EA%3Ctspan%20fill%3D%22%23fbbf24%22%3EF%3C%2Ftspan%3E%3C%2Ftext%3E%3Cpath%20d%3D%22M%2060%20155%20L%20140%20155%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M%2080%20165%20L%20120%20165%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E" 
                     alt="Logo PPTQ Al-Falah" 
                     onclick="openLightbox(this.src)"
-                    class="w-24 h-24 object-contain shrink-0 transition-transform duration-300 hover:scale-110 drop-shadow-xl cursor-pointer rounded-full bg-white border-2 border-emerald-500 p-1 mb-6"
+                    class="w-24 h-24 object-contain shrink-0 transition-transform duration-300 hover:scale-110 drop-shadow-xl cursor-pointer rounded-full bg-white border border-emerald-500 p-1 mb-6"
                     title="Klik untuk memperbesar logo"
                 />
                 <h3 class="font-bold text-3xl text-white mb-2">PPTQ Al-Falah</h3>
@@ -392,13 +598,18 @@
                 <p class="leading-relaxed mb-8">
                     Menyelenggarakan kegiatan pendidikan tahfidzul qur'an dan pembelajaran kitab kitab gundul berdasarkan ajaran ahlussunnah wal jama'ah.
                 </p>
-                <a href="https://drive.google.com/drive/folders/1sIYBnArUwi8tHUZaxtYMplgcaXfl4Gwh" target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 bg-emerald-800 hover:bg-emerald-700 text-white px-8 py-4 rounded-full transition-colors border border-emerald-600 shadow-lg font-bold">
-                    <i data-lucide="file-text" class="text-yellow-400 w-5 h-5"></i> Lihat Brosur Pendaftaran
-                </a>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="https://drive.google.com/drive/folders/1sIYBnArUwi8tHUZaxtYMplgcaXfl4Gwh" target="_blank" rel="noreferrer" class="inline-flex items-center justify-center gap-2 bg-emerald-800 hover:bg-emerald-700 text-white px-8 py-4 rounded-full transition-colors border border-emerald-600 shadow-lg font-bold">
+                        <i data-lucide="file-text" class="text-yellow-400 w-5 h-5"></i> Lihat Brosur Lengkap
+                    </a>
+                </div>
             </div>
-            <div class="flex flex-col md:flex-row justify-between items-center text-sm font-medium">
+
+            <div class="flex flex-col md:flex-row justify-between items-center text-sm font-medium pt-4">
                 <p>© <span id="currentYear"></span> PPTQ Al-Falah Babaan, Ngasem, Malang.</p>
-                <p class="mt-2 md:mt-0 text-emerald-500 dark:text-emerald-400/80 text-xs italic">edited by media al falah</p>
+                <div class="mt-2 md:mt-0 flex items-center gap-4 text-emerald-500 dark:text-emerald-400/80 text-xs italic">
+                    <span>edited by media al falah</span>
+                </div>
             </div>
         </div>
     </footer>
@@ -409,7 +620,7 @@
         lucide.createIcons();
         document.getElementById('currentYear').textContent = new Date().getFullYear();
 
-        // DOM Elements
+        // DOM Elements Navbar dll
         const htmlElement = document.documentElement;
         const navbar = document.getElementById('navbar');
         const navTitle = document.getElementById('nav-title');
@@ -417,9 +628,11 @@
         const desktopMenu = document.getElementById('desktop-menu');
         const desktopBtnDark = document.getElementById('desktop-btn-dark');
         const desktopBtnSearch = document.getElementById('desktop-btn-search');
+        const desktopBtnAuth = document.getElementById('desktop-btn-auth');
         const mobileBtnDark = document.getElementById('mobile-btn-dark');
         const mobileBtnSearch = document.getElementById('mobile-btn-search');
         const mobileBtnMenu = document.getElementById('mobile-btn-menu');
+        const mobileBtnAuth = document.getElementById('mobile-btn-auth');
         const menuIcon = document.getElementById('menu-icon');
         const closeIcon = document.getElementById('close-icon');
         const mobileMenuPanel = document.getElementById('mobile-menu-panel');
@@ -437,24 +650,46 @@
                 navbar.className = 'fixed w-full z-50 transition-all duration-300 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md shadow-sm border-b border-emerald-100 dark:border-emerald-900 py-2 md:py-3';
                 navTitle.className = 'font-bold text-lg md:text-xl leading-tight text-emerald-800 dark:text-emerald-400 drop-shadow-none transition-colors duration-300';
                 navSubtitle.className = 'text-xs font-medium text-emerald-500 dark:text-emerald-500 drop-shadow-none transition-colors duration-300';
-                desktopMenu.className = 'hidden xl:flex gap-6 2xl:gap-8 font-semibold items-center text-emerald-800 dark:text-emerald-200 transition-colors duration-300';
+                desktopMenu.className = 'hidden xl:flex gap-5 2xl:gap-7 font-semibold items-center text-emerald-800 dark:text-emerald-200 transition-colors duration-300 text-sm 2xl:text-base';
                 desktopBtnDark.className = 'p-2 rounded-full transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-900 text-emerald-600 dark:text-emerald-300';
-                desktopBtnSearch.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-900 text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border border-emerald-100 dark:border-emerald-800 group';
+                desktopBtnSearch.className = 'p-2 rounded-full transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-900 text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border border-emerald-100 dark:border-emerald-800';
                 mobileBtnDark.className = 'p-2 rounded-full transition-colors text-emerald-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900';
                 mobileBtnSearch.className = 'p-2 rounded-full transition-colors text-emerald-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900';
                 mobileBtnMenu.className = 'p-2 rounded-md text-emerald-800 dark:text-emerald-200 transition-colors';
+                
+                // Auth button styles when scrolled
+                desktopBtnAuth.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-700 group';
+                mobileBtnAuth.className = 'p-2 rounded-full transition-colors text-emerald-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900';
             } else {
                 navbar.className = 'fixed w-full z-50 transition-all duration-300 bg-transparent py-4 md:py-5';
                 navTitle.className = 'font-bold text-lg md:text-xl leading-tight text-white drop-shadow-md transition-colors duration-300';
                 navSubtitle.className = 'text-xs font-medium text-emerald-100 drop-shadow-md transition-colors duration-300';
-                desktopMenu.className = 'hidden xl:flex gap-6 2xl:gap-8 font-semibold items-center text-white transition-colors duration-300';
+                desktopMenu.className = 'hidden xl:flex gap-5 2xl:gap-7 font-semibold items-center text-white transition-colors duration-300 text-sm 2xl:text-base';
                 desktopBtnDark.className = 'p-2 rounded-full transition-colors hover:bg-white/20 text-white';
-                desktopBtnSearch.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors hover:bg-white/20 text-white bg-white/10 border border-white/20 backdrop-blur-sm group';
+                desktopBtnSearch.className = 'p-2 rounded-full transition-colors hover:bg-white/20 text-white bg-white/10 border border-white/20 backdrop-blur-sm';
                 mobileBtnDark.className = 'p-2 rounded-full transition-colors text-white hover:bg-white/20';
                 mobileBtnSearch.className = 'p-2 rounded-full transition-colors text-white hover:bg-white/20';
                 mobileBtnMenu.className = 'p-2 rounded-md text-white transition-colors';
+                
+                // Auth button styles when at top
+                desktopBtnAuth.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors hover:bg-emerald-500/20 text-emerald-300 bg-emerald-500/10 border border-emerald-400/20 backdrop-blur-sm group';
+                mobileBtnAuth.className = 'p-2 rounded-full transition-colors text-emerald-300 hover:bg-emerald-500/20';
             }
         });
+
+        // Toggle FAQ Akordion
+        function toggleFaq(button) {
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('.faq-icon');
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
 
         // Toggle Dark Mode
         function toggleDarkMode() {
@@ -486,6 +721,8 @@
             const iconOpen = document.getElementById('fab-icon-open');
             const iconClose = document.getElementById('fab-icon-close');
 
+            if (!fabMenu || !iconOpen || !iconClose) return;
+
             if (isFabOpen) {
                 fabMenu.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
                 iconOpen.classList.replace('scale-100', 'scale-0'); iconOpen.classList.replace('opacity-100', 'opacity-0'); iconOpen.classList.add('rotate-90');
@@ -499,8 +736,13 @@
 
         // Tutup menu kontak saat area luar diklik
         document.addEventListener('click', (e) => {
-            const fabContainer = document.getElementById('main-fab').parentNode;
-            if (isFabOpen && !fabContainer.contains(e.target)) toggleFab();
+            const mainFab = document.getElementById('main-fab');
+            if (mainFab) {
+                const fabContainer = mainFab.parentNode;
+                if (isFabOpen && fabContainer && !fabContainer.contains(e.target)) {
+                    toggleFab();
+                }
+            }
         });
 
         // Fitur Lightbox
@@ -518,12 +760,211 @@
             setTimeout(() => { lightboxImg.src = ''; }, 300);
         }
 
+        // ================= FITUR LOGIN SANTRI =================
+        const loginModal = document.getElementById('login-modal');
+        const loginContainer = document.getElementById('login-container');
+        const dashboardModal = document.getElementById('dashboard-modal');
+        const dashboardContainer = document.getElementById('dashboard-container');
+        const logoutModal = document.getElementById('logout-modal');
+        const logoutContainer = document.getElementById('logout-container');
+        const loginError = document.getElementById('login-error');
+        let loggedInSantri = null;
+
+        // Otomatis menaikkan / auto-scroll form login saat keyboard virtual HP muncul
+        const loginInputs = document.querySelectorAll('#login-username, #login-password');
+        loginInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                setTimeout(() => {
+                    this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300); // Jeda 300ms untuk menunggu keyboard HP muncul penuh
+            });
+        });
+
+        // Database Santri & Pengurus Terdaftar
+        const registeredUsers = {
+            "AGUS ZARKASI": {
+                password: "santrialfalah",
+                alamat: "PASURUAN",
+                ttl: "PASURUAN, 12 JULI 2002",
+                ortu: "MANSUR",
+                status: "SANTRI"
+            },
+            "KHOIRUL ANAM": {
+                password: "pengasuh",
+                alamat: "BABAAN",
+                ttl: "MALANG, 28 APRIL 1987",
+                ortu: "M. SJAIFULLAH",
+                status: "PENGASUH PONDOK"
+            }
+        };
+
+        function checkAuthStatus() {
+            if(loggedInSantri) {
+                openDashboard();
+            } else {
+                openLogin();
+            }
+        }
+
+        function updateAuthUI() {
+            const authTextDesktop = document.getElementById('desktop-auth-text');
+            const authTextMobile = document.getElementById('mobile-panel-auth-text');
+            
+            if(loggedInSantri) {
+                authTextDesktop.textContent = "Dashboard Santri";
+                authTextMobile.textContent = "Dashboard Santri";
+            } else {
+                authTextDesktop.textContent = "Login Santri";
+                authTextMobile.textContent = "Login Santri";
+            }
+        }
+
+        function openLogin() {
+            loginModal.classList.remove('hidden');
+            setTimeout(() => {
+                loginModal.classList.remove('opacity-0');
+                loginContainer.classList.remove('scale-95');
+                document.getElementById('login-username').focus();
+            }, 10);
+            document.body.style.overflow = 'hidden';
+            if(isMobileMenuOpen) toggleMobileMenu();
+        }
+
+        function closeLogin() {
+            loginModal.classList.add('opacity-0');
+            loginContainer.classList.add('scale-95');
+            setTimeout(() => {
+                loginModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                loginError.classList.add('hidden');
+            }, 300);
+        }
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('login-password');
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+            } else {
+                passwordInput.type = "password";
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('login-username').value;
+            const passwordInput = document.getElementById('login-password').value;
+
+            loginError.classList.add('hidden'); // Sembunyikan error sebelumnya
+
+            // Validasi 1: Username harus HURUF BESAR SEMUA
+            if (usernameInput !== usernameInput.toUpperCase() || usernameInput.trim() === '') {
+                loginError.innerHTML = "<em>username harus huruf besar semua</em>";
+                loginError.classList.remove('hidden');
+                return;
+            }
+
+            // Validasi 2: Password harus huruf kecil semua dan tanpa spasi
+            if (passwordInput !== passwordInput.toLowerCase() || passwordInput.includes(' ') || passwordInput === '') {
+                loginError.innerHTML = "<em>password harus huruf kecil semua tanpa spasi</em>";
+                loginError.classList.remove('hidden');
+                return;
+            }
+
+            // Validasi 3: Cek apakah user terdaftar dan password sesuai databasenya masing-masing
+            const userClean = usernameInput.trim();
+            if (registeredUsers[userClean] && passwordInput === registeredUsers[userClean].password) {
+                const userData = registeredUsers[userClean];
+                loggedInSantri = userClean;
+                
+                // Set data ke dalam tabel dengan format rapi (Capitalize / Title Case lewat CSS)
+                document.getElementById('dash-nama').textContent = userClean.toLowerCase();
+                document.getElementById('dash-alamat').textContent = userData.alamat.toLowerCase();
+                document.getElementById('dash-ttl').textContent = userData.ttl.toLowerCase();
+                document.getElementById('dash-ortu').textContent = userData.ortu.toLowerCase();
+                
+                // Untuk status kita biarkan Title Case khusus
+                document.getElementById('dash-status-text').textContent = userData.status.toLowerCase();
+
+                // Set Foto Profil (Avatar) dari Inisial Nama (Misal: AGUS ZARKASI -> AZ)
+                const nameWords = userClean.split(/\s+/);
+                let initials = "";
+                if (nameWords.length >= 2) {
+                    initials = nameWords[0][0] + nameWords[1][0];
+                } else if (nameWords.length === 1) {
+                    initials = nameWords[0][0];
+                }
+                document.getElementById('dash-avatar').textContent = initials.toUpperCase();
+                
+                // Menutup Login Modal lalu membuka Dashboard
+                loginError.classList.add('hidden');
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
+                
+                closeLogin();
+                setTimeout(() => {
+                    openDashboard();
+                    updateAuthUI();
+                }, 300);
+            } else {
+                loginError.innerHTML = "<em>User tidak terdaftar atau password salah.</em>";
+                loginError.classList.remove('hidden');
+            }
+        }
+
+        function openDashboard() {
+            dashboardModal.classList.remove('hidden');
+            setTimeout(() => {
+                dashboardModal.classList.remove('opacity-0');
+                dashboardContainer.classList.remove('scale-95');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+            if(isMobileMenuOpen) toggleMobileMenu();
+        }
+
+        function closeDashboard() {
+            dashboardModal.classList.add('opacity-0');
+            dashboardContainer.classList.add('scale-95');
+            setTimeout(() => {
+                dashboardModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        // --- Fungsi Konfirmasi Logout ---
+        function handleLogout() {
+            // Tampilkan Modal Konfirmasi Logout
+            logoutModal.classList.remove('hidden');
+            setTimeout(() => {
+                logoutModal.classList.remove('opacity-0');
+                logoutContainer.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function cancelLogout() {
+            // Sembunyikan Modal Konfirmasi Logout
+            logoutModal.classList.add('opacity-0');
+            logoutContainer.classList.add('scale-95');
+            setTimeout(() => {
+                logoutModal.classList.add('hidden');
+            }, 300);
+        }
+
+        function confirmLogout() {
+            // Lakukan logout sebenarnya jika konfirmasi "Ya" diklik
+            loggedInSantri = null;
+            cancelLogout();
+            closeDashboard();
+            updateAuthUI();
+        }
+
+
         // ================= FITUR PENCARIAN =================
         const searchModal = document.getElementById('search-modal');
         const searchInput = document.getElementById('search-input');
         const searchResults = document.getElementById('search-results');
         const searchContainer = document.getElementById('search-container');
         
+        // Data Pencarian
         const searchData = [
             { id: "profil", icon: "building", title: "Profil & Sejarah", desc: "Visi, Misi, dan Profil Pesantren Al-Falah", tags: ["profil", "visi", "misi", "sejarah", "tentang"] },
             { id: "program", icon: "book-open", title: "Tahfidzul Qur'an", desc: "Program unggulan hafalan Al-Qur'an", tags: ["tahfidz", "hafalan", "qur'an", "al-quran", "program"] },
@@ -532,7 +973,8 @@
             { id: "kegiatan", icon: "wallet", title: "Biaya Pendaftaran", desc: "Rincian biaya awal dan syahriah bulanan", tags: ["biaya", "pendaftaran", "uang", "syahriah", "spp", "bulanan", "harga"] },
             { id: "kegiatan", icon: "home", title: "Fasilitas Pesantren", desc: "Makan 3x sehari, asrama, listrik, dan WiFi", tags: ["fasilitas", "makan", "asrama", "wifi", "gedung", "kegiatan"] },
             { id: "jadwal-kegiatan", icon: "calendar-days", title: "Jadwal Kegiatan", desc: "Jam kegiatan santri dari Senin hingga Minggu", tags: ["jadwal", "kegiatan", "waktu", "jam", "rutinitas"] },
-            { id: "pendaftaran", icon: "phone", title: "Kontak & Lokasi", desc: "WhatsApp, Instagram, YouTube, dan Alamat Map", tags: ["kontak", "hubungi", "alamat", "telepon", "whatsapp", "wa", "instagram", "youtube", "lokasi", "map"] }
+            { id: "faq", icon: "help-circle", title: "Tanya Jawab (FAQ)", desc: "Pertanyaan umum seputar pondok", tags: ["faq", "tanya", "jawab", "bantuan", "pertanyaan", "hp", "laptop"] },
+            { id: "pendaftaran", icon: "phone", title: "Kontak & Lokasi", desc: "Informasi Pendaftaran dan Lokasi Map", tags: ["kontak", "hubungi", "alamat", "telepon", "whatsapp", "wa", "instagram", "youtube", "lokasi", "map"] }
         ];
 
         function openSearch() {
@@ -568,7 +1010,7 @@
             });
 
             if (filtered.length === 0) {
-                searchResults.innerHTML = `<div class="text-center py-10 text-emerald-400 dark:text-emerald-500"><p>Tidak ada hasil untuk "<b>${query}</b>"</p><p class="text-sm mt-2 opacity-80">Coba gunakan kata kunci lain seperti 'biaya' atau 'kitab'.</p></div>`;
+                searchResults.innerHTML = `<div class="text-center py-10 text-emerald-400 dark:text-emerald-500"><p>Tidak ada hasil untuk "<b>${query}</b>"</p><p class="text-sm mt-2 opacity-80">Coba gunakan kata kunci lain seperti 'biaya', 'kitab', atau 'jadwal'.</p></div>`;
                 return;
             }
 
@@ -590,8 +1032,17 @@
 
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
-            if (e.key === 'Escape' && !searchModal.classList.contains('hidden')) closeSearch();
+            if (e.key === 'Escape') {
+                if(searchModal && !searchModal.classList.contains('hidden')) closeSearch();
+                if(logoutModal && !logoutModal.classList.contains('hidden')) {
+                    cancelLogout();
+                } else if(dashboardModal && !dashboardModal.classList.contains('hidden')) {
+                    closeDashboard();
+                } else if(loginModal && !loginModal.classList.contains('hidden')) {
+                    closeLogin();
+                }
+            }
         });
     </script>
 </body>
-                            </html>
+                    </html>
