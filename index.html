@@ -160,7 +160,13 @@
                             Masuk Sistem <i data-lucide="log-in" class="w-5 h-5"></i>
                         </button>
                     </div>
-                    <!-- Indikator Status Cloud -->
+
+                    <!-- Peringatan Offline (Akan muncul jika file didownload) -->
+                    <div id="offline-warning" class="hidden mt-4 p-3 bg-amber-100/80 dark:bg-amber-900/40 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 text-xs rounded-xl text-center leading-relaxed">
+                        <i data-lucide="wifi-off" class="w-4 h-4 inline mr-1 mb-0.5"></i>
+                        <b>Mode Offline:</b> File berjalan secara lokal tanpa server. Data dan Password hanya tersimpan di perangkat ini.
+                    </div>
+                    
                     <div class="text-center text-xs text-emerald-600 dark:text-emerald-400 font-medium flex justify-center items-center gap-1.5 opacity-70 mb-2">
                         <div id="status-indicator" class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></div>
                         <span id="server-status-text">Menghubungkan Server...</span>
@@ -698,7 +704,7 @@
 
         // 1. Inisialisasi Database
         async function initFirebase() {
-            // Mengecek apakah berjalan di lingkungan Preview dengan config cloud
+            // Mengecek apakah berjalan di dalam lingkungan preview web AI (Terkoneksi Database)
             if (typeof __firebase_config !== 'undefined' && __firebase_config) {
                 try {
                     const firebaseConfig = JSON.parse(__firebase_config);
@@ -724,9 +730,39 @@
                     updateServerStatusUI();
                 }
             } else {
-                // Jika file di-download / berjalan di server lokal
+                // JIKA FILE DI DOWNLOAD / DIJALANKAN DI LAPTOP SENDIRI
+                // Karena file tidak memiliki server, otomatis masuk mode offline
                 isOfflineMode = true;
                 updateServerStatusUI();
+
+                /*
+                ======================================================================
+                 PANDUAN UNTUK PENGELOLA WEB PPTQ AL FALAH:
+                 Jika Anda ingin mengupload web ini dan agar password tersinkron,
+                 Anda harus mengaktifkan Firebase milik Anda sendiri.
+                 
+                 Hapus komentar (tanda slash bintang) di bawah ini dan isi dengan 
+                 config Firebase dari project Google Firebase milik Anda:
+                ======================================================================
+                
+                const myFirebaseConfig = {
+                    apiKey: "API_KEY_ANDA",
+                    authDomain: "project-anda.firebaseapp.com",
+                    projectId: "project-anda",
+                    storageBucket: "project-anda.appspot.com",
+                    messagingSenderId: "12345678",
+                    appId: "1:12345678:web:abcde123"
+                };
+                const app = initializeApp(myFirebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                await signInAnonymously(auth);
+                isOfflineMode = false;
+                isDbReady = true;
+                updateServerStatusUI();
+                appId = "pondok-al-falah"; // Bebas dinamai apa saja
+                */
             }
         }
         
@@ -734,13 +770,17 @@
         function updateServerStatusUI() {
             const statusIndicator = document.getElementById('status-indicator');
             const statusText = document.getElementById('server-status-text');
+            const offlineWarning = document.getElementById('offline-warning');
+            
             if (statusIndicator && statusText) {
                 if (isOfflineMode) {
                     statusIndicator.className = "w-2 h-2 rounded-full bg-slate-400";
-                    statusText.textContent = "Mode Offline (Penyimpanan Perangkat Ini)";
+                    statusText.textContent = "Database Server Tidak Ditemukan";
+                    if(offlineWarning) offlineWarning.classList.remove('hidden');
                 } else if (isDbReady) {
                     statusIndicator.className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_#22c55e]";
-                    statusText.textContent = "Terhubung ke Database Cloud";
+                    statusText.textContent = "Terhubung ke Database Online";
+                    if(offlineWarning) offlineWarning.classList.add('hidden');
                 }
             }
         }
@@ -1036,12 +1076,12 @@
                 await saveSantriPassword(loggedInSantri, newPwd);
                 
                 if(isOfflineMode) {
-                    showCPMessage("<b>Berhasil Lokal:</b> Password diubah hanya di perangkat ini (Mode Offline).", false);
+                    showCPMessage("<b>Tersimpan Lokal:</b> Password berhasil diganti, <b>namun hanya berlaku di perangkat ini</b> (Mode Offline).", false);
                 } else {
-                    showCPMessage("<b>Berhasil:</b> Password Anda berhasil diperbarui ke server!", false);
+                    showCPMessage("<b>Berhasil:</b> Password Anda berhasil diperbarui dan tersinkron ke Server!", false);
                 }
                 
-                setTimeout(() => window.closeChangePassword(), 1800);
+                setTimeout(() => window.closeChangePassword(), 3000);
 
             } catch (error) {
                 showCPMessage("<b>Error:</b> Terjadi kesalahan saat menyimpan ke database.");
@@ -1276,4 +1316,4 @@
         lucide.createIcons();
     </script>
 </body>
-    </html>
+                                         </html>
