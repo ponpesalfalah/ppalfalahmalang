@@ -38,6 +38,14 @@
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
         
+        /* Animasi Shake untuk Form Error */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .animate-shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        
         #lightbox-img { background-color: transparent; }
     </style>
 </head>
@@ -121,8 +129,11 @@
                 <button onclick="closeLogin()" class="p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <div class="p-6 sm:p-8 overflow-y-auto max-h-[75vh]">
-                <!-- Pesan Error dinamis akan muncul disini -->
-                <div id="login-error" class="hidden mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-200 font-medium">
+                
+                <!-- Pesan Error dinamis yang diperbarui -->
+                <div id="login-error" class="hidden mb-5 p-4 bg-red-100 dark:bg-red-900/40 border-l-4 border-red-500 text-red-700 dark:text-red-300 rounded-r-lg text-sm flex items-start gap-3 shadow-sm transition-all duration-300">
+                    <i data-lucide="alert-circle" class="w-5 h-5 shrink-0 mt-0.5"></i>
+                    <span id="login-error-text" class="leading-relaxed">Username atau password salah!</span>
                 </div>
                 
                 <form id="login-form" onsubmit="handleLogin(event)" class="space-y-5">
@@ -148,9 +159,6 @@
                         <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2">
                             Masuk Sistem <i data-lucide="log-in" class="w-5 h-5"></i>
                         </button>
-                        <p class="text-[11px] text-red-500 italic mt-4 text-center">
-                            NB: santri/alumni yang belum terdaftar mohon menghubungi bagian media al-falah.
-                        </p>
                     </div>
                 </form>
             </div>
@@ -182,22 +190,32 @@
                 <div class="bg-emerald-50/50 dark:bg-emerald-950/50 rounded-2xl border border-emerald-100 dark:border-emerald-800 overflow-hidden shadow-sm">
                     <table class="w-full text-left border-collapse">
                         <tbody>
+                            <!-- NAMA -->
                             <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">NAMA</th>
                                 <td class="p-4 sm:p-5 font-bold text-emerald-950 dark:text-emerald-50 text-sm sm:text-base capitalize tracking-wide" id="dash-nama">-</td>
                             </tr>
+                            <!-- KELAS -->
+                            <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
+                                <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">KELAS</th>
+                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 text-sm sm:text-base tracking-wide" id="dash-kelas">-</td>
+                            </tr>
+                            <!-- ALAMAT -->
                             <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">ALAMAT</th>
                                 <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base capitalize tracking-wide" id="dash-alamat">-</td>
                             </tr>
+                            <!-- TTL -->
                             <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">TEMPAT, TANGGAL LAHIR</th>
                                 <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base capitalize tracking-wide" id="dash-ttl">-</td>
                             </tr>
+                            <!-- ORTU -->
                             <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">NAMA ORANG TUA</th>
                                 <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base capitalize tracking-wide" id="dash-ortu">-</td>
                             </tr>
+                            <!-- STATUS -->
                             <tr class="hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">STATUS</th>
                                 <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 text-sm sm:text-base capitalize">
@@ -768,6 +786,8 @@
         const logoutModal = document.getElementById('logout-modal');
         const logoutContainer = document.getElementById('logout-container');
         const loginError = document.getElementById('login-error');
+        const loginErrorText = document.getElementById('login-error-text');
+        const loginForm = document.getElementById('login-form');
         let loggedInSantri = null;
 
         // Otomatis menaikkan / auto-scroll form login saat keyboard virtual HP muncul
@@ -786,6 +806,7 @@
                 password: "santrialfalah",
                 alamat: "PASURUAN",
                 ttl: "PASURUAN, 12 JULI 2002",
+                kelas: "LULUS",
                 ortu: "MANSUR",
                 status: "SANTRI"
             },
@@ -793,8 +814,25 @@
                 password: "pengasuh",
                 alamat: "BABAAN",
                 ttl: "MALANG, 28 APRIL 1987",
+                kelas: "-",
                 ortu: "M. SJAIFULLAH",
                 status: "PENGASUH PONDOK"
+            },
+            "DEWI CANTIKA SAKTI": {
+                password: "santrialfalah",
+                alamat: "MADUARJO",
+                ttl: "MALANG, 29 JULI 2009",
+                kelas: "XI",
+                ortu: "TRI RUSFANDI",
+                status: "SANTRI"
+            },
+            "DEWA BUDIMAN SAKTI": {
+                password: "santrialfalah",
+                alamat: "MADUARJO",
+                ttl: "MALANG, 29 JULI 2009",
+                kelas: "XI",
+                ortu: "TRI RUSFANDI",
+                status: "SANTRI"
             }
         };
 
@@ -849,66 +887,101 @@
             }
         }
 
+        // Fungsi khusus untuk memunculkan pesan error dengan animasi
+        function showLoginError(message) {
+            loginErrorText.innerHTML = message;
+            loginError.classList.remove('hidden');
+            
+            // Hapus class animasi jika sebelumnya ada, paksa render ulang (reflow), lalu tambahkan kembali agar animasi mengulang
+            loginForm.classList.remove('animate-shake');
+            void loginForm.offsetWidth;
+            loginForm.classList.add('animate-shake');
+        }
+
         function handleLogin(e) {
             e.preventDefault();
             const usernameInput = document.getElementById('login-username').value;
             const passwordInput = document.getElementById('login-password').value;
 
-            loginError.classList.add('hidden'); // Sembunyikan error sebelumnya
-
             // Validasi 1: Username harus HURUF BESAR SEMUA
             if (usernameInput !== usernameInput.toUpperCase() || usernameInput.trim() === '') {
-                loginError.innerHTML = "<em>username harus huruf besar semua</em>";
-                loginError.classList.remove('hidden');
+                showLoginError("<b>Perhatian:</b> Username harus diisi dengan HURUF BESAR SEMUA.");
                 return;
             }
 
             // Validasi 2: Password harus huruf kecil semua dan tanpa spasi
             if (passwordInput !== passwordInput.toLowerCase() || passwordInput.includes(' ') || passwordInput === '') {
-                loginError.innerHTML = "<em>password harus huruf kecil semua tanpa spasi</em>";
-                loginError.classList.remove('hidden');
+                showLoginError("<b>Perhatian:</b> Password harus berupa huruf kecil semua tanpa spasi.");
                 return;
             }
 
-            // Validasi 3: Cek apakah user terdaftar dan password sesuai databasenya masing-masing
             const userClean = usernameInput.trim();
-            if (registeredUsers[userClean] && passwordInput === registeredUsers[userClean].password) {
-                const userData = registeredUsers[userClean];
-                loggedInSantri = userClean;
-                
-                // Set data ke dalam tabel dengan format rapi (Capitalize / Title Case lewat CSS)
-                document.getElementById('dash-nama').textContent = userClean.toLowerCase();
-                document.getElementById('dash-alamat').textContent = userData.alamat.toLowerCase();
-                document.getElementById('dash-ttl').textContent = userData.ttl.toLowerCase();
-                document.getElementById('dash-ortu').textContent = userData.ortu.toLowerCase();
-                
-                // Untuk status kita biarkan Title Case khusus
-                document.getElementById('dash-status-text').textContent = userData.status.toLowerCase();
 
-                // Set Foto Profil (Avatar) dari Inisial Nama (Misal: AGUS ZARKASI -> AZ)
-                const nameWords = userClean.split(/\s+/);
-                let initials = "";
-                if (nameWords.length >= 2) {
-                    initials = nameWords[0][0] + nameWords[1][0];
-                } else if (nameWords.length === 1) {
-                    initials = nameWords[0][0];
-                }
-                document.getElementById('dash-avatar').textContent = initials.toUpperCase();
-                
-                // Menutup Login Modal lalu membuka Dashboard
-                loginError.classList.add('hidden');
-                document.getElementById('login-username').value = '';
-                document.getElementById('login-password').value = '';
-                
-                closeLogin();
-                setTimeout(() => {
-                    openDashboard();
-                    updateAuthUI();
-                }, 300);
-            } else {
-                loginError.innerHTML = "<em>User tidak terdaftar atau password salah.</em>";
-                loginError.classList.remove('hidden');
+            // Validasi 3: Cek apakah username terdaftar di database (Pesan Error Miring/Italic)
+            if (!registeredUsers[userClean]) {
+                showLoginError("<b>Login Gagal:</b> <i>Username tidak terdaftar, silahkan hubungi bagian media</i>");
+                return;
             }
+
+            // Validasi 4: Cek apakah password sesuai dengan yang ada di database
+            if (passwordInput !== registeredUsers[userClean].password) {
+                showLoginError("<b>Login Gagal:</b> Password yang Anda masukkan salah.");
+                return;
+            }
+
+            // Jika semua pengecekan berhasil, lanjutkan login
+            const userData = registeredUsers[userClean];
+            loggedInSantri = userClean;
+            
+            // Menata Teks Biodata Santri
+            document.getElementById('dash-nama').textContent = userClean.toLowerCase();
+            document.getElementById('dash-alamat').textContent = userData.alamat.toLowerCase();
+            document.getElementById('dash-ttl').textContent = userData.ttl.toLowerCase();
+            document.getElementById('dash-ortu').textContent = userData.ortu.toLowerCase();
+            
+            // Penanganan Dinamis untuk Kolom "Kelas"
+            const elKelas = document.getElementById('dash-kelas');
+            const kelasStr = (userData.kelas || "-").trim();
+            
+            // Menggunakan Regex untuk mendeteksi apakah isinya murni Karakter Romawi
+            const isRoman = /^[IVXLCDM]+$/i.test(kelasStr);
+            
+            // Reset style ke class standar terlebih dahulu
+            elKelas.className = "p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 text-sm sm:text-base tracking-wide";
+            
+            if (isRoman) {
+                // Jika Angka Romawi (misal XI, X, VII), maka ubah uppercase & tebal (bold)
+                elKelas.textContent = kelasStr.toUpperCase();
+                elKelas.classList.add("font-bold", "uppercase");
+            } else {
+                // Jika Teks Biasa (misal LULUS), maka ikuti style alamat (Title Case & semibold)
+                elKelas.textContent = kelasStr.toLowerCase(); // huruf kecil ini akan di-TitleCase oleh CSS 'capitalize'
+                elKelas.classList.add("font-semibold", "capitalize");
+            }
+            
+            // Untuk status kita biarkan Title Case khusus
+            document.getElementById('dash-status-text').textContent = userData.status.toLowerCase();
+
+            // Set Foto Profil (Avatar) dari Inisial Nama (Misal: AGUS ZARKASI -> AZ)
+            const nameWords = userClean.split(/\s+/);
+            let initials = "";
+            if (nameWords.length >= 2) {
+                initials = nameWords[0][0] + nameWords[1][0];
+            } else if (nameWords.length === 1) {
+                initials = nameWords[0][0];
+            }
+            document.getElementById('dash-avatar').textContent = initials.toUpperCase();
+            
+            // Menutup Login Modal lalu membuka Dashboard
+            loginError.classList.add('hidden');
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            
+            closeLogin();
+            setTimeout(() => {
+                openDashboard();
+                updateAuthUI();
+            }, 300);
         }
 
         function openDashboard() {
@@ -1045,4 +1118,4 @@
         });
     </script>
 </body>
-                    </html>
+    </html>
