@@ -156,7 +156,7 @@
                         </div>
                     </div>
                     <div class="pt-2 pb-4">
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2">
+                        <button type="submit" id="btn-login-submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-70">
                             Masuk Sistem <i data-lucide="log-in" class="w-5 h-5"></i>
                         </button>
                     </div>
@@ -312,7 +312,7 @@
                     </div>
 
                     <div class="pt-4">
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2">
+                        <button type="submit" id="btn-cp-submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-wait">
                             Simpan Password <i data-lucide="save" class="w-5 h-5"></i>
                         </button>
                     </div>
@@ -700,13 +700,107 @@
         </div>
     </footer>
 
-    <!-- ==================== JAVASCRIPT ==================== -->
-    <script>
-        // Inisialisasi Umum
-        lucide.createIcons();
+    <!-- ==================== JAVASCRIPT & DATABASE (FIREBASE) ==================== -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // DOM Setup Dasar
         document.getElementById('currentYear').textContent = new Date().getFullYear();
 
-        // DOM Elements Navbar dll
+        // State Variables
+        let isDarkMode = false;
+        let isMobileMenuOpen = false;
+        let isFabOpen = false;
+        let loggedInSantri = null;
+
+        // Inisialisasi Firebase (Backend Database)
+        let db, auth, appId, fbUser;
+        let useFirebase = false;
+
+        async function initFirebase() {
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                try {
+                    const firebaseConfig = JSON.parse(__firebase_config);
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+                    appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                    
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                    fbUser = auth.currentUser;
+                    useFirebase = !!fbUser;
+                } catch (error) {
+                    console.error("Firebase init error:", error);
+                }
+            }
+        }
+        
+        // Mulai Database
+        initFirebase();
+
+        // ---------------- FUNGSI PASSWORD DATABASE ----------------
+        // Mengambil Password (Memprioritaskan dari Database, lalu Lokal, lalu Default)
+        async function getSantriPassword(username) {
+            const defaultPassword = "santrialfalah";
+            const safeUsername = username.replace(/\s+/g, '_'); // Ubah spasi jadi underscore untuk ID Dokumen
+            
+            // 1. Coba ambil dari Database Cloud
+            if (useFirebase && fbUser) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'passwords', safeUsername);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        return docSnap.data().password;
+                    }
+                } catch (e) {
+                    console.error("Error membaca database", e);
+                }
+            }
+            
+            // 2. Jika gagal/tidak ada di database, cek Local Storage
+            const savedPassword = localStorage.getItem('pwd_' + username);
+            if (savedPassword) {
+                return savedPassword;
+            }
+            
+            // 3. Jika semuanya kosong, pakai Password Default
+            return defaultPassword;
+        }
+
+        // Menyimpan Password Baru ke Database & Lokal
+        async function saveSantriPassword(username, newPassword) {
+            const safeUsername = username.replace(/\s+/g, '_');
+            
+            // Simpan ke Local Storage sebagai cadangan
+            localStorage.setItem('pwd_' + username, newPassword);
+            
+            // Simpan ke Database Cloud
+            if (useFirebase && fbUser) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'passwords', safeUsername);
+                    await setDoc(docRef, { password: newPassword });
+                } catch (e) {
+                    console.error("Error menyimpan ke database", e);
+                    throw e; // Lemparkan error agar ditangkap oleh fitur UI
+                }
+            }
+        }
+
+        // Database Data Diri Santri
+        const registeredUsers = {
+            "AGUS ZARKASI": { alamat: "PASURUAN", ttl: "PASURUAN, 12 JULI 2002", kelas: "LULUS", ortu: "MANSUR", status: "SANTRI" },
+            "KHOIRUL ANAM": { alamat: "BABAAN", ttl: "MALANG, 28 APRIL 1987", kelas: "-", ortu: "M. SJAIFULLAH", status: "PENGASUH PONDOK" },
+            "DEWI CANTIKA SAKTI": { alamat: "MADUARJO", ttl: "MALANG, 29 JULI 2009", kelas: "XI", ortu: "TRI RUSFANDI", status: "SANTRI" },
+            "DEWA BUDIMAN SAKTI": { alamat: "MADUARJO", ttl: "MALANG, 29 JULI 2009", kelas: "XI", ortu: "TRI RUSFANDI", status: "SANTRI" }
+        };
+
+        // ---------------- UI & ANIMASI DASAR ----------------
         const htmlElement = document.documentElement;
         const navbar = document.getElementById('navbar');
         const navTitle = document.getElementById('nav-title');
@@ -722,15 +816,7 @@
         const menuIcon = document.getElementById('menu-icon');
         const closeIcon = document.getElementById('close-icon');
         const mobileMenuPanel = document.getElementById('mobile-menu-panel');
-        const lightboxModal = document.getElementById('lightbox-modal');
-        const lightboxImg = document.getElementById('lightbox-img');
 
-        // State Variables
-        let isDarkMode = false;
-        let isMobileMenuOpen = false;
-        let isFabOpen = false;
-
-        // Efek Scroll Navbar
         window.addEventListener('scroll', () => {
             if (window.scrollY > 50) {
                 navbar.className = 'fixed w-full z-50 transition-all duration-300 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md shadow-sm border-b border-emerald-100 dark:border-emerald-900 py-2 md:py-3';
@@ -742,8 +828,6 @@
                 mobileBtnDark.className = 'p-2 rounded-full transition-colors text-emerald-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900';
                 mobileBtnSearch.className = 'p-2 rounded-full transition-colors text-emerald-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900';
                 mobileBtnMenu.className = 'p-2 rounded-md text-emerald-800 dark:text-emerald-200 transition-colors';
-                
-                // Auth button styles when scrolled
                 desktopBtnAuth.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-700 group';
                 mobileBtnAuth.className = 'p-2 rounded-full transition-colors text-emerald-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900';
             } else {
@@ -756,36 +840,21 @@
                 mobileBtnDark.className = 'p-2 rounded-full transition-colors text-white hover:bg-white/20';
                 mobileBtnSearch.className = 'p-2 rounded-full transition-colors text-white hover:bg-white/20';
                 mobileBtnMenu.className = 'p-2 rounded-md text-white transition-colors';
-                
-                // Auth button styles when at top
                 desktopBtnAuth.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors hover:bg-emerald-500/20 text-emerald-300 bg-emerald-500/10 border border-emerald-400/20 backdrop-blur-sm group';
                 mobileBtnAuth.className = 'p-2 rounded-full transition-colors text-emerald-300 hover:bg-emerald-500/20';
             }
         });
 
-        // Toggle FAQ Akordion
-        function toggleFaq(button) {
-            const content = button.nextElementSibling;
-            const icon = button.querySelector('.faq-icon');
-            
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                icon.classList.add('rotate-180');
-            } else {
-                content.classList.add('hidden');
-                icon.classList.remove('rotate-180');
-            }
-        }
+        // ---------------- MENYAMBUNGKAN FUNGSI KE WINDOW ----------------
+        // (Agar bisa dipanggil dari atribut onclick di HTML)
 
-        // Toggle Dark Mode
-        function toggleDarkMode() {
+        window.toggleDarkMode = function() {
             isDarkMode = !isDarkMode;
             if (isDarkMode) htmlElement.classList.add('dark');
             else htmlElement.classList.remove('dark');
-        }
+        };
 
-        // Toggle Menu Mobile
-        function toggleMobileMenu() {
+        window.toggleMobileMenu = function() {
             isMobileMenuOpen = !isMobileMenuOpen;
             if (isMobileMenuOpen) {
                 mobileMenuPanel.classList.remove('hidden');
@@ -798,15 +867,25 @@
                 menuIcon.classList.add('block'); menuIcon.classList.remove('hidden');
                 closeIcon.classList.add('hidden'); closeIcon.classList.remove('block');
             }
-        }
+        };
 
-        // Toggle Menu Kontak Mengambang (FAB)
-        function toggleFab() {
+        window.toggleFaq = function(button) {
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('.faq-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        };
+
+        window.toggleFab = function() {
             isFabOpen = !isFabOpen;
             const fabMenu = document.getElementById('fab-menu');
             const iconOpen = document.getElementById('fab-icon-open');
             const iconClose = document.getElementById('fab-icon-close');
-
             if (!fabMenu || !iconOpen || !iconClose) return;
 
             if (isFabOpen) {
@@ -818,386 +897,37 @@
                 iconOpen.classList.replace('scale-0', 'scale-100'); iconOpen.classList.replace('opacity-0', 'opacity-100'); iconOpen.classList.remove('rotate-90');
                 iconClose.classList.replace('scale-100', 'scale-0'); iconClose.classList.replace('opacity-100', 'opacity-0'); iconClose.classList.replace('rotate-0', '-rotate-90');
             }
-        }
+        };
 
-        // Tutup menu kontak saat area luar diklik
         document.addEventListener('click', (e) => {
             const mainFab = document.getElementById('main-fab');
             if (mainFab) {
                 const fabContainer = mainFab.parentNode;
                 if (isFabOpen && fabContainer && !fabContainer.contains(e.target)) {
-                    toggleFab();
+                    window.toggleFab();
                 }
             }
         });
 
-        // Fitur Lightbox
-        function openLightbox(imageSrc) {
+        // ---------------- LIGHTBOX ----------------
+        const lightboxModal = document.getElementById('lightbox-modal');
+        const lightboxImg = document.getElementById('lightbox-img');
+
+        window.openLightbox = function(imageSrc) {
             lightboxImg.src = imageSrc;
             lightboxModal.classList.remove('hidden');
             lightboxModal.classList.add('flex');
             document.body.style.overflow = 'hidden';
-        }
+        };
 
-        function closeLightbox() {
+        window.closeLightbox = function() {
             lightboxModal.classList.add('hidden');
             lightboxModal.classList.remove('flex');
             document.body.style.overflow = 'auto';
             setTimeout(() => { lightboxImg.src = ''; }, 300);
-        }
-
-        // ================= FITUR LOGIN SANTRI =================
-        const loginModal = document.getElementById('login-modal');
-        const loginContainer = document.getElementById('login-container');
-        const dashboardModal = document.getElementById('dashboard-modal');
-        const dashboardContainer = document.getElementById('dashboard-container');
-        const logoutModal = document.getElementById('logout-modal');
-        const logoutContainer = document.getElementById('logout-container');
-        
-        // Modals Ganti Password
-        const cpModal = document.getElementById('cp-modal');
-        const cpContainer = document.getElementById('cp-container');
-
-        const loginError = document.getElementById('login-error');
-        const loginErrorText = document.getElementById('login-error-text');
-        const loginForm = document.getElementById('login-form');
-        let loggedInSantri = null;
-
-        // Otomatis menaikkan / auto-scroll form login saat keyboard virtual HP muncul
-        const loginInputs = document.querySelectorAll('#login-username, #login-password, #cp-old, #cp-new, #cp-confirm');
-        loginInputs.forEach(input => {
-            input.addEventListener('focus', function() {
-                setTimeout(() => {
-                    this.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 300); // Jeda 300ms untuk menunggu keyboard HP muncul penuh
-            });
-        });
-
-        // Database Santri & Pengurus Terdaftar (Password Semua Default = "santrialfalah")
-        const registeredUsers = {
-            "AGUS ZARKASI": {
-                alamat: "PASURUAN",
-                ttl: "PASURUAN, 12 JULI 2002",
-                kelas: "LULUS",
-                ortu: "MANSUR",
-                status: "SANTRI"
-            },
-            "KHOIRUL ANAM": {
-                alamat: "BABAAN",
-                ttl: "MALANG, 28 APRIL 1987",
-                kelas: "-",
-                ortu: "M. SJAIFULLAH",
-                status: "PENGASUH PONDOK"
-            },
-            "DEWI CANTIKA SAKTI": {
-                alamat: "MADUARJO",
-                ttl: "MALANG, 29 JULI 2009",
-                kelas: "XI",
-                ortu: "TRI RUSFANDI",
-                status: "SANTRI"
-            },
-            "DEWA BUDIMAN SAKTI": {
-                alamat: "MADUARJO",
-                ttl: "MALANG, 29 JULI 2009",
-                kelas: "XI",
-                ortu: "TRI RUSFANDI",
-                status: "SANTRI"
-            }
         };
 
-        // Fungsi Cek Password (Membaca dari LocalStorage, jika kosong gunakan default)
-        function getSantriPassword(username) {
-            const savedPassword = localStorage.getItem('pwd_' + username);
-            if (savedPassword) {
-                return savedPassword;
-            }
-            // Password default jika belum diubah
-            return "santrialfalah";
-        }
-
-        function checkAuthStatus() {
-            if(loggedInSantri) {
-                openDashboard();
-            } else {
-                openLogin();
-            }
-        }
-
-        function updateAuthUI() {
-            const authTextDesktop = document.getElementById('desktop-auth-text');
-            const authTextMobile = document.getElementById('mobile-panel-auth-text');
-            
-            if(loggedInSantri) {
-                authTextDesktop.textContent = "Dashboard Santri";
-                authTextMobile.textContent = "Dashboard Santri";
-            } else {
-                authTextDesktop.textContent = "Login Santri";
-                authTextMobile.textContent = "Login Santri";
-            }
-        }
-
-        function openLogin() {
-            loginModal.classList.remove('hidden');
-            setTimeout(() => {
-                loginModal.classList.remove('opacity-0');
-                loginContainer.classList.remove('scale-95');
-                document.getElementById('login-username').focus();
-            }, 10);
-            document.body.style.overflow = 'hidden';
-            if(isMobileMenuOpen) toggleMobileMenu();
-        }
-
-        function closeLogin() {
-            loginModal.classList.add('opacity-0');
-            loginContainer.classList.add('scale-95');
-            setTimeout(() => {
-                loginModal.classList.add('hidden');
-                document.body.style.overflow = 'auto';
-                loginError.classList.add('hidden');
-            }, 300);
-        }
-
-        function togglePasswordVisibility(id) {
-            const passwordInput = document.getElementById(id);
-            if (passwordInput.type === "password") {
-                passwordInput.type = "text";
-            } else {
-                passwordInput.type = "password";
-            }
-        }
-
-        // Tampilkan error
-        function showLoginError(message) {
-            loginErrorText.innerHTML = message;
-            loginError.classList.remove('hidden');
-            
-            loginForm.classList.remove('animate-shake');
-            void loginForm.offsetWidth;
-            loginForm.classList.add('animate-shake');
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const usernameInput = document.getElementById('login-username').value;
-            const passwordInput = document.getElementById('login-password').value;
-
-            // Validasi 1: Username harus HURUF BESAR SEMUA
-            if (usernameInput !== usernameInput.toUpperCase() || usernameInput.trim() === '') {
-                showLoginError("<b>Perhatian:</b> Username harus diisi dengan HURUF BESAR SEMUA.");
-                return;
-            }
-
-            // Validasi 2: Password harus huruf kecil semua dan tanpa spasi
-            if (passwordInput !== passwordInput.toLowerCase() || passwordInput.includes(' ') || passwordInput === '') {
-                showLoginError("<b>Perhatian:</b> Password harus berupa huruf kecil semua tanpa spasi.");
-                return;
-            }
-
-            const userClean = usernameInput.trim();
-
-            // Validasi 3: Cek apakah username terdaftar di database 
-            if (!registeredUsers[userClean]) {
-                showLoginError("<b>Login Gagal:</b> <i>Username tidak terdaftar, silahkan hubungi bagian media</i>");
-                return;
-            }
-
-            // Validasi 4: Cek Password (mengambil dari default atau local storage)
-            const validPassword = getSantriPassword(userClean);
-            if (passwordInput !== validPassword) {
-                showLoginError("<b>Login Gagal:</b> Password yang Anda masukkan salah.");
-                return;
-            }
-
-            // Lanjutkan Login
-            const userData = registeredUsers[userClean];
-            loggedInSantri = userClean;
-            
-            // Menata Teks Biodata Santri
-            document.getElementById('dash-nama').textContent = userClean.toLowerCase();
-            document.getElementById('dash-alamat').textContent = userData.alamat.toLowerCase();
-            document.getElementById('dash-ttl').textContent = userData.ttl.toLowerCase();
-            document.getElementById('dash-ortu').textContent = userData.ortu.toLowerCase();
-            
-            const elKelas = document.getElementById('dash-kelas');
-            const kelasStr = (userData.kelas || "-").trim();
-            const isRoman = /^[IVXLCDM]+$/i.test(kelasStr);
-            
-            elKelas.className = "p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 text-sm sm:text-base tracking-wide";
-            
-            if (isRoman) {
-                elKelas.textContent = kelasStr.toUpperCase();
-                elKelas.classList.add("font-bold", "uppercase");
-            } else {
-                elKelas.textContent = kelasStr.toLowerCase();
-                elKelas.classList.add("font-semibold", "capitalize");
-            }
-            
-            document.getElementById('dash-status-text').textContent = userData.status.toLowerCase();
-
-            const nameWords = userClean.split(/\s+/);
-            let initials = "";
-            if (nameWords.length >= 2) {
-                initials = nameWords[0][0] + nameWords[1][0];
-            } else if (nameWords.length === 1) {
-                initials = nameWords[0][0];
-            }
-            document.getElementById('dash-avatar').textContent = initials.toUpperCase();
-            
-            loginError.classList.add('hidden');
-            document.getElementById('login-username').value = '';
-            document.getElementById('login-password').value = '';
-            
-            closeLogin();
-            setTimeout(() => {
-                openDashboard();
-                updateAuthUI();
-            }, 300);
-        }
-
-        // ================= FITUR GANTI PASSWORD =================
-        function openChangePassword() {
-            closeDashboard();
-            setTimeout(() => {
-                cpModal.classList.remove('hidden');
-                setTimeout(() => {
-                    cpModal.classList.remove('opacity-0');
-                    cpContainer.classList.remove('scale-95');
-                }, 10);
-                document.body.style.overflow = 'hidden';
-            }, 300);
-        }
-
-        function closeChangePassword() {
-            cpModal.classList.add('opacity-0');
-            cpContainer.classList.add('scale-95');
-            setTimeout(() => {
-                cpModal.classList.add('hidden');
-                // Buka kembali dashboard
-                if (loggedInSantri) openDashboard();
-                else document.body.style.overflow = 'auto';
-                
-                // Reset form & pesan
-                document.getElementById('cp-form').reset();
-                document.getElementById('cp-msg').classList.add('hidden');
-            }, 300);
-        }
-
-        function toggleVisibilityCP() {
-            const isChecked = document.getElementById('toggle-cp-password').checked;
-            const type = isChecked ? 'text' : 'password';
-            document.getElementById('cp-old').type = type;
-            document.getElementById('cp-new').type = type;
-            document.getElementById('cp-confirm').type = type;
-        }
-
-        function showCPMessage(msg, isError = true) {
-            const cpMsgBox = document.getElementById('cp-msg');
-            const cpMsgText = document.getElementById('cp-msg-text');
-            const cpIcon = document.getElementById('cp-msg-icon');
-            
-            cpMsgText.innerHTML = msg;
-            cpMsgBox.classList.remove('hidden');
-
-            if (isError) {
-                cpMsgBox.className = "mb-5 p-4 rounded-r-lg text-sm flex items-start gap-3 shadow-sm transition-all duration-300 border-l-4 bg-red-100 dark:bg-red-900/40 border-red-500 text-red-700 dark:text-red-300 animate-shake";
-                cpIcon.setAttribute('data-lucide', 'alert-circle');
-            } else {
-                cpMsgBox.className = "mb-5 p-4 rounded-r-lg text-sm flex items-start gap-3 shadow-sm transition-all duration-300 border-l-4 bg-emerald-100 dark:bg-emerald-900/40 border-emerald-500 text-emerald-700 dark:text-emerald-300 animate-in";
-                cpIcon.setAttribute('data-lucide', 'check-circle');
-            }
-            lucide.createIcons();
-            
-            if(isError) {
-                // Force reflow for shake animation
-                cpMsgBox.classList.remove('animate-shake');
-                void cpMsgBox.offsetWidth;
-                cpMsgBox.classList.add('animate-shake');
-            }
-        }
-
-        function handleChangePassword(e) {
-            e.preventDefault();
-            
-            const oldPwd = document.getElementById('cp-old').value;
-            const newPwd = document.getElementById('cp-new').value;
-            const confirmPwd = document.getElementById('cp-confirm').value;
-
-            // Validasi Password Lama
-            const validPassword = getSantriPassword(loggedInSantri);
-            if (oldPwd !== validPassword) {
-                showCPMessage("<b>Gagal:</b> Password lama yang Anda masukkan salah.");
-                return;
-            }
-
-            // Validasi Format Password Baru
-            if (newPwd !== newPwd.toLowerCase() || newPwd.includes(' ') || newPwd === '') {
-                showCPMessage("<b>Perhatian:</b> Password baru harus berupa huruf kecil semua tanpa spasi.");
-                return;
-            }
-
-            // Validasi Konfirmasi
-            if (newPwd !== confirmPwd) {
-                showCPMessage("<b>Gagal:</b> Konfirmasi password tidak sama.");
-                return;
-            }
-
-            // Simpan Password Baru ke Local Storage
-            localStorage.setItem('pwd_' + loggedInSantri, newPwd);
-            
-            // Tampilkan Pesan Sukses
-            showCPMessage("<b>Berhasil:</b> Password Anda berhasil diperbarui!", false);
-            
-            // Bersihkan form & kembali ke dashboard setelah delay
-            setTimeout(() => {
-                closeChangePassword();
-            }, 1500);
-        }
-
-        // ================= DASBOARD & LOGOUT =================
-        function openDashboard() {
-            dashboardModal.classList.remove('hidden');
-            setTimeout(() => {
-                dashboardModal.classList.remove('opacity-0');
-                dashboardContainer.classList.remove('scale-95');
-            }, 10);
-            document.body.style.overflow = 'hidden';
-            if(isMobileMenuOpen) toggleMobileMenu();
-        }
-
-        function closeDashboard() {
-            dashboardModal.classList.add('opacity-0');
-            dashboardContainer.classList.add('scale-95');
-            setTimeout(() => {
-                dashboardModal.classList.add('hidden');
-                document.body.style.overflow = 'auto';
-            }, 300);
-        }
-
-        function handleLogout() {
-            logoutModal.classList.remove('hidden');
-            setTimeout(() => {
-                logoutModal.classList.remove('opacity-0');
-                logoutContainer.classList.remove('scale-95');
-            }, 10);
-        }
-
-        function cancelLogout() {
-            logoutModal.classList.add('opacity-0');
-            logoutContainer.classList.add('scale-95');
-            setTimeout(() => {
-                logoutModal.classList.add('hidden');
-            }, 300);
-        }
-
-        function confirmLogout() {
-            loggedInSantri = null;
-            cancelLogout();
-            closeDashboard();
-            updateAuthUI();
-        }
-
-
-        // ================= FITUR PENCARIAN =================
+        // ---------------- PENCARIAN ----------------
         const searchModal = document.getElementById('search-modal');
         const searchInput = document.getElementById('search-input');
         const searchResults = document.getElementById('search-results');
@@ -1215,7 +945,7 @@
             { id: "pendaftaran", icon: "phone", title: "Kontak & Lokasi", desc: "Informasi Pendaftaran dan Lokasi Map", tags: ["kontak", "hubungi", "alamat", "telepon", "whatsapp", "wa", "instagram", "youtube", "lokasi", "map"] }
         ];
 
-        function openSearch() {
+        window.openSearch = function() {
             searchModal.classList.remove('hidden');
             setTimeout(() => {
                 searchModal.classList.remove('opacity-0');
@@ -1223,10 +953,10 @@
                 searchInput.focus();
             }, 10);
             document.body.style.overflow = 'hidden';
-            if(isMobileMenuOpen) toggleMobileMenu();
-        }
+            if(isMobileMenuOpen) window.toggleMobileMenu();
+        };
 
-        function closeSearch() {
+        window.closeSearch = function() {
             searchModal.classList.add('opacity-0');
             searchContainer.classList.add('scale-95');
             setTimeout(() => {
@@ -1235,7 +965,7 @@
                 renderSearchResults(''); 
                 document.body.style.overflow = 'auto';
             }, 200);
-        }
+        };
 
         function renderSearchResults(query) {
             query = query.toLowerCase().trim();
@@ -1268,16 +998,326 @@
 
         searchInput.addEventListener('input', (e) => renderSearchResults(e.target.value));
 
+        // ---------------- AUTHENTICATION & LOGIN ----------------
+        const loginModal = document.getElementById('login-modal');
+        const loginContainer = document.getElementById('login-container');
+        const loginError = document.getElementById('login-error');
+        const loginErrorText = document.getElementById('login-error-text');
+        const loginForm = document.getElementById('login-form');
+
+        const loginInputs = document.querySelectorAll('#login-username, #login-password, #cp-old, #cp-new, #cp-confirm');
+        loginInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                setTimeout(() => {
+                    this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            });
+        });
+
+        window.checkAuthStatus = function() {
+            if(loggedInSantri) window.openDashboard();
+            else window.openLogin();
+        };
+
+        function updateAuthUI() {
+            const authTextDesktop = document.getElementById('desktop-auth-text');
+            const authTextMobile = document.getElementById('mobile-panel-auth-text');
+            if(loggedInSantri) {
+                authTextDesktop.textContent = "Dashboard Santri";
+                authTextMobile.textContent = "Dashboard Santri";
+            } else {
+                authTextDesktop.textContent = "Login Santri";
+                authTextMobile.textContent = "Login Santri";
+            }
+        }
+
+        window.openLogin = function() {
+            loginModal.classList.remove('hidden');
+            setTimeout(() => {
+                loginModal.classList.remove('opacity-0');
+                loginContainer.classList.remove('scale-95');
+                document.getElementById('login-username').focus();
+            }, 10);
+            document.body.style.overflow = 'hidden';
+            if(isMobileMenuOpen) window.toggleMobileMenu();
+        };
+
+        window.closeLogin = function() {
+            loginModal.classList.add('opacity-0');
+            loginContainer.classList.add('scale-95');
+            setTimeout(() => {
+                loginModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                loginError.classList.add('hidden');
+            }, 300);
+        };
+
+        window.togglePasswordVisibility = function(id) {
+            const passwordInput = document.getElementById(id);
+            if (passwordInput.type === "password") passwordInput.type = "text";
+            else passwordInput.type = "password";
+        };
+
+        function showLoginError(message) {
+            loginErrorText.innerHTML = message;
+            loginError.classList.remove('hidden');
+            loginForm.classList.remove('animate-shake');
+            void loginForm.offsetWidth;
+            loginForm.classList.add('animate-shake');
+        }
+
+        window.handleLogin = async function(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('login-username').value;
+            const passwordInput = document.getElementById('login-password').value;
+            const btnSubmit = document.getElementById('btn-login-submit');
+
+            if (usernameInput !== usernameInput.toUpperCase() || usernameInput.trim() === '') {
+                showLoginError("<b>Perhatian:</b> Username harus diisi dengan HURUF BESAR SEMUA.");
+                return;
+            }
+
+            if (passwordInput !== passwordInput.toLowerCase() || passwordInput.includes(' ') || passwordInput === '') {
+                showLoginError("<b>Perhatian:</b> Password harus berupa huruf kecil semua tanpa spasi.");
+                return;
+            }
+
+            const userClean = usernameInput.trim();
+
+            if (!registeredUsers[userClean]) {
+                showLoginError("<b>Login Gagal:</b> <i>Username tidak terdaftar, silahkan hubungi bagian media</i>");
+                return;
+            }
+
+            // Ubah tombol jadi loading karena mengecek Database Cloud
+            const originalBtnText = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = 'Memeriksa Data... <div class="w-5 h-5 ml-2 inline-block border-2 border-white/30 border-t-white rounded-full animate-spin align-middle"></div>';
+            btnSubmit.disabled = true;
+
+            // Memeriksa password dari database cloud
+            const validPassword = await getSantriPassword(userClean);
+
+            // Kembalikan tombol
+            btnSubmit.innerHTML = originalBtnText;
+            btnSubmit.disabled = false;
+
+            if (passwordInput !== validPassword) {
+                showLoginError("<b>Login Gagal:</b> Password yang Anda masukkan salah.");
+                return;
+            }
+
+            const userData = registeredUsers[userClean];
+            loggedInSantri = userClean;
+            
+            document.getElementById('dash-nama').textContent = userClean.toLowerCase();
+            document.getElementById('dash-alamat').textContent = userData.alamat.toLowerCase();
+            document.getElementById('dash-ttl').textContent = userData.ttl.toLowerCase();
+            document.getElementById('dash-ortu').textContent = userData.ortu.toLowerCase();
+            
+            const elKelas = document.getElementById('dash-kelas');
+            const kelasStr = (userData.kelas || "-").trim();
+            const isRoman = /^[IVXLCDM]+$/i.test(kelasStr);
+            
+            elKelas.className = "p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 text-sm sm:text-base tracking-wide";
+            if (isRoman) {
+                elKelas.textContent = kelasStr.toUpperCase();
+                elKelas.classList.add("font-bold", "uppercase");
+            } else {
+                elKelas.textContent = kelasStr.toLowerCase();
+                elKelas.classList.add("font-semibold", "capitalize");
+            }
+            
+            document.getElementById('dash-status-text').textContent = userData.status.toLowerCase();
+
+            const nameWords = userClean.split(/\s+/);
+            let initials = (nameWords.length >= 2) ? nameWords[0][0] + nameWords[1][0] : nameWords[0][0];
+            document.getElementById('dash-avatar').textContent = initials.toUpperCase();
+            
+            loginError.classList.add('hidden');
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            
+            window.closeLogin();
+            setTimeout(() => {
+                window.openDashboard();
+                updateAuthUI();
+            }, 300);
+        };
+
+        // ---------------- GANTI PASSWORD (CLOUD) ----------------
+        const cpModal = document.getElementById('cp-modal');
+        const cpContainer = document.getElementById('cp-container');
+
+        window.openChangePassword = function() {
+            window.closeDashboard();
+            setTimeout(() => {
+                cpModal.classList.remove('hidden');
+                setTimeout(() => {
+                    cpModal.classList.remove('opacity-0');
+                    cpContainer.classList.remove('scale-95');
+                }, 10);
+                document.body.style.overflow = 'hidden';
+            }, 300);
+        };
+
+        window.closeChangePassword = function() {
+            cpModal.classList.add('opacity-0');
+            cpContainer.classList.add('scale-95');
+            setTimeout(() => {
+                cpModal.classList.add('hidden');
+                if (loggedInSantri) window.openDashboard();
+                else document.body.style.overflow = 'auto';
+                
+                document.getElementById('cp-form').reset();
+                document.getElementById('cp-msg').classList.add('hidden');
+            }, 300);
+        };
+
+        window.toggleVisibilityCP = function() {
+            const isChecked = document.getElementById('toggle-cp-password').checked;
+            const type = isChecked ? 'text' : 'password';
+            document.getElementById('cp-old').type = type;
+            document.getElementById('cp-new').type = type;
+            document.getElementById('cp-confirm').type = type;
+        };
+
+        function showCPMessage(msg, isError = true) {
+            const cpMsgBox = document.getElementById('cp-msg');
+            const cpMsgText = document.getElementById('cp-msg-text');
+            const cpIcon = document.getElementById('cp-msg-icon');
+            
+            cpMsgText.innerHTML = msg;
+            cpMsgBox.classList.remove('hidden');
+
+            if (isError) {
+                cpMsgBox.className = "mb-5 p-4 rounded-r-lg text-sm flex items-start gap-3 shadow-sm transition-all duration-300 border-l-4 bg-red-100 dark:bg-red-900/40 border-red-500 text-red-700 dark:text-red-300 animate-shake";
+                cpIcon.setAttribute('data-lucide', 'alert-circle');
+            } else {
+                cpMsgBox.className = "mb-5 p-4 rounded-r-lg text-sm flex items-start gap-3 shadow-sm transition-all duration-300 border-l-4 bg-emerald-100 dark:bg-emerald-900/40 border-emerald-500 text-emerald-700 dark:text-emerald-300 animate-in";
+                cpIcon.setAttribute('data-lucide', 'check-circle');
+            }
+            lucide.createIcons();
+            
+            if(isError) {
+                cpMsgBox.classList.remove('animate-shake');
+                void cpMsgBox.offsetWidth;
+                cpMsgBox.classList.add('animate-shake');
+            }
+        }
+
+        window.handleChangePassword = async function(e) {
+            e.preventDefault();
+            
+            const oldPwd = document.getElementById('cp-old').value;
+            const newPwd = document.getElementById('cp-new').value;
+            const confirmPwd = document.getElementById('cp-confirm').value;
+            const btnSubmit = document.getElementById('btn-cp-submit');
+
+            // Set tombol ke Loading State karena butuh menarik database
+            const originalBtnText = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = 'Memverifikasi... <div class="w-5 h-5 ml-2 inline-block border-2 border-white/30 border-t-white rounded-full animate-spin align-middle"></div>';
+            btnSubmit.disabled = true;
+
+            try {
+                // Validasi Password Lama
+                const validPassword = await getSantriPassword(loggedInSantri);
+                if (oldPwd !== validPassword) {
+                    showCPMessage("<b>Gagal:</b> Password lama yang Anda masukkan salah.");
+                    return; // Skip throw error by finally block
+                }
+
+                // Validasi Format Password Baru
+                if (newPwd !== newPwd.toLowerCase() || newPwd.includes(' ') || newPwd === '') {
+                    showCPMessage("<b>Perhatian:</b> Password baru harus berupa huruf kecil semua tanpa spasi.");
+                    return;
+                }
+
+                // Validasi Konfirmasi
+                if (newPwd !== confirmPwd) {
+                    showCPMessage("<b>Gagal:</b> Konfirmasi password tidak sama.");
+                    return;
+                }
+
+                btnSubmit.innerHTML = 'Menyimpan... <div class="w-5 h-5 ml-2 inline-block border-2 border-white/30 border-t-white rounded-full animate-spin align-middle"></div>';
+
+                // Simpan Password Baru ke Cloud & Local
+                await saveSantriPassword(loggedInSantri, newPwd);
+                
+                showCPMessage("<b>Berhasil:</b> Password Anda berhasil diperbarui ke server!", false);
+                
+                setTimeout(() => {
+                    window.closeChangePassword();
+                }, 1500);
+
+            } catch (error) {
+                showCPMessage("<b>Error:</b> Terjadi kesalahan saat menyimpan ke database.");
+            } finally {
+                btnSubmit.innerHTML = originalBtnText;
+                btnSubmit.disabled = false;
+            }
+        };
+
+        // ---------------- DASHBOARD & LOGOUT ----------------
+        const dashboardModal = document.getElementById('dashboard-modal');
+        const dashboardContainer = document.getElementById('dashboard-container');
+        const logoutModal = document.getElementById('logout-modal');
+        const logoutContainer = document.getElementById('logout-container');
+
+        window.openDashboard = function() {
+            dashboardModal.classList.remove('hidden');
+            setTimeout(() => {
+                dashboardModal.classList.remove('opacity-0');
+                dashboardContainer.classList.remove('scale-95');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+            if(isMobileMenuOpen) window.toggleMobileMenu();
+        };
+
+        window.closeDashboard = function() {
+            dashboardModal.classList.add('opacity-0');
+            dashboardContainer.classList.add('scale-95');
+            setTimeout(() => {
+                dashboardModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        };
+
+        window.handleLogout = function() {
+            logoutModal.classList.remove('hidden');
+            setTimeout(() => {
+                logoutModal.classList.remove('opacity-0');
+                logoutContainer.classList.remove('scale-95');
+            }, 10);
+        };
+
+        window.cancelLogout = function() {
+            logoutModal.classList.add('opacity-0');
+            logoutContainer.classList.add('scale-95');
+            setTimeout(() => {
+                logoutModal.classList.add('hidden');
+            }, 300);
+        };
+
+        window.confirmLogout = function() {
+            loggedInSantri = null;
+            window.cancelLogout();
+            window.closeDashboard();
+            updateAuthUI();
+        };
+
+        // Event listener tambahan untuk menutup modal menggunakan ESC
         document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
             if (e.key === 'Escape') {
-                if(searchModal && !searchModal.classList.contains('hidden')) closeSearch();
-                if(cpModal && !cpModal.classList.contains('hidden')) closeChangePassword();
-                else if(logoutModal && !logoutModal.classList.contains('hidden')) cancelLogout();
-                else if(dashboardModal && !dashboardModal.classList.contains('hidden')) closeDashboard();
-                else if(loginModal && !loginModal.classList.contains('hidden')) closeLogin();
+                if(searchModal && !searchModal.classList.contains('hidden')) window.closeSearch();
+                if(cpModal && !cpModal.classList.contains('hidden')) window.closeChangePassword();
+                else if(logoutModal && !logoutModal.classList.contains('hidden')) window.cancelLogout();
+                else if(dashboardModal && !dashboardModal.classList.contains('hidden')) window.closeDashboard();
+                else if(loginModal && !loginModal.classList.contains('hidden')) window.closeLogin();
             }
         });
+
+        // Akhir inisialisasi icon
+        lucide.createIcons();
     </script>
 </body>
-    </html>
+                    </html>
