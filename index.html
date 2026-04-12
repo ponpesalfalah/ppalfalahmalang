@@ -130,7 +130,7 @@
             </div>
             <div class="p-6 sm:p-8 overflow-y-auto max-h-[75vh]">
                 
-                <!-- Pesan Error dinamis yang diperbarui -->
+                <!-- Pesan Error -->
                 <div id="login-error" class="hidden mb-5 p-4 bg-red-100 dark:bg-red-900/40 border-l-4 border-red-500 text-red-700 dark:text-red-300 rounded-r-lg text-sm flex items-start gap-3 shadow-sm transition-all duration-300">
                     <i data-lucide="alert-circle" class="w-5 h-5 shrink-0 mt-0.5"></i>
                     <span id="login-error-text" class="leading-relaxed">Username atau password salah!</span>
@@ -155,10 +155,15 @@
                             <label for="toggle-password" class="text-sm font-medium text-emerald-700 dark:text-emerald-300 cursor-pointer select-none">Tampilkan Password</label>
                         </div>
                     </div>
-                    <div class="pt-2 pb-4">
+                    <div class="pt-2 pb-2">
                         <button type="submit" id="btn-login-submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-70">
                             Masuk Sistem <i data-lucide="log-in" class="w-5 h-5"></i>
                         </button>
+                    </div>
+                    <!-- Indikator Status Cloud -->
+                    <div class="text-center text-xs text-emerald-600 dark:text-emerald-400 font-medium flex justify-center items-center gap-1.5 opacity-70 mb-2">
+                        <div id="status-indicator" class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></div>
+                        <span id="server-status-text">Menghubungkan Server...</span>
                     </div>
                 </form>
             </div>
@@ -190,32 +195,26 @@
                 <div class="bg-emerald-50/50 dark:bg-emerald-950/50 rounded-2xl border border-emerald-100 dark:border-emerald-800 overflow-hidden shadow-sm">
                     <table class="w-full text-left border-collapse">
                         <tbody>
-                            <!-- NAMA -->
                             <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">NAMA</th>
                                 <td class="p-4 sm:p-5 font-bold text-emerald-950 dark:text-emerald-50 text-sm sm:text-base capitalize tracking-wide" id="dash-nama">-</td>
                             </tr>
-                            <!-- KELAS -->
                             <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">KELAS</th>
                                 <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 text-sm sm:text-base tracking-wide" id="dash-kelas">-</td>
                             </tr>
-                            <!-- ALAMAT -->
                             <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">ALAMAT</th>
                                 <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base capitalize tracking-wide" id="dash-alamat">-</td>
                             </tr>
-                            <!-- TTL -->
                             <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">TEMPAT, TANGGAL LAHIR</th>
                                 <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base capitalize tracking-wide" id="dash-ttl">-</td>
                             </tr>
-                            <!-- ORTU -->
                             <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">NAMA ORANG TUA</th>
                                 <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base capitalize tracking-wide" id="dash-ortu">-</td>
                             </tr>
-                            <!-- STATUS -->
                             <tr class="hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">STATUS</th>
                                 <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 text-sm sm:text-base capitalize">
@@ -228,7 +227,6 @@
                     </table>
                 </div>
                 
-                <!-- Tombol Action di Dashboard -->
                 <div class="mt-6 flex flex-wrap justify-end gap-3">
                     <button onclick="openChangePassword()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl transition-colors shadow-md flex items-center gap-2 text-sm flex-grow sm:flex-grow-0 justify-center">
                         <i data-lucide="key" class="w-4 h-4"></i> GANTI PASSWORD
@@ -261,7 +259,6 @@
     <div id="cp-modal" class="fixed inset-0 z-[160] hidden items-start sm:items-center justify-center pt-10 sm:pt-0 p-4 sm:p-6 opacity-0 transition-opacity duration-300 overflow-y-auto">
         <div class="absolute inset-0 bg-emerald-950/80 backdrop-blur-sm cursor-pointer" onclick="closeChangePassword()"></div>
         <div id="cp-container" class="bg-white dark:bg-emerald-900 w-full max-w-md rounded-3xl shadow-2xl relative z-10 flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 border border-emerald-100 dark:border-emerald-800 mb-20 sm:mb-0">
-            <!-- Header -->
             <div class="px-6 py-5 bg-gradient-to-r from-blue-600 to-blue-500 text-white flex justify-between items-center shadow-md relative z-20 shrink-0">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"><i data-lucide="key" class="w-5 h-5"></i></div>
@@ -272,16 +269,13 @@
                 </div>
                 <button onclick="closeChangePassword()" class="p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-            <!-- Body -->
             <div class="p-6 sm:p-8 overflow-y-auto max-h-[75vh]">
-                <!-- Pesan Notifikasi (Error/Success) -->
                 <div id="cp-msg" class="hidden mb-5 p-4 rounded-r-lg text-sm flex items-start gap-3 shadow-sm transition-all duration-300 border-l-4">
                     <i data-lucide="info" class="w-5 h-5 shrink-0 mt-0.5" id="cp-msg-icon"></i>
                     <span id="cp-msg-text" class="leading-relaxed"></span>
                 </div>
                 
                 <form id="cp-form" onsubmit="handleChangePassword(event)" class="space-y-4">
-                    <!-- Password Lama -->
                     <div>
                         <label for="cp-old" class="block text-sm font-semibold text-emerald-900 dark:text-emerald-100 mb-2">Password Saat Ini</label>
                         <div class="relative">
@@ -289,7 +283,6 @@
                             <input type="password" id="cp-old" class="w-full pl-10 pr-4 py-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-emerald-950 dark:text-emerald-50 transition-all" placeholder="Masukkan password saat ini" required>
                         </div>
                     </div>
-                    <!-- Password Baru -->
                     <div>
                         <label for="cp-new" class="block text-sm font-semibold text-emerald-900 dark:text-emerald-100 mb-2">Password Baru</label>
                         <div class="relative">
@@ -297,7 +290,6 @@
                             <input type="password" id="cp-new" class="w-full pl-10 pr-4 py-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-emerald-950 dark:text-emerald-50 transition-all" placeholder="huruf kecil tanpa spasi" required>
                         </div>
                     </div>
-                    <!-- Konfirmasi Password Baru -->
                     <div>
                         <label for="cp-confirm" class="block text-sm font-semibold text-emerald-900 dark:text-emerald-100 mb-2">Konfirmasi Password Baru</label>
                         <div class="relative">
@@ -426,11 +418,8 @@
 
     <!-- ==================== PROFIL SINGKAT ==================== -->
     <section id="profil" class="py-20 bg-white dark:bg-emerald-950 transition-colors duration-300 relative overflow-hidden">
-        <!-- Dekorasi background -->
         <div class="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-emerald-950 to-transparent opacity-10 dark:opacity-50"></div>
-        
         <div class="container mx-auto px-4 md:px-8 relative z-10">
-            <!-- Profil Singkat -->
             <div class="max-w-5xl mx-auto">
                 <div class="text-center md:text-left">
                     <h2 class="text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center md:justify-start gap-3">
@@ -497,7 +486,6 @@
         <div class="absolute inset-0 opacity-10 dark:opacity-5" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
         <div class="container mx-auto px-4 md:px-8 relative z-10">
             <div class="grid lg:grid-cols-2 gap-16 items-start">
-                <!-- Kolom Kiri: Biaya & Fasilitas -->
                 <div class="space-y-12">
                     <div class="bg-emerald-700/80 dark:bg-emerald-950/80 backdrop-blur-md p-5 sm:p-8 md:p-10 rounded-3xl border border-emerald-400/30 shadow-2xl relative overflow-hidden transition-colors duration-300 hover:border-yellow-400/50 transition-all">
                         <div class="absolute -top-10 -right-10 w-32 h-32 bg-yellow-400/30 rounded-full blur-3xl"></div>
@@ -542,7 +530,6 @@
                     </div>
                 </div>
 
-                <!-- Kolom Kanan: Jadwal Kegiatan -->
                 <div id="jadwal-kegiatan" class="bg-white dark:bg-emerald-950 text-emerald-950 dark:text-emerald-50 p-8 md:p-10 rounded-3xl shadow-2xl transition-colors duration-300 border border-emerald-100 dark:border-emerald-800">
                     <h3 class="text-2xl md:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mb-8 flex items-center gap-3 border-b-2 border-emerald-100 dark:border-emerald-900 pb-6 transition-colors duration-300">
                         <i data-lucide="calendar-days" class="w-8 h-8"></i> JADWAL KEGIATAN
@@ -617,7 +604,6 @@
             </div>
 
             <div class="space-y-4">
-                <!-- FAQ Item 1 -->
                 <div class="bg-white dark:bg-emerald-900 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 overflow-hidden">
                     <button class="w-full px-6 py-5 flex items-center justify-between font-bold text-left text-emerald-900 dark:text-emerald-100 focus:outline-none" onclick="toggleFaq(this)">
                         <span>Siapa saja yang bisa mendaftar di PPTQ Al-Falah?</span>
@@ -627,7 +613,6 @@
                         Pondok kami menerima santri putra dan putri. Prioritas kami adalah calon santri yang memiliki tekad kuat untuk menghafal Al-Qur'an dan mempelajari ilmu agama ala Ahlussunnah wal Jama'ah. Untuk batasan umur spesifik, silakan hubungi kontak pendaftaran.
                     </div>
                 </div>
-                <!-- FAQ Item 2 -->
                 <div class="bg-white dark:bg-emerald-900 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 overflow-hidden">
                     <button class="w-full px-6 py-5 flex items-center justify-between font-bold text-left text-emerald-900 dark:text-emerald-100 focus:outline-none" onclick="toggleFaq(this)">
                         <span>Apakah santri diperbolehkan membawa HP/Laptop?</span>
@@ -637,7 +622,6 @@
                         Untuk menjaga kefokusan dalam menghafal Al-Qur'an, aturan membawa barang elektronik (HP/Laptop) disesuaikan dengan kebijakan pengurus. Biasanya ada waktu-waktu tertentu dimana santri diperbolehkan menggunakannya untuk keperluan tugas sekolah/kuliah jika mereka juga menempuh pendidikan formal.
                     </div>
                 </div>
-                <!-- FAQ Item 3 -->
                 <div class="bg-white dark:bg-emerald-900 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 overflow-hidden">
                     <button class="w-full px-6 py-5 flex items-center justify-between font-bold text-left text-emerald-900 dark:text-emerald-100 focus:outline-none" onclick="toggleFaq(this)">
                         <span>Apakah biaya Rp 350.000 sudah termasuk semuanya?</span>
@@ -647,7 +631,6 @@
                         Ya, biaya syahriah bulanan sebesar Rp 350.000 sudah mencakup makan 3x sehari, biaya listrik, air, dan fasilitas asrama. Biaya tersebut belum termasuk keperluan pribadi santri, alat tulis, dan transportasi luar pondok.
                     </div>
                 </div>
-                <!-- FAQ Item 4 -->
                 <div class="bg-white dark:bg-emerald-900 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 overflow-hidden">
                     <button class="w-full px-6 py-5 flex items-center justify-between font-bold text-left text-emerald-900 dark:text-emerald-100 focus:outline-none" onclick="toggleFaq(this)">
                         <span>Bagaimana cara menuju lokasi pondok pesantren?</span>
@@ -663,7 +646,6 @@
 
     <!-- ==================== FOOTER ==================== -->
     <footer id="pendaftaran" class="bg-emerald-950 dark:bg-black text-emerald-100/70 pt-20 pb-8 transition-colors duration-300 relative">
-        <!-- SVG Wave top -->
         <div class="absolute top-0 left-0 w-full overflow-hidden leading-none -translate-y-full">
             <svg class="relative block w-full h-[50px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
                 <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118,152.47,125.4,225.97,110.74,258.97,104.16,290.79,88.4,321.39,56.44Z" class="fill-emerald-950 dark:fill-black"></path>
@@ -700,26 +682,23 @@
         </div>
     </footer>
 
-    <!-- ==================== JAVASCRIPT & DATABASE (FIREBASE) ==================== -->
+    <!-- ==================== JAVASCRIPT & DATABASE (FIREBASE CLOUD) ==================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // DOM Setup Dasar
         document.getElementById('currentYear').textContent = new Date().getFullYear();
 
-        // State Variables
-        let isDarkMode = false;
-        let isMobileMenuOpen = false;
-        let isFabOpen = false;
+        // Variabel Database Cloud
+        let db, auth, appId;
+        let isDbReady = false;
+        let isOfflineMode = false;
         let loggedInSantri = null;
 
-        // Inisialisasi Firebase (Backend Database)
-        let db, auth, appId, fbUser;
-        let useFirebase = false;
-
+        // 1. Inisialisasi Database
         async function initFirebase() {
+            // Mengecek apakah berjalan di lingkungan Preview dengan config cloud
             if (typeof __firebase_config !== 'undefined' && __firebase_config) {
                 try {
                     const firebaseConfig = JSON.parse(__firebase_config);
@@ -733,66 +712,101 @@
                     } else {
                         await signInAnonymously(auth);
                     }
-                    fbUser = auth.currentUser;
-                    useFirebase = !!fbUser;
+                    
+                    // Memantau Status Login Database Cloud
+                    onAuthStateChanged(auth, (user) => {
+                        isDbReady = !!user;
+                        updateServerStatusUI();
+                    });
                 } catch (error) {
-                    console.error("Firebase init error:", error);
+                    console.error("Gagal terhubung ke Database Cloud:", error);
+                    isOfflineMode = true;
+                    updateServerStatusUI();
                 }
+            } else {
+                // Jika file di-download / berjalan di server lokal
+                isOfflineMode = true;
+                updateServerStatusUI();
             }
         }
         
-        // Mulai Database
+        // Memperbarui teks indikator di bawah form login
+        function updateServerStatusUI() {
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('server-status-text');
+            if (statusIndicator && statusText) {
+                if (isOfflineMode) {
+                    statusIndicator.className = "w-2 h-2 rounded-full bg-slate-400";
+                    statusText.textContent = "Mode Offline (Penyimpanan Perangkat Ini)";
+                } else if (isDbReady) {
+                    statusIndicator.className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_#22c55e]";
+                    statusText.textContent = "Terhubung ke Database Cloud";
+                }
+            }
+        }
+
+        // Mulai sambungan database
         initFirebase();
 
+        // Helper untuk menunggu DB siap sebelum membaca/menulis
+        async function waitForDb() {
+            if (isOfflineMode) return false;
+            if (isDbReady) return true;
+            for (let i = 0; i < 30; i++) {
+                await new Promise(r => setTimeout(r, 100));
+                if (isDbReady || isOfflineMode) break;
+            }
+            return isDbReady;
+        }
+
         // ---------------- FUNGSI PASSWORD DATABASE ----------------
-        // Mengambil Password (Memprioritaskan dari Database, lalu Lokal, lalu Default)
+        // Baca Password (Prioritas: Cloud > Lokal > Default)
         async function getSantriPassword(username) {
             const defaultPassword = "santrialfalah";
-            const safeUsername = username.replace(/\s+/g, '_'); // Ubah spasi jadi underscore untuk ID Dokumen
+            const safeUsername = username.replace(/\s+/g, '_');
             
-            // 1. Coba ambil dari Database Cloud
-            if (useFirebase && fbUser) {
+            await waitForDb(); // Tunggu koneksi cloud jika ada
+            
+            if (isDbReady && db && !isOfflineMode) {
                 try {
                     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'passwords', safeUsername);
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
-                        return docSnap.data().password;
+                        return docSnap.data().password; // Ditemukan di Cloud
                     }
                 } catch (e) {
-                    console.error("Error membaca database", e);
+                    console.warn("Gagal membaca Cloud, menggunakan Lokal.");
                 }
             }
             
-            // 2. Jika gagal/tidak ada di database, cek Local Storage
+            // Jika Cloud kosong / offline, cek penyimpanan lokal di HP ini
             const savedPassword = localStorage.getItem('pwd_' + username);
-            if (savedPassword) {
-                return savedPassword;
-            }
+            if (savedPassword) return savedPassword;
             
-            // 3. Jika semuanya kosong, pakai Password Default
             return defaultPassword;
         }
 
-        // Menyimpan Password Baru ke Database & Lokal
+        // Simpan Password Baru (Cloud & Lokal)
         async function saveSantriPassword(username, newPassword) {
             const safeUsername = username.replace(/\s+/g, '_');
             
-            // Simpan ke Local Storage sebagai cadangan
+            // Selalu simpan ke HP (sebagai backup Offline)
             localStorage.setItem('pwd_' + username, newPassword);
             
-            // Simpan ke Database Cloud
-            if (useFirebase && fbUser) {
+            await waitForDb();
+
+            // Jika Online, simpan ke Cloud agar sinkron dengan HP lain
+            if (isDbReady && db && !isOfflineMode) {
                 try {
                     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'passwords', safeUsername);
                     await setDoc(docRef, { password: newPassword });
                 } catch (e) {
-                    console.error("Error menyimpan ke database", e);
-                    throw e; // Lemparkan error agar ditangkap oleh fitur UI
+                    throw new Error("Gagal menyimpan ke server Cloud.");
                 }
             }
         }
 
-        // Database Data Diri Santri
+        // Data Profil Pengguna
         const registeredUsers = {
             "AGUS ZARKASI": { alamat: "PASURUAN", ttl: "PASURUAN, 12 JULI 2002", kelas: "LULUS", ortu: "MANSUR", status: "SANTRI" },
             "KHOIRUL ANAM": { alamat: "BABAAN", ttl: "MALANG, 28 APRIL 1987", kelas: "-", ortu: "M. SJAIFULLAH", status: "PENGASUH PONDOK" },
@@ -800,220 +814,7 @@
             "DEWA BUDIMAN SAKTI": { alamat: "MADUARJO", ttl: "MALANG, 29 JULI 2009", kelas: "XI", ortu: "TRI RUSFANDI", status: "SANTRI" }
         };
 
-        // ---------------- UI & ANIMASI DASAR ----------------
-        const htmlElement = document.documentElement;
-        const navbar = document.getElementById('navbar');
-        const navTitle = document.getElementById('nav-title');
-        const navSubtitle = document.getElementById('nav-subtitle');
-        const desktopMenu = document.getElementById('desktop-menu');
-        const desktopBtnDark = document.getElementById('desktop-btn-dark');
-        const desktopBtnSearch = document.getElementById('desktop-btn-search');
-        const desktopBtnAuth = document.getElementById('desktop-btn-auth');
-        const mobileBtnDark = document.getElementById('mobile-btn-dark');
-        const mobileBtnSearch = document.getElementById('mobile-btn-search');
-        const mobileBtnMenu = document.getElementById('mobile-btn-menu');
-        const mobileBtnAuth = document.getElementById('mobile-btn-auth');
-        const menuIcon = document.getElementById('menu-icon');
-        const closeIcon = document.getElementById('close-icon');
-        const mobileMenuPanel = document.getElementById('mobile-menu-panel');
-
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                navbar.className = 'fixed w-full z-50 transition-all duration-300 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md shadow-sm border-b border-emerald-100 dark:border-emerald-900 py-2 md:py-3';
-                navTitle.className = 'font-bold text-lg md:text-xl leading-tight text-emerald-800 dark:text-emerald-400 drop-shadow-none transition-colors duration-300';
-                navSubtitle.className = 'text-xs font-medium text-emerald-500 dark:text-emerald-500 drop-shadow-none transition-colors duration-300';
-                desktopMenu.className = 'hidden xl:flex gap-5 2xl:gap-7 font-semibold items-center text-emerald-800 dark:text-emerald-200 transition-colors duration-300 text-sm 2xl:text-base';
-                desktopBtnDark.className = 'p-2 rounded-full transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-900 text-emerald-600 dark:text-emerald-300';
-                desktopBtnSearch.className = 'p-2 rounded-full transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-900 text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border border-emerald-100 dark:border-emerald-800';
-                mobileBtnDark.className = 'p-2 rounded-full transition-colors text-emerald-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900';
-                mobileBtnSearch.className = 'p-2 rounded-full transition-colors text-emerald-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900';
-                mobileBtnMenu.className = 'p-2 rounded-md text-emerald-800 dark:text-emerald-200 transition-colors';
-                desktopBtnAuth.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-700 group';
-                mobileBtnAuth.className = 'p-2 rounded-full transition-colors text-emerald-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900';
-            } else {
-                navbar.className = 'fixed w-full z-50 transition-all duration-300 bg-transparent py-4 md:py-5';
-                navTitle.className = 'font-bold text-lg md:text-xl leading-tight text-white drop-shadow-md transition-colors duration-300';
-                navSubtitle.className = 'text-xs font-medium text-emerald-100 drop-shadow-md transition-colors duration-300';
-                desktopMenu.className = 'hidden xl:flex gap-5 2xl:gap-7 font-semibold items-center text-white transition-colors duration-300 text-sm 2xl:text-base';
-                desktopBtnDark.className = 'p-2 rounded-full transition-colors hover:bg-white/20 text-white';
-                desktopBtnSearch.className = 'p-2 rounded-full transition-colors hover:bg-white/20 text-white bg-white/10 border border-white/20 backdrop-blur-sm';
-                mobileBtnDark.className = 'p-2 rounded-full transition-colors text-white hover:bg-white/20';
-                mobileBtnSearch.className = 'p-2 rounded-full transition-colors text-white hover:bg-white/20';
-                mobileBtnMenu.className = 'p-2 rounded-md text-white transition-colors';
-                desktopBtnAuth.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors hover:bg-emerald-500/20 text-emerald-300 bg-emerald-500/10 border border-emerald-400/20 backdrop-blur-sm group';
-                mobileBtnAuth.className = 'p-2 rounded-full transition-colors text-emerald-300 hover:bg-emerald-500/20';
-            }
-        });
-
-        // ---------------- MENYAMBUNGKAN FUNGSI KE WINDOW ----------------
-        // (Agar bisa dipanggil dari atribut onclick di HTML)
-
-        window.toggleDarkMode = function() {
-            isDarkMode = !isDarkMode;
-            if (isDarkMode) htmlElement.classList.add('dark');
-            else htmlElement.classList.remove('dark');
-        };
-
-        window.toggleMobileMenu = function() {
-            isMobileMenuOpen = !isMobileMenuOpen;
-            if (isMobileMenuOpen) {
-                mobileMenuPanel.classList.remove('hidden');
-                mobileMenuPanel.classList.add('flex');
-                menuIcon.classList.remove('block'); menuIcon.classList.add('hidden');
-                closeIcon.classList.remove('hidden'); closeIcon.classList.add('block');
-            } else {
-                mobileMenuPanel.classList.add('hidden');
-                mobileMenuPanel.classList.remove('flex');
-                menuIcon.classList.add('block'); menuIcon.classList.remove('hidden');
-                closeIcon.classList.add('hidden'); closeIcon.classList.remove('block');
-            }
-        };
-
-        window.toggleFaq = function(button) {
-            const content = button.nextElementSibling;
-            const icon = button.querySelector('.faq-icon');
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                icon.classList.add('rotate-180');
-            } else {
-                content.classList.add('hidden');
-                icon.classList.remove('rotate-180');
-            }
-        };
-
-        window.toggleFab = function() {
-            isFabOpen = !isFabOpen;
-            const fabMenu = document.getElementById('fab-menu');
-            const iconOpen = document.getElementById('fab-icon-open');
-            const iconClose = document.getElementById('fab-icon-close');
-            if (!fabMenu || !iconOpen || !iconClose) return;
-
-            if (isFabOpen) {
-                fabMenu.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
-                iconOpen.classList.replace('scale-100', 'scale-0'); iconOpen.classList.replace('opacity-100', 'opacity-0'); iconOpen.classList.add('rotate-90');
-                iconClose.classList.replace('scale-0', 'scale-100'); iconClose.classList.replace('opacity-0', 'opacity-100'); iconClose.classList.replace('-rotate-90', 'rotate-0');
-            } else {
-                fabMenu.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
-                iconOpen.classList.replace('scale-0', 'scale-100'); iconOpen.classList.replace('opacity-0', 'opacity-100'); iconOpen.classList.remove('rotate-90');
-                iconClose.classList.replace('scale-100', 'scale-0'); iconClose.classList.replace('opacity-100', 'opacity-0'); iconClose.classList.replace('rotate-0', '-rotate-90');
-            }
-        };
-
-        document.addEventListener('click', (e) => {
-            const mainFab = document.getElementById('main-fab');
-            if (mainFab) {
-                const fabContainer = mainFab.parentNode;
-                if (isFabOpen && fabContainer && !fabContainer.contains(e.target)) {
-                    window.toggleFab();
-                }
-            }
-        });
-
-        // ---------------- LIGHTBOX ----------------
-        const lightboxModal = document.getElementById('lightbox-modal');
-        const lightboxImg = document.getElementById('lightbox-img');
-
-        window.openLightbox = function(imageSrc) {
-            lightboxImg.src = imageSrc;
-            lightboxModal.classList.remove('hidden');
-            lightboxModal.classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        };
-
-        window.closeLightbox = function() {
-            lightboxModal.classList.add('hidden');
-            lightboxModal.classList.remove('flex');
-            document.body.style.overflow = 'auto';
-            setTimeout(() => { lightboxImg.src = ''; }, 300);
-        };
-
-        // ---------------- PENCARIAN ----------------
-        const searchModal = document.getElementById('search-modal');
-        const searchInput = document.getElementById('search-input');
-        const searchResults = document.getElementById('search-results');
-        const searchContainer = document.getElementById('search-container');
-        
-        const searchData = [
-            { id: "profil", icon: "building", title: "Profil & Sejarah", desc: "Visi, Misi, dan Profil Pesantren Al-Falah", tags: ["profil", "visi", "misi", "sejarah", "tentang"] },
-            { id: "program", icon: "book-open", title: "Tahfidzul Qur'an", desc: "Program unggulan hafalan Al-Qur'an", tags: ["tahfidz", "hafalan", "qur'an", "al-quran", "program"] },
-            { id: "program", icon: "book", title: "Kajian Kitab", desc: "Pembelajaran Fiqih, Tasawuf, dan Hadist", tags: ["kitab", "kuning", "kajian", "fiqih", "tasawuf", "hadist", "program"] },
-            { id: "program", icon: "music", title: "Seni Al Banjari", desc: "Kegiatan hadrah & pembacaan sholawat", tags: ["banjari", "sholawat", "hadrah", "musik", "seni", "program"] },
-            { id: "kegiatan", icon: "wallet", title: "Biaya Pendaftaran", desc: "Rincian biaya awal dan syahriah bulanan", tags: ["biaya", "pendaftaran", "uang", "syahriah", "spp", "bulanan", "harga"] },
-            { id: "kegiatan", icon: "home", title: "Fasilitas Pesantren", desc: "Makan 3x sehari, asrama, listrik, dan WiFi", tags: ["fasilitas", "makan", "asrama", "wifi", "gedung", "kegiatan"] },
-            { id: "jadwal-kegiatan", icon: "calendar-days", title: "Jadwal Kegiatan", desc: "Jam kegiatan santri dari Senin hingga Minggu", tags: ["jadwal", "kegiatan", "waktu", "jam", "rutinitas"] },
-            { id: "faq", icon: "help-circle", title: "Tanya Jawab (FAQ)", desc: "Pertanyaan umum seputar pondok", tags: ["faq", "tanya", "jawab", "bantuan", "pertanyaan", "hp", "laptop"] },
-            { id: "pendaftaran", icon: "phone", title: "Kontak & Lokasi", desc: "Informasi Pendaftaran dan Lokasi Map", tags: ["kontak", "hubungi", "alamat", "telepon", "whatsapp", "wa", "instagram", "youtube", "lokasi", "map"] }
-        ];
-
-        window.openSearch = function() {
-            searchModal.classList.remove('hidden');
-            setTimeout(() => {
-                searchModal.classList.remove('opacity-0');
-                searchContainer.classList.remove('scale-95');
-                searchInput.focus();
-            }, 10);
-            document.body.style.overflow = 'hidden';
-            if(isMobileMenuOpen) window.toggleMobileMenu();
-        };
-
-        window.closeSearch = function() {
-            searchModal.classList.add('opacity-0');
-            searchContainer.classList.add('scale-95');
-            setTimeout(() => {
-                searchModal.classList.add('hidden');
-                searchInput.value = '';
-                renderSearchResults(''); 
-                document.body.style.overflow = 'auto';
-            }, 200);
-        };
-
-        function renderSearchResults(query) {
-            query = query.toLowerCase().trim();
-            if (!query) {
-                searchResults.innerHTML = `<div class="text-center py-10 text-emerald-400 dark:text-emerald-500"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-3 opacity-50"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><p>Ketik sesuatu untuk mulai mencari...</p></div>`;
-                return;
-            }
-            const filtered = searchData.filter(item => {
-                return item.title.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query) || item.tags.some(tag => tag.includes(query));
-            });
-
-            if (filtered.length === 0) {
-                searchResults.innerHTML = `<div class="text-center py-10 text-emerald-400 dark:text-emerald-500"><p>Tidak ada hasil untuk "<b>${query}</b>"</p><p class="text-sm mt-2 opacity-80">Coba gunakan kata kunci lain seperti 'biaya', 'kitab', atau 'jadwal'.</p></div>`;
-                return;
-            }
-
-            let html = '<div class="space-y-2">';
-            filtered.forEach(item => {
-                html += `
-                    <a href="#${item.id}" onclick="closeSearch()" class="flex items-start gap-4 p-3 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-800/50 transition-colors group border border-transparent hover:border-emerald-100 dark:hover:border-emerald-700">
-                        <div class="bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-400 p-2.5 rounded-lg shrink-0 group-hover:bg-emerald-500 group-hover:text-white transition-colors"><i data-lucide="${item.icon}" class="w-5 h-5"></i></div>
-                        <div><h4 class="font-bold text-emerald-900 dark:text-emerald-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors">${item.title}</h4><p class="text-sm text-emerald-600/80 dark:text-emerald-300/70 mt-0.5">${item.desc}</p></div>
-                        <i data-lucide="chevron-right" class="w-5 h-5 text-emerald-300 dark:text-emerald-700 ml-auto my-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                    </a>`;
-            });
-            html += '</div>';
-            searchResults.innerHTML = html;
-            lucide.createIcons();
-        }
-
-        searchInput.addEventListener('input', (e) => renderSearchResults(e.target.value));
-
-        // ---------------- AUTHENTICATION & LOGIN ----------------
-        const loginModal = document.getElementById('login-modal');
-        const loginContainer = document.getElementById('login-container');
-        const loginError = document.getElementById('login-error');
-        const loginErrorText = document.getElementById('login-error-text');
-        const loginForm = document.getElementById('login-form');
-
-        const loginInputs = document.querySelectorAll('#login-username, #login-password, #cp-old, #cp-new, #cp-confirm');
-        loginInputs.forEach(input => {
-            input.addEventListener('focus', function() {
-                setTimeout(() => {
-                    this.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 300);
-            });
-        });
-
+        // ---------------- MENYAMBUNGKAN FUNGSI KE HTML (WINDOW) ----------------
         window.checkAuthStatus = function() {
             if(loggedInSantri) window.openDashboard();
             else window.openLogin();
@@ -1032,10 +833,10 @@
         }
 
         window.openLogin = function() {
-            loginModal.classList.remove('hidden');
+            document.getElementById('login-modal').classList.remove('hidden');
             setTimeout(() => {
-                loginModal.classList.remove('opacity-0');
-                loginContainer.classList.remove('scale-95');
+                document.getElementById('login-modal').classList.remove('opacity-0');
+                document.getElementById('login-container').classList.remove('scale-95');
                 document.getElementById('login-username').focus();
             }, 10);
             document.body.style.overflow = 'hidden';
@@ -1043,29 +844,30 @@
         };
 
         window.closeLogin = function() {
-            loginModal.classList.add('opacity-0');
-            loginContainer.classList.add('scale-95');
+            document.getElementById('login-modal').classList.add('opacity-0');
+            document.getElementById('login-container').classList.add('scale-95');
             setTimeout(() => {
-                loginModal.classList.add('hidden');
+                document.getElementById('login-modal').classList.add('hidden');
                 document.body.style.overflow = 'auto';
-                loginError.classList.add('hidden');
+                document.getElementById('login-error').classList.add('hidden');
             }, 300);
         };
 
         window.togglePasswordVisibility = function(id) {
             const passwordInput = document.getElementById(id);
-            if (passwordInput.type === "password") passwordInput.type = "text";
-            else passwordInput.type = "password";
+            passwordInput.type = passwordInput.type === "password" ? "text" : "password";
         };
 
         function showLoginError(message) {
-            loginErrorText.innerHTML = message;
-            loginError.classList.remove('hidden');
-            loginForm.classList.remove('animate-shake');
-            void loginForm.offsetWidth;
-            loginForm.classList.add('animate-shake');
+            document.getElementById('login-error-text').innerHTML = message;
+            document.getElementById('login-error').classList.remove('hidden');
+            const form = document.getElementById('login-form');
+            form.classList.remove('animate-shake');
+            void form.offsetWidth;
+            form.classList.add('animate-shake');
         }
 
+        // FUNGSI LOGIN UTAMA (Telah terhubung dengan Cloud)
         window.handleLogin = async function(e) {
             e.preventDefault();
             const usernameInput = document.getElementById('login-username').value;
@@ -1089,15 +891,14 @@
                 return;
             }
 
-            // Ubah tombol jadi loading karena mengecek Database Cloud
+            // Animasi Tombol saat memeriksa Cloud
             const originalBtnText = btnSubmit.innerHTML;
             btnSubmit.innerHTML = 'Memeriksa Data... <div class="w-5 h-5 ml-2 inline-block border-2 border-white/30 border-t-white rounded-full animate-spin align-middle"></div>';
             btnSubmit.disabled = true;
 
-            // Memeriksa password dari database cloud
+            // Baca password dari Database Cloud atau Lokal
             const validPassword = await getSantriPassword(userClean);
 
-            // Kembalikan tombol
             btnSubmit.innerHTML = originalBtnText;
             btnSubmit.disabled = false;
 
@@ -1106,6 +907,7 @@
                 return;
             }
 
+            // Jika Berhasil Login
             const userData = registeredUsers[userClean];
             loggedInSantri = userClean;
             
@@ -1126,14 +928,13 @@
                 elKelas.textContent = kelasStr.toLowerCase();
                 elKelas.classList.add("font-semibold", "capitalize");
             }
-            
             document.getElementById('dash-status-text').textContent = userData.status.toLowerCase();
 
             const nameWords = userClean.split(/\s+/);
             let initials = (nameWords.length >= 2) ? nameWords[0][0] + nameWords[1][0] : nameWords[0][0];
             document.getElementById('dash-avatar').textContent = initials.toUpperCase();
             
-            loginError.classList.add('hidden');
+            document.getElementById('login-error').classList.add('hidden');
             document.getElementById('login-username').value = '';
             document.getElementById('login-password').value = '';
             
@@ -1145,26 +946,23 @@
         };
 
         // ---------------- GANTI PASSWORD (CLOUD) ----------------
-        const cpModal = document.getElementById('cp-modal');
-        const cpContainer = document.getElementById('cp-container');
-
         window.openChangePassword = function() {
             window.closeDashboard();
             setTimeout(() => {
-                cpModal.classList.remove('hidden');
+                document.getElementById('cp-modal').classList.remove('hidden');
                 setTimeout(() => {
-                    cpModal.classList.remove('opacity-0');
-                    cpContainer.classList.remove('scale-95');
+                    document.getElementById('cp-modal').classList.remove('opacity-0');
+                    document.getElementById('cp-container').classList.remove('scale-95');
                 }, 10);
                 document.body.style.overflow = 'hidden';
             }, 300);
         };
 
         window.closeChangePassword = function() {
-            cpModal.classList.add('opacity-0');
-            cpContainer.classList.add('scale-95');
+            document.getElementById('cp-modal').classList.add('opacity-0');
+            document.getElementById('cp-container').classList.add('scale-95');
             setTimeout(() => {
-                cpModal.classList.add('hidden');
+                document.getElementById('cp-modal').classList.add('hidden');
                 if (loggedInSantri) window.openDashboard();
                 else document.body.style.overflow = 'auto';
                 
@@ -1207,32 +1005,27 @@
 
         window.handleChangePassword = async function(e) {
             e.preventDefault();
-            
             const oldPwd = document.getElementById('cp-old').value;
             const newPwd = document.getElementById('cp-new').value;
             const confirmPwd = document.getElementById('cp-confirm').value;
             const btnSubmit = document.getElementById('btn-cp-submit');
 
-            // Set tombol ke Loading State karena butuh menarik database
             const originalBtnText = btnSubmit.innerHTML;
             btnSubmit.innerHTML = 'Memverifikasi... <div class="w-5 h-5 ml-2 inline-block border-2 border-white/30 border-t-white rounded-full animate-spin align-middle"></div>';
             btnSubmit.disabled = true;
 
             try {
-                // Validasi Password Lama
                 const validPassword = await getSantriPassword(loggedInSantri);
                 if (oldPwd !== validPassword) {
                     showCPMessage("<b>Gagal:</b> Password lama yang Anda masukkan salah.");
-                    return; // Skip throw error by finally block
+                    return;
                 }
 
-                // Validasi Format Password Baru
                 if (newPwd !== newPwd.toLowerCase() || newPwd.includes(' ') || newPwd === '') {
                     showCPMessage("<b>Perhatian:</b> Password baru harus berupa huruf kecil semua tanpa spasi.");
                     return;
                 }
 
-                // Validasi Konfirmasi
                 if (newPwd !== confirmPwd) {
                     showCPMessage("<b>Gagal:</b> Konfirmasi password tidak sama.");
                     return;
@@ -1240,14 +1033,15 @@
 
                 btnSubmit.innerHTML = 'Menyimpan... <div class="w-5 h-5 ml-2 inline-block border-2 border-white/30 border-t-white rounded-full animate-spin align-middle"></div>';
 
-                // Simpan Password Baru ke Cloud & Local
                 await saveSantriPassword(loggedInSantri, newPwd);
                 
-                showCPMessage("<b>Berhasil:</b> Password Anda berhasil diperbarui ke server!", false);
+                if(isOfflineMode) {
+                    showCPMessage("<b>Berhasil Lokal:</b> Password diubah hanya di perangkat ini (Mode Offline).", false);
+                } else {
+                    showCPMessage("<b>Berhasil:</b> Password Anda berhasil diperbarui ke server!", false);
+                }
                 
-                setTimeout(() => {
-                    window.closeChangePassword();
-                }, 1500);
+                setTimeout(() => window.closeChangePassword(), 1800);
 
             } catch (error) {
                 showCPMessage("<b>Error:</b> Terjadi kesalahan saat menyimpan ke database.");
@@ -1257,45 +1051,139 @@
             }
         };
 
-        // ---------------- DASHBOARD & LOGOUT ----------------
-        const dashboardModal = document.getElementById('dashboard-modal');
-        const dashboardContainer = document.getElementById('dashboard-container');
-        const logoutModal = document.getElementById('logout-modal');
-        const logoutContainer = document.getElementById('logout-container');
+        // ---------------- FUNGSI UI NAVBAR, MOBILE, & LAINNYA ----------------
+        let isDarkMode = false;
+        let isMobileMenuOpen = false;
+        let isFabOpen = false;
+
+        window.toggleDarkMode = function() {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+        };
+
+        window.toggleMobileMenu = function() {
+            isMobileMenuOpen = !isMobileMenuOpen;
+            const panel = document.getElementById('mobile-menu-panel');
+            const menuIco = document.getElementById('menu-icon');
+            const closeIco = document.getElementById('close-icon');
+            
+            if (isMobileMenuOpen) {
+                panel.classList.remove('hidden'); panel.classList.add('flex');
+                menuIco.classList.remove('block'); menuIco.classList.add('hidden');
+                closeIco.classList.remove('hidden'); closeIco.classList.add('block');
+            } else {
+                panel.classList.add('hidden'); panel.classList.remove('flex');
+                menuIco.classList.add('block'); menuIco.classList.remove('hidden');
+                closeIco.classList.add('hidden'); closeIco.classList.remove('block');
+            }
+        };
+
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.className = 'fixed w-full z-50 transition-all duration-300 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md shadow-sm border-b border-emerald-100 dark:border-emerald-900 py-2 md:py-3';
+                document.getElementById('nav-title').className = 'font-bold text-lg md:text-xl leading-tight text-emerald-800 dark:text-emerald-400 drop-shadow-none transition-colors duration-300';
+                document.getElementById('nav-subtitle').className = 'text-xs font-medium text-emerald-500 dark:text-emerald-500 drop-shadow-none transition-colors duration-300';
+                document.getElementById('desktop-menu').className = 'hidden xl:flex gap-5 2xl:gap-7 font-semibold items-center text-emerald-800 dark:text-emerald-200 transition-colors duration-300 text-sm 2xl:text-base';
+                document.getElementById('desktop-btn-dark').className = 'p-2 rounded-full transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-900 text-emerald-600 dark:text-emerald-300';
+                document.getElementById('desktop-btn-search').className = 'p-2 rounded-full transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-900 text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border border-emerald-100 dark:border-emerald-800';
+                document.getElementById('mobile-btn-dark').className = 'p-2 rounded-full transition-colors text-emerald-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900';
+                document.getElementById('mobile-btn-search').className = 'p-2 rounded-full transition-colors text-emerald-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900';
+                document.getElementById('mobile-btn-menu').className = 'p-2 rounded-md text-emerald-800 dark:text-emerald-200 transition-colors';
+                document.getElementById('desktop-btn-auth').className = 'flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-700 group';
+                document.getElementById('mobile-btn-auth').className = 'p-2 rounded-full transition-colors text-emerald-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900';
+            } else {
+                navbar.className = 'fixed w-full z-50 transition-all duration-300 bg-transparent py-4 md:py-5';
+                document.getElementById('nav-title').className = 'font-bold text-lg md:text-xl leading-tight text-white drop-shadow-md transition-colors duration-300';
+                document.getElementById('nav-subtitle').className = 'text-xs font-medium text-emerald-100 drop-shadow-md transition-colors duration-300';
+                document.getElementById('desktop-menu').className = 'hidden xl:flex gap-5 2xl:gap-7 font-semibold items-center text-white transition-colors duration-300 text-sm 2xl:text-base';
+                document.getElementById('desktop-btn-dark').className = 'p-2 rounded-full transition-colors hover:bg-white/20 text-white';
+                document.getElementById('desktop-btn-search').className = 'p-2 rounded-full transition-colors hover:bg-white/20 text-white bg-white/10 border border-white/20 backdrop-blur-sm';
+                document.getElementById('mobile-btn-dark').className = 'p-2 rounded-full transition-colors text-white hover:bg-white/20';
+                document.getElementById('mobile-btn-search').className = 'p-2 rounded-full transition-colors text-white hover:bg-white/20';
+                document.getElementById('mobile-btn-menu').className = 'p-2 rounded-md text-white transition-colors';
+                document.getElementById('desktop-btn-auth').className = 'flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors hover:bg-emerald-500/20 text-emerald-300 bg-emerald-500/10 border border-emerald-400/20 backdrop-blur-sm group';
+                document.getElementById('mobile-btn-auth').className = 'p-2 rounded-full transition-colors text-emerald-300 hover:bg-emerald-500/20';
+            }
+        });
+
+        window.toggleFaq = function(button) {
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('.faq-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden'); icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden'); icon.classList.remove('rotate-180');
+            }
+        };
+
+        window.toggleFab = function() {
+            isFabOpen = !isFabOpen;
+            const fabMenu = document.getElementById('fab-menu');
+            const iconOpen = document.getElementById('fab-icon-open');
+            const iconClose = document.getElementById('fab-icon-close');
+            if (isFabOpen) {
+                fabMenu.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+                iconOpen.classList.replace('scale-100', 'scale-0'); iconOpen.classList.replace('opacity-100', 'opacity-0'); iconOpen.classList.add('rotate-90');
+                iconClose.classList.replace('scale-0', 'scale-100'); iconClose.classList.replace('opacity-0', 'opacity-100'); iconClose.classList.replace('-rotate-90', 'rotate-0');
+            } else {
+                fabMenu.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+                iconOpen.classList.replace('scale-0', 'scale-100'); iconOpen.classList.replace('opacity-0', 'opacity-100'); iconOpen.classList.remove('rotate-90');
+                iconClose.classList.replace('scale-100', 'scale-0'); iconClose.classList.replace('opacity-100', 'opacity-0'); iconClose.classList.replace('rotate-0', '-rotate-90');
+            }
+        };
+
+        document.addEventListener('click', (e) => {
+            const mainFab = document.getElementById('main-fab');
+            if (mainFab && isFabOpen && !mainFab.parentNode.contains(e.target)) window.toggleFab();
+        });
+
+        window.openLightbox = function(imageSrc) {
+            document.getElementById('lightbox-img').src = imageSrc;
+            document.getElementById('lightbox-modal').classList.remove('hidden');
+            document.getElementById('lightbox-modal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeLightbox = function() {
+            document.getElementById('lightbox-modal').classList.add('hidden');
+            document.getElementById('lightbox-modal').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+            setTimeout(() => { document.getElementById('lightbox-img').src = ''; }, 300);
+        };
 
         window.openDashboard = function() {
-            dashboardModal.classList.remove('hidden');
+            document.getElementById('dashboard-modal').classList.remove('hidden');
             setTimeout(() => {
-                dashboardModal.classList.remove('opacity-0');
-                dashboardContainer.classList.remove('scale-95');
+                document.getElementById('dashboard-modal').classList.remove('opacity-0');
+                document.getElementById('dashboard-container').classList.remove('scale-95');
             }, 10);
             document.body.style.overflow = 'hidden';
             if(isMobileMenuOpen) window.toggleMobileMenu();
         };
 
         window.closeDashboard = function() {
-            dashboardModal.classList.add('opacity-0');
-            dashboardContainer.classList.add('scale-95');
+            document.getElementById('dashboard-modal').classList.add('opacity-0');
+            document.getElementById('dashboard-container').classList.add('scale-95');
             setTimeout(() => {
-                dashboardModal.classList.add('hidden');
+                document.getElementById('dashboard-modal').classList.add('hidden');
                 document.body.style.overflow = 'auto';
             }, 300);
         };
 
         window.handleLogout = function() {
-            logoutModal.classList.remove('hidden');
+            document.getElementById('logout-modal').classList.remove('hidden');
             setTimeout(() => {
-                logoutModal.classList.remove('opacity-0');
-                logoutContainer.classList.remove('scale-95');
+                document.getElementById('logout-modal').classList.remove('opacity-0');
+                document.getElementById('logout-container').classList.remove('scale-95');
             }, 10);
         };
 
         window.cancelLogout = function() {
-            logoutModal.classList.add('opacity-0');
-            logoutContainer.classList.add('scale-95');
-            setTimeout(() => {
-                logoutModal.classList.add('hidden');
-            }, 300);
+            document.getElementById('logout-modal').classList.add('opacity-0');
+            document.getElementById('logout-container').classList.add('scale-95');
+            setTimeout(() => { document.getElementById('logout-modal').classList.add('hidden'); }, 300);
         };
 
         window.confirmLogout = function() {
@@ -1305,19 +1193,87 @@
             updateAuthUI();
         };
 
-        // Event listener tambahan untuk menutup modal menggunakan ESC
+        // Pencarian Data
+        const searchData = [
+            { id: "profil", icon: "building", title: "Profil & Sejarah", desc: "Visi, Misi, dan Profil Pesantren Al-Falah", tags: ["profil", "visi", "misi", "sejarah", "tentang"] },
+            { id: "program", icon: "book-open", title: "Tahfidzul Qur'an", desc: "Program unggulan hafalan Al-Qur'an", tags: ["tahfidz", "hafalan", "qur'an", "al-quran", "program"] },
+            { id: "program", icon: "book", title: "Kajian Kitab", desc: "Pembelajaran Fiqih, Tasawuf, dan Hadist", tags: ["kitab", "kuning", "kajian", "fiqih", "tasawuf", "hadist", "program"] },
+            { id: "program", icon: "music", title: "Seni Al Banjari", desc: "Kegiatan hadrah & pembacaan sholawat", tags: ["banjari", "sholawat", "hadrah", "musik", "seni", "program"] },
+            { id: "kegiatan", icon: "wallet", title: "Biaya Pendaftaran", desc: "Rincian biaya awal dan syahriah bulanan", tags: ["biaya", "pendaftaran", "uang", "syahriah", "spp", "bulanan", "harga"] },
+            { id: "kegiatan", icon: "home", title: "Fasilitas Pesantren", desc: "Makan 3x sehari, asrama, listrik, dan WiFi", tags: ["fasilitas", "makan", "asrama", "wifi", "gedung", "kegiatan"] },
+            { id: "jadwal-kegiatan", icon: "calendar-days", title: "Jadwal Kegiatan", desc: "Jam kegiatan santri dari Senin hingga Minggu", tags: ["jadwal", "kegiatan", "waktu", "jam", "rutinitas"] },
+            { id: "faq", icon: "help-circle", title: "Tanya Jawab (FAQ)", desc: "Pertanyaan umum seputar pondok", tags: ["faq", "tanya", "jawab", "bantuan", "pertanyaan", "hp", "laptop"] },
+            { id: "pendaftaran", icon: "phone", title: "Kontak & Lokasi", desc: "Informasi Pendaftaran dan Lokasi Map", tags: ["kontak", "hubungi", "alamat", "telepon", "whatsapp", "wa", "instagram", "youtube", "lokasi", "map"] }
+        ];
+
+        window.openSearch = function() {
+            document.getElementById('search-modal').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('search-modal').classList.remove('opacity-0');
+                document.getElementById('search-container').classList.remove('scale-95');
+                document.getElementById('search-input').focus();
+            }, 10);
+            document.body.style.overflow = 'hidden';
+            if(isMobileMenuOpen) window.toggleMobileMenu();
+        };
+
+        window.closeSearch = function() {
+            document.getElementById('search-modal').classList.add('opacity-0');
+            document.getElementById('search-container').classList.add('scale-95');
+            setTimeout(() => {
+                document.getElementById('search-modal').classList.add('hidden');
+                document.getElementById('search-input').value = '';
+                renderSearchResults(''); 
+                document.body.style.overflow = 'auto';
+            }, 200);
+        };
+
+        function renderSearchResults(query) {
+            query = query.toLowerCase().trim();
+            const searchResults = document.getElementById('search-results');
+            if (!query) {
+                searchResults.innerHTML = `<div class="text-center py-10 text-emerald-400 dark:text-emerald-500"><i data-lucide="search-dashed" class="w-12 h-12 mx-auto mb-3 opacity-50"></i><p>Ketik sesuatu untuk mulai mencari...</p></div>`;
+                lucide.createIcons();
+                return;
+            }
+            const filtered = searchData.filter(item => {
+                return item.title.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query) || item.tags.some(tag => tag.includes(query));
+            });
+
+            if (filtered.length === 0) {
+                searchResults.innerHTML = `<div class="text-center py-10 text-emerald-400 dark:text-emerald-500"><p>Tidak ada hasil untuk "<b>${query}</b>"</p><p class="text-sm mt-2 opacity-80">Coba gunakan kata kunci lain seperti 'biaya', 'kitab', atau 'jadwal'.</p></div>`;
+                return;
+            }
+
+            let html = '<div class="space-y-2">';
+            filtered.forEach(item => {
+                html += `
+                    <a href="#${item.id}" onclick="closeSearch()" class="flex items-start gap-4 p-3 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-800/50 transition-colors group border border-transparent hover:border-emerald-100 dark:hover:border-emerald-700">
+                        <div class="bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-400 p-2.5 rounded-lg shrink-0 group-hover:bg-emerald-500 group-hover:text-white transition-colors"><i data-lucide="${item.icon}" class="w-5 h-5"></i></div>
+                        <div><h4 class="font-bold text-emerald-900 dark:text-emerald-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors">${item.title}</h4><p class="text-sm text-emerald-600/80 dark:text-emerald-300/70 mt-0.5">${item.desc}</p></div>
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-emerald-300 dark:text-emerald-700 ml-auto my-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                    </a>`;
+            });
+            html += '</div>';
+            searchResults.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        document.getElementById('search-input').addEventListener('input', (e) => renderSearchResults(e.target.value));
+
         document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); window.openSearch(); }
             if (e.key === 'Escape') {
-                if(searchModal && !searchModal.classList.contains('hidden')) window.closeSearch();
-                if(cpModal && !cpModal.classList.contains('hidden')) window.closeChangePassword();
-                else if(logoutModal && !logoutModal.classList.contains('hidden')) window.cancelLogout();
-                else if(dashboardModal && !dashboardModal.classList.contains('hidden')) window.closeDashboard();
-                else if(loginModal && !loginModal.classList.contains('hidden')) window.closeLogin();
+                if(!document.getElementById('search-modal').classList.contains('hidden')) window.closeSearch();
+                else if(!document.getElementById('cp-modal').classList.contains('hidden')) window.closeChangePassword();
+                else if(!document.getElementById('logout-modal').classList.contains('hidden')) window.cancelLogout();
+                else if(!document.getElementById('dashboard-modal').classList.contains('hidden')) window.closeDashboard();
+                else if(!document.getElementById('login-modal').classList.contains('hidden')) window.closeLogin();
             }
         });
 
-        // Akhir inisialisasi icon
+        // Initialize Icons for the first time
         lucide.createIcons();
     </script>
 </body>
-                    </html>
+    </html>
