@@ -161,13 +161,8 @@
                         </button>
                     </div>
 
-                    <!-- Peringatan Offline (Akan muncul jika file didownload) -->
-                    <div id="offline-warning" class="hidden mt-4 p-3 bg-amber-100/80 dark:bg-amber-900/40 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 text-xs rounded-xl text-center leading-relaxed">
-                        <i data-lucide="wifi-off" class="w-4 h-4 inline mr-1 mb-0.5"></i>
-                        <b>Mode Offline:</b> File berjalan secara lokal tanpa server. Data dan Password hanya tersimpan di perangkat ini.
-                    </div>
-                    
-                    <div class="text-center text-xs text-emerald-600 dark:text-emerald-400 font-medium flex justify-center items-center gap-1.5 opacity-70 mb-2">
+                    <!-- Indikator Status Cloud (Selalu tampil untuk memastikan terhubung dengan Firebase asli) -->
+                    <div class="text-center text-xs text-emerald-600 dark:text-emerald-400 font-medium flex justify-center items-center gap-1.5 opacity-70 mb-2 mt-4">
                         <div id="status-indicator" class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></div>
                         <span id="server-status-text">Menghubungkan Server...</span>
                     </div>
@@ -691,7 +686,7 @@
     <!-- ==================== JAVASCRIPT & DATABASE (FIREBASE CLOUD) ==================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         document.getElementById('currentYear').textContent = new Date().getFullYear();
@@ -702,67 +697,40 @@
         let isOfflineMode = false;
         let loggedInSantri = null;
 
-        // 1. Inisialisasi Database
+        // 1. Inisialisasi Database Menggunakan Firebase Anda
         async function initFirebase() {
-            // Mengecek apakah berjalan di dalam lingkungan preview web AI (Terkoneksi Database)
-            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                try {
-                    const firebaseConfig = JSON.parse(__firebase_config);
-                    const app = initializeApp(firebaseConfig);
-                    auth = getAuth(app);
-                    db = getFirestore(app);
-                    appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                    
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                    
-                    // Memantau Status Login Database Cloud
-                    onAuthStateChanged(auth, (user) => {
-                        isDbReady = !!user;
-                        updateServerStatusUI();
-                    });
-                } catch (error) {
-                    console.error("Gagal terhubung ke Database Cloud:", error);
-                    isOfflineMode = true;
-                    updateServerStatusUI();
-                }
-            } else {
-                // JIKA FILE DI DOWNLOAD / DIJALANKAN DI LAPTOP SENDIRI
-                // Karena file tidak memiliki server, otomatis masuk mode offline
-                isOfflineMode = true;
-                updateServerStatusUI();
-
-                /*
-                ======================================================================
-                 PANDUAN UNTUK PENGELOLA WEB PPTQ AL FALAH:
-                 Jika Anda ingin mengupload web ini dan agar password tersinkron,
-                 Anda harus mengaktifkan Firebase milik Anda sendiri.
-                 
-                 Hapus komentar (tanda slash bintang) di bawah ini dan isi dengan 
-                 config Firebase dari project Google Firebase milik Anda:
-                ======================================================================
-                
-                const myFirebaseConfig = {
-                    apiKey: "API_KEY_ANDA",
-                    authDomain: "project-anda.firebaseapp.com",
-                    projectId: "project-anda",
-                    storageBucket: "project-anda.appspot.com",
-                    messagingSenderId: "12345678",
-                    appId: "1:12345678:web:abcde123"
+            try {
+                // Config Firebase Milik Anda
+                const firebaseConfig = {
+                    apiKey: "AIzaSyDoSBif7-_RR4TgMwqyBXO0C0L_i7NWVpk",
+                    authDomain: "pptq-alfalah.firebaseapp.com",
+                    projectId: "pptq-alfalah",
+                    storageBucket: "pptq-alfalah.firebasestorage.app",
+                    messagingSenderId: "781221105643",
+                    appId: "1:781221105643:web:7568d0f882d65e9d7353ae"
                 };
-                const app = initializeApp(myFirebaseConfig);
+
+                const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
                 
+                // ID unik untuk database app ini di Firestore
+                appId = "pptq-alfalah-web"; 
+                
+                // Login secara anonim ke Firebase Anda
                 await signInAnonymously(auth);
-                isOfflineMode = false;
-                isDbReady = true;
+                
+                // Memantau Status Koneksi
+                onAuthStateChanged(auth, (user) => {
+                    isDbReady = !!user;
+                    isOfflineMode = !user; 
+                    updateServerStatusUI();
+                });
+
+            } catch (error) {
+                console.error("Gagal terhubung ke Database Cloud:", error);
+                isOfflineMode = true;
                 updateServerStatusUI();
-                appId = "pondok-al-falah"; // Bebas dinamai apa saja
-                */
             }
         }
         
@@ -770,17 +738,14 @@
         function updateServerStatusUI() {
             const statusIndicator = document.getElementById('status-indicator');
             const statusText = document.getElementById('server-status-text');
-            const offlineWarning = document.getElementById('offline-warning');
             
             if (statusIndicator && statusText) {
                 if (isOfflineMode) {
                     statusIndicator.className = "w-2 h-2 rounded-full bg-slate-400";
-                    statusText.textContent = "Database Server Tidak Ditemukan";
-                    if(offlineWarning) offlineWarning.classList.remove('hidden');
+                    statusText.textContent = "Gagal terhubung ke Database";
                 } else if (isDbReady) {
                     statusIndicator.className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_#22c55e]";
-                    statusText.textContent = "Terhubung ke Database Online";
-                    if(offlineWarning) offlineWarning.classList.add('hidden');
+                    statusText.textContent = "Terhubung ke Server (Online)";
                 }
             }
         }
@@ -809,13 +774,14 @@
             
             if (isDbReady && db && !isOfflineMode) {
                 try {
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'passwords', safeUsername);
+                    // Path penyimpanan ke Firestore Anda
+                    const docRef = doc(db, 'passwords', safeUsername);
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         return docSnap.data().password; // Ditemukan di Cloud
                     }
                 } catch (e) {
-                    console.warn("Gagal membaca Cloud, menggunakan Lokal.");
+                    console.warn("Gagal membaca Cloud, menggunakan Lokal.", e);
                 }
             }
             
@@ -838,11 +804,15 @@
             // Jika Online, simpan ke Cloud agar sinkron dengan HP lain
             if (isDbReady && db && !isOfflineMode) {
                 try {
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'passwords', safeUsername);
+                    // Path penyimpanan ke Firestore Anda
+                    const docRef = doc(db, 'passwords', safeUsername);
                     await setDoc(docRef, { password: newPassword });
                 } catch (e) {
+                    console.error("Firebase Error:", e);
                     throw new Error("Gagal menyimpan ke server Cloud.");
                 }
+            } else if (isOfflineMode) {
+                throw new Error("Anda sedang offline, data hanya disimpan di perangkat ini.");
             }
         }
 
@@ -1075,16 +1045,17 @@
 
                 await saveSantriPassword(loggedInSantri, newPwd);
                 
-                if(isOfflineMode) {
-                    showCPMessage("<b>Tersimpan Lokal:</b> Password berhasil diganti, <b>namun hanya berlaku di perangkat ini</b> (Mode Offline).", false);
-                } else {
-                    showCPMessage("<b>Berhasil:</b> Password Anda berhasil diperbarui dan tersinkron ke Server!", false);
-                }
+                showCPMessage("<b>Berhasil:</b> Password Anda berhasil diperbarui dan tersinkron ke Server!", false);
                 
                 setTimeout(() => window.closeChangePassword(), 3000);
 
             } catch (error) {
-                showCPMessage("<b>Error:</b> Terjadi kesalahan saat menyimpan ke database.");
+                if (error.message.includes("offline")) {
+                    showCPMessage("<b>Tersimpan Lokal:</b> Password berhasil diganti, tapi koneksi ke server terputus. Hanya berlaku di HP ini untuk sementara.", false);
+                    setTimeout(() => window.closeChangePassword(), 4000);
+                } else {
+                    showCPMessage("<b>Error:</b> " + error.message);
+                }
             } finally {
                 btnSubmit.innerHTML = originalBtnText;
                 btnSubmit.disabled = false;
@@ -1316,4 +1287,4 @@
         lucide.createIcons();
     </script>
 </body>
-                                         </html>
+    </html>
