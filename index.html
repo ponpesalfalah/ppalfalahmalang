@@ -299,7 +299,7 @@
                         <tbody>
                             <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-transparent dark:bg-transparent w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">NAMA</th>
-                                <td class="p-4 sm:p-5 font-bold text-emerald-950 dark:text-emerald-50 text-sm sm:text-base capitalize tracking-wide" id="dash-nama">-</td>
+                                <td class="p-4 sm:p-5 font-bold text-emerald-950 dark:text-emerald-50 text-sm sm:text-base uppercase tracking-wide" id="dash-nama">-</td>
                             </tr>
                             <tr id="dash-kelas-tr" class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors hidden">
                                 <th class="p-4 sm:p-5 bg-transparent dark:bg-transparent w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">KELAS</th>
@@ -307,20 +307,20 @@
                             </tr>
                             <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-transparent dark:bg-transparent w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">ALAMAT</th>
-                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base capitalize tracking-wide" id="dash-alamat">-</td>
+                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base uppercase tracking-wide" id="dash-alamat">-</td>
                             </tr>
                             <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-transparent dark:bg-transparent w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">TEMPAT, TANGGAL LAHIR</th>
-                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base capitalize tracking-wide" id="dash-ttl">-</td>
+                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base uppercase tracking-wide" id="dash-ttl">-</td>
                             </tr>
                             <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-transparent dark:bg-transparent w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">NAMA ORANG TUA</th>
-                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base capitalize tracking-wide" id="dash-ortu">-</td>
+                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 font-semibold text-sm sm:text-base uppercase tracking-wide" id="dash-ortu">-</td>
                             </tr>
                             <tr class="hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-transparent dark:bg-transparent w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">STATUS</th>
-                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 text-sm sm:text-base capitalize">
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-transparent dark:bg-transparent text-emerald-800 dark:text-emerald-200 text-xs font-extrabold border border-emerald-300 dark:border-emerald-600 capitalize tracking-widest">
+                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 text-sm sm:text-base uppercase">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-transparent dark:bg-transparent text-emerald-800 dark:text-emerald-200 text-xs font-extrabold border border-emerald-300 dark:border-emerald-600 uppercase tracking-widest">
                                         <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div> <span id="dash-status-text"></span>
                                     </span>
                                 </td>
@@ -1353,12 +1353,13 @@
 
         const registeredUsers = {
             "AGUS ZARKASI": { alamat: "PASURUAN", ttl: "PASURUAN, 12 JULI 2002", kelas: "LULUS", ortu: "MANSUR", status: "SANTRI" },
-            "KHOIRUL ANAM": { alamat: "BABAAN", ttl: "MALANG, 28 APRIL 1987", ortu: "M. SJAIFULLAH", status: "PENGASUH PONDOK" },
+            "KHOIRUL ANAM": { alamat: "BABAAN", ttl: "MALANG, 28 APRIL 1987", ortu: "M. SJAIFULLAH", status: "PENGASUH" },
             "DEWI CANTIKA SAKTI": { alamat: "MADUARJO", ttl: "MALANG, 29 JULI 2009", kelas: "XI", ortu: "TRI RUSFANDI", status: "SANTRI" },
             "DEWA BUDIMAN SAKTI": { alamat: "MADUARJO", ttl: "MALANG, 29 JULI 2009", kelas: "XI", ortu: "TRI RUSFANDI", status: "SANTRI" },
             "MOCH HAFIDZ IHWANUDDIN": { alamat: "SUKOSARI", ttl: "MALANG, 08 JULI 2002", kelas: "KAKAP", ortu: "IMAM MAHRUS", status: "SANTRI" },
             "JORDAN PRANATA": { alamat: "KALIMANTAN TIMUR", ttl: "SAMARINDA, 24 JUNI 2008", kelas: "XI", ortu: "WINARSEH", status: "SANTRI" },
-            "RAVENDRA RISKY ATTALAH": { alamat: "BLIMBING SARI", ttl: "SURABAYA, 01 MEI 2009", kelas: "VIII", ortu: "WIDIH KURNIA WENI MIRTASARI", status: "SANTRI" }
+            "RAVENDRA RISKY ATTALAH": { alamat: "BLIMBING SARI", ttl: "SURABAYA, 01 MEI 2009", kelas: "VIII", ortu: "WIDIH KURNIA WENI MIRTASARI", status: "SANTRI" },
+            "M NABIL AZMI ALMAS": { alamat: "SEBANI, GADINGREJO KOTA PASURUAN", ttl: "MALANG, 01 JANUARI 2007", kelas: "LULUS", ortu: "ABDUL QODIR (ALM)", status: "SANTRI" }
         };
 
         window.checkAuthStatus = function() {
@@ -1502,11 +1503,11 @@
             const userData = registeredUsers[userClean];
             loggedInSantri = userClean;
             
-            document.getElementById('dash-nama').textContent = userClean.toLowerCase();
-            document.getElementById('dash-alamat').textContent = userData.alamat.toLowerCase();
-            document.getElementById('dash-ttl').textContent = userData.ttl.toLowerCase();
-            document.getElementById('dash-ortu').textContent = userData.ortu.toLowerCase();
-            document.getElementById('dash-status-text').textContent = userData.status.toLowerCase();
+            document.getElementById('dash-nama').textContent = userClean.toUpperCase();
+            document.getElementById('dash-alamat').textContent = userData.alamat.toUpperCase();
+            document.getElementById('dash-ttl').textContent = userData.ttl.toUpperCase();
+            document.getElementById('dash-ortu').textContent = userData.ortu.toUpperCase();
+            document.getElementById('dash-status-text').textContent = userData.status.toUpperCase();
             
             const elKelasTr = document.getElementById('dash-kelas-tr');
             const elKelas = document.getElementById('dash-kelas');
