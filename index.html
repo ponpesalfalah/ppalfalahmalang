@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tambahan Library untuk mengunduh HTML menjadi Gambar (KTS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -44,6 +46,13 @@
         
         #lightbox-img { background-color: transparent; }
 
+        /* Fitur Foto HD Otomatis */
+        .hd-image {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: high-quality;
+            -ms-interpolation-mode: bicubic;
+        }
+
         /* Animasi Typing Indikator Ala WA */
         @keyframes typingDot {
             0%, 100% { transform: translateY(0); opacity: 0.5; }
@@ -53,6 +62,77 @@
         .wa-dot-1 { animation-delay: -0.32s; }
         .wa-dot-2 { animation-delay: -0.16s; }
         .wa-dot-3 { animation-delay: 0s; }
+
+        /* Animasi Background Slideshow (8 Foto x 5 detik = 40 detik total) */
+        @keyframes bgSlideshow {
+            0% { opacity: 0; transform: scale(1); }
+            5% { opacity: 1; transform: scale(1.02); } 
+            12.5% { opacity: 1; transform: scale(1.04); } 
+            17.5% { opacity: 0; transform: scale(1.05); } 
+            100% { opacity: 0; transform: scale(1); }
+        }
+        .slide-bg {
+            opacity: 0;
+            animation: bgSlideshow 40s infinite;
+            background-size: cover;
+            background-position: center;
+            position: absolute;
+            inset: 0;
+        }
+
+        /* Styling Khusus KTS (Depan & Belakang) */
+        .kts-front-bg {
+            background-color: #ffffff;
+            background-image: 
+                linear-gradient(135deg, rgba(16, 185, 129, 0.05) 25%, transparent 25%, transparent 50%, rgba(16, 185, 129, 0.05) 50%, rgba(16, 185, 129, 0.05) 75%, transparent 75%, transparent),
+                radial-gradient(circle at top right, rgba(250, 204, 21, 0.1), transparent 40%);
+            background-size: 20px 20px, 100% 100%;
+        }
+        .kts-back-bg {
+            background-color: #047857;
+            background-image: 
+                radial-gradient(circle at 100% 0%, rgba(250, 204, 21, 0.15) 0, transparent 50%),
+                radial-gradient(circle at 0% 100%, rgba(16, 185, 129, 0.5) 0, transparent 50%),
+                repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 10px);
+        }
+        
+        /* Background Foto KTS - Efek Abu-abu Muda yang Serasi */
+        .kts-photo-bg {
+            background-color: #f1f5f9; /* Slate-100 dari Tailwind */
+            background-image: 
+                radial-gradient(circle at center, rgba(16, 185, 129, 0.03) 0%, transparent 60%),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(241, 245, 249, 1));
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Menyembunyikan scrollbar untuk fitur geser (slider) */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Fitur Lightbox Navigation */
+        .lightbox-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            transition: background-color 0.3s;
+            z-index: 130;
+        }
+        .lightbox-nav-btn:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+        .lightbox-prev { left: 16px; }
+        .lightbox-next { right: 16px; }
     </style>
 </head>
 <body class="font-sans transition-colors duration-300 bg-emerald-50/40 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-50 overflow-x-hidden">
@@ -89,14 +169,55 @@
         </button>
     </div>
 
+    <!-- Modal Gambar Penuh -->
     <div id="lightbox-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4 sm:p-6">
         <div class="absolute inset-0 bg-emerald-950/90 backdrop-blur-md cursor-pointer" onclick="closeLightbox()"></div>
         <div class="relative z-20 flex flex-col items-center animate-in max-w-5xl w-full">
             <button onclick="closeLightbox()" class="absolute -top-12 right-0 md:-right-12 p-2 bg-white/20 hover:bg-white/40 text-white rounded-full transition-colors shadow-lg backdrop-blur-md"><i data-lucide="x" class="w-7 h-7"></i></button>
-            <img id="lightbox-img" src="" alt="Tampilan Penuh" class="w-full max-h-[85vh] object-contain drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] rounded-xl bg-white" />
+            <img id="lightbox-img" src="" alt="Tampilan Penuh" class="w-full max-h-[85vh] object-contain drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] rounded-xl bg-transparent hd-image" />
+        </div>
+        
+        <!-- Tombol Navigasi Lightbox -->
+        <button id="lightbox-btn-prev" class="lightbox-nav-btn lightbox-prev hidden" onclick="navigateLightbox(-1)" aria-label="Gambar Sebelumnya">
+            <i data-lucide="chevron-left" class="w-8 h-8"></i>
+        </button>
+        <button id="lightbox-btn-next" class="lightbox-nav-btn lightbox-next hidden" onclick="navigateLightbox(1)" aria-label="Gambar Selanjutnya">
+            <i data-lucide="chevron-right" class="w-8 h-8"></i>
+        </button>
+    </div>
+
+    <!-- Modal Brosur -->
+    <div id="brosur-modal" class="fixed inset-0 z-[170] hidden items-center justify-center p-4 sm:p-6 opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-emerald-950/90 backdrop-blur-md cursor-pointer" onclick="closeBrosur()"></div>
+        <div class="relative z-10 w-full max-w-4xl max-h-[90vh] bg-white dark:bg-emerald-900 rounded-3xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 border border-emerald-100 dark:border-emerald-800">
+            <div class="px-6 py-4 bg-emerald-600 dark:bg-emerald-700 flex justify-between items-center text-white shrink-0 shadow-md z-20">
+                <h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="image" class="w-5 h-5"></i> Brosur Pendaftaran PPTQ</h3>
+                <button onclick="closeBrosur()" class="p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="p-4 sm:p-6 overflow-y-auto flex flex-col gap-8 flex-1 bg-emerald-50 dark:bg-emerald-950">
+                <!-- Brosur Halaman 1 -->
+                <div class="flex flex-col items-center gap-4 bg-white dark:bg-emerald-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 transition-all hover:shadow-md">
+                    <h4 class="font-bold text-emerald-900 dark:text-emerald-100 mb-2 border-b-2 border-yellow-400 pb-2">Brosur Halaman 1</h4>
+                    <img src="bg30.jpg" class="w-full max-w-2xl h-auto rounded-xl shadow-md hd-image cursor-pointer hover:scale-[1.01] transition-transform" onclick="openLightbox('bg30.jpg')" alt="Brosur Halaman 1">
+                    <a href="bg30.jpg" download="Brosur_PPTQ_Al-Falah_1_HD.jpg" class="bg-yellow-400 hover:bg-yellow-500 text-emerald-950 font-bold py-3 px-6 rounded-xl flex items-center gap-2 transition-colors w-full sm:w-auto justify-center shadow-md mt-2">
+                        <i data-lucide="download" class="w-5 h-5"></i> Download Kualitas HD
+                    </a>
+                </div>
+
+                <!-- Brosur Halaman 2 -->
+                <div class="flex flex-col items-center gap-4 bg-white dark:bg-emerald-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 transition-all hover:shadow-md">
+                    <h4 class="font-bold text-emerald-900 dark:text-emerald-100 mb-2 border-b-2 border-yellow-400 pb-2">Brosur Halaman 2</h4>
+                    <img src="bg31.jpg" class="w-full max-w-2xl h-auto rounded-xl shadow-md hd-image cursor-pointer hover:scale-[1.01] transition-transform" onclick="openLightbox('bg31.jpg')" alt="Brosur Halaman 2">
+                    <a href="bg31.jpg" download="Brosur_PPTQ_Al-Falah_2_HD.jpg" class="bg-yellow-400 hover:bg-yellow-500 text-emerald-950 font-bold py-3 px-6 rounded-xl flex items-center gap-2 transition-colors w-full sm:w-auto justify-center shadow-md mt-2">
+                        <i data-lucide="download" class="w-5 h-5"></i> Download Kualitas HD
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Modal Login -->
     <div id="login-modal" class="fixed inset-0 z-[140] hidden items-start sm:items-center justify-center pt-10 sm:pt-0 px-4 sm:px-6 opacity-0 transition-opacity duration-300 overflow-y-auto">
         <div class="fixed inset-0 bg-emerald-950/80 backdrop-blur-sm cursor-pointer" onclick="closeLogin()"></div>
         <div id="login-container" class="bg-white dark:bg-emerald-900 w-full max-w-md rounded-3xl shadow-2xl relative z-10 flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 border border-emerald-100 dark:border-emerald-800 mb-20 sm:mb-0">
@@ -151,14 +272,16 @@
         </div>
     </div>
 
+    <!-- Modal Dashboard Santri -->
     <div id="dashboard-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4 sm:p-6 opacity-0 transition-opacity duration-300">
         <div class="absolute inset-0 bg-emerald-950/90 backdrop-blur-sm cursor-pointer" onclick="closeDashboard()"></div>
         <div id="dashboard-container" class="bg-white dark:bg-emerald-900 w-full max-w-2xl rounded-3xl shadow-2xl relative z-10 flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 border border-emerald-100 dark:border-emerald-800">
             <div class="px-6 py-6 bg-gradient-to-br from-emerald-700 to-emerald-600 text-white flex justify-between items-center relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
                 <div class="relative z-10 flex items-center gap-4">
-                    <div id="dash-avatar" class="w-14 h-14 bg-white/20 border-2 border-white/50 rounded-full flex items-center justify-center text-white shadow-inner font-bold text-xl tracking-widest uppercase">
-                        AZ
+                    <!-- Dash Avatar Diganti Jadi Logo Sesuai Request dengan Background KTS -->
+                    <div id="dash-avatar" class="w-14 h-14 sm:w-16 sm:h-16 border-2 border-emerald-300 rounded-full flex items-center justify-center shadow-lg overflow-hidden shrink-0 kts-photo-bg">
+                        <img src="bg25.jpg" class="w-full h-full object-contain p-1 hd-image mix-blend-multiply" alt="Logo Pondok">
                     </div>
                     <div>
                         <h2 class="font-extrabold text-xl md:text-2xl drop-shadow-md uppercase">BIODATA PENGGUNA</h2>
@@ -178,7 +301,7 @@
                             </tr>
                             <tr id="dash-kelas-tr" class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors hidden">
                                 <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">KELAS</th>
-                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 text-sm sm:text-base tracking-wide" id="dash-kelas">-</td>
+                                <td class="p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 text-sm sm:text-base tracking-wide font-bold uppercase" id="dash-kelas">-</td>
                             </tr>
                             <tr class="border-b border-emerald-100 dark:border-emerald-800 hover:bg-white dark:hover:bg-emerald-900/50 transition-colors">
                                 <th class="p-4 sm:p-5 bg-emerald-100/50 dark:bg-emerald-900/50 w-2/5 font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base border-r border-emerald-100 dark:border-emerald-800 uppercase">ALAMAT</th>
@@ -205,6 +328,9 @@
                 </div>
                 
                 <div class="mt-6 flex flex-wrap justify-end gap-3">
+                    <button onclick="openKTS()" class="bg-yellow-400 hover:bg-yellow-500 text-emerald-950 font-bold py-2.5 px-6 rounded-xl transition-colors shadow-md flex items-center gap-2 text-sm flex-grow sm:flex-grow-0 justify-center">
+                        <i data-lucide="id-card" class="w-5 h-5"></i> LIHAT KTS
+                    </button>
                     <button onclick="openChangePassword()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl transition-colors shadow-md flex items-center gap-2 text-sm flex-grow sm:flex-grow-0 justify-center">
                         <i data-lucide="key" class="w-4 h-4"></i> GANTI PASSWORD
                     </button>
@@ -216,6 +342,120 @@
         </div>
     </div>
 
+    <!-- Modal KTS (Kartu Tanda Santri) -->
+    <div id="kts-modal" class="fixed inset-0 z-[180] hidden items-start sm:items-center justify-center pt-8 sm:pt-0 px-2 sm:px-6 opacity-0 transition-opacity duration-300 overflow-y-auto">
+        <div class="fixed inset-0 bg-emerald-950/90 backdrop-blur-md cursor-pointer" onclick="closeKTS()"></div>
+        <div id="kts-container" class="relative z-10 w-full max-w-2xl flex flex-col items-center transform scale-95 transition-transform duration-300 mb-20 sm:mb-0">
+            
+            <div class="w-full flex justify-between items-center bg-white dark:bg-emerald-900 rounded-t-3xl px-6 py-4 border-b border-emerald-100 dark:border-emerald-800 shadow-md">
+                <h3 class="font-extrabold text-emerald-950 dark:text-white text-lg flex items-center gap-2"><i data-lucide="id-card" class="w-6 h-6 text-emerald-600"></i> Kartu Tanda Santri</h3>
+                <button onclick="closeKTS()" class="p-2 bg-emerald-50 dark:bg-emerald-800 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 rounded-full transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <div class="w-full bg-emerald-50 dark:bg-emerald-950 p-4 sm:p-6 flex flex-col items-center overflow-x-auto rounded-b-3xl shadow-2xl border border-t-0 border-emerald-100 dark:border-emerald-800">
+                
+                <!-- Area KTS (Untuk Di-Export) -->
+                <div id="kts-export-area" class="flex flex-col gap-6 p-2 bg-transparent rounded-xl mx-auto w-fit">
+                    
+                    <!-- KTS DEPAN (Rasio Standar KTP) -->
+                    <div class="relative w-[340px] sm:w-[420px] aspect-[856/540] rounded-xl shadow-[0_10px_20px_rgba(0,0,0,0.15)] overflow-hidden border border-emerald-200 hd-image flex flex-col kts-front-bg">
+                        
+                        <!-- Header Hijau -->
+                        <div class="bg-gradient-to-r from-emerald-700 to-emerald-500 py-2.5 px-4 flex items-center gap-3 border-b border-emerald-400/30">
+                            <img src="bg25.jpg" class="w-10 h-10 object-contain bg-white rounded-full p-0.5 shadow-sm">
+                            <div class="text-white">
+                                <h2 class="font-black text-[14px] sm:text-[17px] leading-tight drop-shadow-md tracking-wide">KARTU TANDA SANTRI</h2>
+                                <p class="font-bold text-[8px] sm:text-[10px] leading-tight text-emerald-100 drop-shadow-md">PPTQ AL-FALAH BABAAN NGASEM MALANG</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Body KTS -->
+                        <div class="flex-1 flex items-center px-4 py-2 gap-4 relative overflow-hidden">
+                            <!-- Watermark Background -->
+                            <div class="absolute -right-12 -bottom-12 w-40 h-40 opacity-5 rotate-12 pointer-events-none">
+                                <img src="bg25.jpg" class="w-full h-full object-contain grayscale">
+                            </div>
+                            
+                            <!-- Foto Santri dengan Background Pattern -->
+                            <div class="w-[80px] sm:w-[95px] aspect-[3/4] rounded-lg border-2 border-emerald-500 shadow-[0_4px_10px_rgba(16,185,129,0.3)] overflow-hidden shrink-0 flex items-center justify-center p-1.5 z-10 relative kts-photo-bg">
+                                <img src="bg25.jpg" class="w-full h-full object-contain drop-shadow-md hd-image relative z-10 mix-blend-multiply">
+                                <!-- Garis hiasan kecil di foto -->
+                                <div class="absolute bottom-0 left-0 w-full h-1.5 bg-emerald-500 z-20"></div>
+                            </div>
+                            
+                            <!-- Tabel Biodata (Tanpa Kelas) -->
+                            <div class="flex-1 z-10 text-[10px] sm:text-[12px] leading-tight">
+                                <table class="w-full text-left border-separate border-spacing-y-1.5 sm:border-spacing-y-2">
+                                    <tr>
+                                        <td class="font-bold text-emerald-900 w-[35%] align-top">NAMA</td>
+                                        <td class="text-emerald-900 font-bold align-top w-[5px]">:</td>
+                                        <td class="font-bold text-emerald-950 uppercase" id="kts-nama">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold text-emerald-900 align-top">ALAMAT</td>
+                                        <td class="text-emerald-900 font-bold align-top">:</td>
+                                        <td class="text-emerald-800 uppercase font-semibold leading-snug" id="kts-alamat">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold text-emerald-900 align-top">TTL</td>
+                                        <td class="text-emerald-900 font-bold align-top">:</td>
+                                        <td class="text-emerald-800 uppercase font-semibold" id="kts-ttl">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold text-emerald-900 align-top">NAMA ORTU</td>
+                                        <td class="text-emerald-900 font-bold align-top">:</td>
+                                        <td class="text-emerald-800 uppercase font-semibold" id="kts-ortu">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold text-emerald-900 align-top">STATUS</td>
+                                        <td class="text-emerald-900 font-bold align-top">:</td>
+                                        <td class="font-bold text-white bg-emerald-600 rounded px-1.5 py-0.5 inline-block uppercase text-[9px] sm:text-[10px]" id="kts-status">-</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Footer Garis Bawah Hijau KTS -->
+                        <div class="h-2.5 bg-gradient-to-r from-emerald-700 via-emerald-500 to-emerald-700 w-full relative z-20"></div>
+                    </div>
+
+                    <!-- KTS BELAKANG (Rasio Standar KTP) -->
+                    <div class="relative w-[340px] sm:w-[420px] aspect-[856/540] rounded-xl shadow-[0_10px_20px_rgba(0,0,0,0.15)] overflow-hidden border border-emerald-800 hd-image flex flex-col items-center justify-center p-5 text-center text-white kts-back-bg">
+                        
+                        <!-- Logo Watermark Tengah -->
+                        <img src="bg25.jpg" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 object-contain opacity-[0.07] pointer-events-none">
+
+                        <!-- Konten Visi -->
+                        <div class="relative z-10 w-full mb-4 sm:mb-5">
+                            <h3 class="font-black text-yellow-300 text-[14px] sm:text-[16px] mb-1.5 uppercase tracking-widest flex items-center justify-center gap-3 drop-shadow-md">
+                                <span class="w-6 h-[2px] bg-yellow-300 rounded-full"></span> VISI <span class="w-6 h-[2px] bg-yellow-300 rounded-full"></span>
+                            </h3>
+                            <p class="text-[10px] sm:text-[12px] leading-relaxed font-medium text-emerald-50">"Terwujudnya lembaga pendidikan islam yang mencetak generasi qur'ani serta memiliki pemahaman ilmu agama islam agar menjadi hamba alloh yang bertaqwa dan berilmu."</p>
+                        </div>
+                        
+                        <!-- Konten Misi -->
+                        <div class="relative z-10 w-full">
+                            <h3 class="font-black text-yellow-300 text-[14px] sm:text-[16px] mb-1.5 uppercase tracking-widest flex items-center justify-center gap-3 drop-shadow-md">
+                                <span class="w-6 h-[2px] bg-yellow-300 rounded-full"></span> MISI <span class="w-6 h-[2px] bg-yellow-300 rounded-full"></span>
+                            </h3>
+                            <p class="text-[10px] sm:text-[12px] leading-relaxed font-medium text-emerald-50">"Menyelenggarakan kegiatan pendidikan tahfidzul qur'an dan pembelajaran kitab kitab gundul berdasarkan ajaran ahlussunnah wal jama'ah."</p>
+                        </div>
+                    </div>
+                </div> <!-- End KTS Export Area -->
+
+                <div class="mt-6 w-full max-w-sm">
+                    <button onclick="downloadKTS()" id="btn-download-kts" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-emerald-500/30 transform hover:-translate-y-1">
+                        <i data-lucide="download-cloud" class="w-5 h-5"></i> UNDUH KTS HD (PNG)
+                    </button>
+                    <p class="text-xs text-center text-slate-500 dark:text-emerald-200/70 mt-3 font-medium flex items-center justify-center gap-1.5">
+                        <i data-lucide="info" class="w-3.5 h-3.5"></i> Dapat dicetak menggunakan kertas PVC/KTP.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Logout -->
     <div id="logout-modal" class="fixed inset-0 z-[160] hidden items-center justify-center p-4 sm:p-6 opacity-0 transition-opacity duration-300">
         <div class="absolute inset-0 bg-emerald-950/80 backdrop-blur-sm cursor-pointer" onclick="cancelLogout()"></div>
         <div id="logout-container" class="bg-white dark:bg-emerald-900 w-full max-w-sm rounded-3xl shadow-2xl relative z-10 flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 border border-emerald-100 dark:border-emerald-800 p-6 sm:p-8 text-center">
@@ -231,6 +471,7 @@
         </div>
     </div>
 
+    <!-- Modal Ganti Password -->
     <div id="cp-modal" class="fixed inset-0 z-[160] hidden items-start sm:items-center justify-center pt-10 sm:pt-0 p-4 sm:p-6 opacity-0 transition-opacity duration-300 overflow-y-auto">
         <div class="absolute inset-0 bg-emerald-950/80 backdrop-blur-sm cursor-pointer" onclick="closeChangePassword()"></div>
         <div id="cp-container" class="bg-white dark:bg-emerald-900 w-full max-w-md rounded-3xl shadow-2xl relative z-10 flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 border border-emerald-100 dark:border-emerald-800 mb-20 sm:mb-0">
@@ -294,10 +535,10 @@
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-3">
                     <img 
-                        src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%22100%22%20fill%3D%22%23022c22%22%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2295%22%20fill%3D%22%23064e3b%22%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2285%22%20fill%3D%22none%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%226%204%22%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2278%22%20fill%3D%22none%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%221%22%2F%3E%3Cpath%20d%3D%22M%2040%20140%20Q%2040%2070%2C%20100%2030%20Q%20160%2070%2C%20160%20140%22%20fill%3D%22none%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%223%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22135%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2275%22%20font-weight%3D%22900%22%20fill%3D%22%23ffffff%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%224%22%3EA%3Ctspan%20fill%3D%22%23fbbf24%22%3EF%3C%2Ftspan%3E%3C%2Ftext%3E%3Cpath%20d%3D%22M%2060%20155%20L%20140%20155%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M%2080%20165%20L%20120%20165%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E" 
+                        src="bg25.jpg" 
                         alt="Logo PPTQ Al-Falah" 
                         onclick="openLightbox(this.src)"
-                        class="w-12 h-12 md:w-16 md:h-16 object-contain shrink-0 transition-transform duration-300 hover:scale-110 drop-shadow-md cursor-pointer rounded-full bg-white border border-emerald-500 p-0.5"
+                        class="h-12 md:h-16 w-auto object-contain shrink-0 transition-transform duration-300 hover:scale-105 drop-shadow-md cursor-pointer hd-image"
                         title="Klik untuk memperbesar logo"
                     />
                     <div class="hidden sm:block">
@@ -311,6 +552,7 @@
                     <a href="#profil" class="hover:text-emerald-400 transition-colors">Profil</a>
                     <a href="#program" class="hover:text-emerald-400 transition-colors">Program</a>
                     <a href="#kegiatan" class="hover:text-emerald-400 transition-colors">Fasilitas & Jadwal</a>
+                    <a href="#galeri" class="hover:text-emerald-400 transition-colors">Galeri</a>
                     <a href="#faq" class="hover:text-emerald-400 transition-colors">FAQ</a>
                     
                     <div class="flex items-center gap-2 border-l border-white/20 pl-4 dark:border-emerald-800">
@@ -345,20 +587,33 @@
             <a href="#profil" onclick="toggleMobileMenu()" class="font-semibold p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-xl">Profil Pondok</a>
             <a href="#program" onclick="toggleMobileMenu()" class="font-semibold p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-xl">Program Unggulan</a>
             <a href="#kegiatan" onclick="toggleMobileMenu()" class="font-semibold p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-xl">Fasilitas & Jadwal</a>
+            <a href="#galeri" onclick="toggleMobileMenu()" class="font-semibold p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-xl">Galeri Kegiatan</a>
             <a href="#faq" onclick="toggleMobileMenu()" class="font-semibold p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-xl">Tanya Jawab (FAQ)</a>
             <hr class="my-2 border-emerald-100 dark:border-emerald-800">
             <button onclick="checkAuthStatus(); toggleMobileMenu();" id="mobile-panel-auth" class="font-bold p-3 bg-emerald-100 dark:bg-emerald-900 hover:bg-emerald-200 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-100 text-left rounded-xl flex items-center gap-3 transition-colors w-full">
                 <i data-lucide="user" class="w-5 h-5"></i> <span id="mobile-panel-auth-text">Login Santri</span>
             </button>
-            <a href="https://drive.google.com/drive/folders/1sIYBnArUwi8tHUZaxtYMplgcaXfl4Gwh" target="_blank" rel="noreferrer" class="font-bold p-3 bg-yellow-400 hover:bg-yellow-500 text-emerald-950 text-center rounded-xl flex items-center justify-center gap-2 shadow-sm transition-colors w-full"><i data-lucide="eye" class="w-5 h-5"></i> Lihat Brosur</a>
+            <button onclick="openBrosur(); toggleMobileMenu();" class="font-bold p-3 bg-yellow-400 hover:bg-yellow-500 text-emerald-950 text-center rounded-xl flex items-center justify-center gap-2 shadow-sm transition-colors w-full"><i data-lucide="eye" class="w-5 h-5"></i> Lihat Brosur HD</button>
             <a href="#pendaftaran" onclick="toggleMobileMenu()" class="font-bold p-3 bg-emerald-600 hover:bg-emerald-500 text-white text-center rounded-xl shadow-md transition-colors block">Info Pendaftaran</a>
         </div>
     </nav>
 
     <section id="beranda" class="relative h-screen flex items-center justify-center overflow-hidden">
-        <div class="absolute inset-0 z-0 bg-emerald-950">
-            <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
-            <div class="absolute inset-0 bg-gradient-to-b from-emerald-800/90 via-emerald-700/90 to-emerald-950 dark:from-emerald-950 dark:via-emerald-900/90 dark:to-emerald-950 transition-colors duration-500"></div>
+        <div class="absolute inset-0 z-0 bg-black">
+            <!-- 8 Foto Slideshow -->
+            <div class="absolute inset-0 w-full h-full">
+                <div class="slide-bg hd-image" style="background-image: url('bg23.jpg'); animation-delay: 0s;"></div>
+                <div class="slide-bg hd-image" style="background-image: url('bg24.jpg'); animation-delay: 5s;"></div>
+                <div class="slide-bg hd-image" style="background-image: url('bg19.jpg'); animation-delay: 10s;"></div>
+                <div class="slide-bg hd-image" style="background-image: url('bg20.jpg'); animation-delay: 15s;"></div>
+                <div class="slide-bg hd-image" style="background-image: url('bg21.jpg'); animation-delay: 20s;"></div>
+                <div class="slide-bg hd-image" style="background-image: url('bg2.jpg'); animation-delay: 25s;"></div>
+                <div class="slide-bg hd-image" style="background-image: url('bg3.jpg'); animation-delay: 30s;"></div>
+                <div class="slide-bg hd-image" style="background-image: url('bg4.jpg'); animation-delay: 35s;"></div>
+            </div>
+            
+            <div class="absolute inset-0 bg-black/40 transition-colors duration-500"></div>
+            <div class="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-white dark:from-emerald-950 to-transparent transition-colors duration-500"></div>
         </div>
         
         <div class="container relative z-10 px-4 md:px-8 text-center flex flex-col items-center mt-16">
@@ -380,36 +635,56 @@
         </div>
     </section>
 
-    <section id="profil" class="py-20 bg-white dark:bg-emerald-950 transition-colors duration-300 relative overflow-hidden">
+    <!-- Profil Baru dengan Tata Letak bg16, bg5 (Visi), bg17 (Misi) -->
+    <section id="profil" class="py-24 bg-white dark:bg-emerald-950 transition-colors duration-300 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-emerald-950 to-transparent opacity-10 dark:opacity-50"></div>
         <div class="container mx-auto px-4 md:px-8 relative z-10">
-            <div class="max-w-5xl mx-auto">
-                <div class="text-center md:text-left">
+
+            <div class="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center max-w-6xl mx-auto mb-20">
+                <div class="lg:col-span-7 text-center md:text-left order-2 lg:order-1">
                     <h2 class="text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center md:justify-start gap-3">
                         <div class="w-10 h-1 bg-emerald-500 rounded-full"></div> Profil Singkat
                     </h2>
-                    <h3 class="text-3xl md:text-4xl font-extrabold text-emerald-950 dark:text-white mb-6 transition-colors duration-300">Mencetak Generasi Bertaqwa dan Berilmu</h3>
+                    <h3 class="text-3xl md:text-4xl font-extrabold text-emerald-950 dark:text-white mb-6 transition-colors duration-300 leading-tight">Mencetak Generasi Bertaqwa dan Berilmu</h3>
                     <p class="text-slate-600 dark:text-emerald-100/80 text-lg leading-relaxed border-l-4 border-emerald-400 pl-5 bg-emerald-50/50 dark:bg-emerald-900/20 p-5 rounded-r-2xl italic transition-colors duration-300">
                         "Pesantren tahfidzul qur'an al falah adalah tempat belajar untuk menunjang proses KBM agar lebih efektif, serta memberikan fasilitas tempat belajar yang cukup memadai dengan suasana khas pedesaan yang asri, bersih, dan nyaman."
                     </p>
                 </div>
-                <div class="grid md:grid-cols-2 gap-6 sm:gap-8 mt-8">
-                    <div class="flex items-start gap-4 sm:gap-5 bg-white dark:bg-emerald-900/40 p-5 sm:p-6 rounded-2xl shadow-lg shadow-emerald-100/50 dark:shadow-none border border-emerald-50 dark:border-emerald-800 transition-all hover:-translate-y-1">
-                        <div class="bg-emerald-100 dark:bg-emerald-800 p-3 rounded-xl text-emerald-600 dark:text-emerald-300 shrink-0"><i data-lucide="target" class="w-6 h-6 sm:w-8 sm:h-8"></i></div>
-                        <div>
-                            <h4 class="font-bold text-lg sm:text-xl text-emerald-950 dark:text-emerald-50 mb-2">Visi</h4>
-                            <p class="text-slate-600 dark:text-emerald-100/70 text-sm sm:text-base leading-relaxed">Terwujudnya lembaga pendidikan islam yang mencetak generasi qur'ani serta memiliki pemahaman ilmu agama islam agar menjadi hamba alloh yang bertaqwa dan berilmu.</p>
-                        </div>
+                <div class="lg:col-span-5 order-1 lg:order-2 relative">
+                    <div class="absolute -inset-4 bg-gradient-to-tr from-emerald-100 to-yellow-100 dark:from-emerald-900/50 dark:to-yellow-900/20 rounded-3xl transform rotate-3 scale-105 z-0"></div>
+                    <img src="bg16.jpg" alt="Profil PPTQ Al-Falah" class="relative z-10 w-full rounded-2xl shadow-2xl object-cover h-[250px] sm:h-[350px] md:h-[400px] hover:scale-[1.02] transition-transform duration-500 cursor-pointer border-4 border-white dark:border-emerald-800 hd-image" onclick="openLightbox(this.src)">
+                </div>
+            </div>
+
+            <!-- Visi Misi Cards Premium -->
+            <div class="grid md:grid-cols-2 gap-8 sm:gap-12 max-w-6xl mx-auto">
+                <div class="bg-white dark:bg-emerald-900/40 rounded-3xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] dark:shadow-none border border-emerald-100 dark:border-emerald-800 transition-all hover:-translate-y-2 group overflow-hidden flex flex-col">
+                    <div class="relative h-56 sm:h-64 w-full overflow-hidden">
+                        <img src="bg5.jpg" alt="Visi" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src)">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
+                        <h4 class="absolute bottom-4 left-6 font-extrabold text-3xl text-white drop-shadow-md flex items-center gap-3">
+                            <i data-lucide="target" class="w-8 h-8 text-emerald-400"></i> VISI
+                        </h4>
                     </div>
-                    <div class="flex items-start gap-4 sm:gap-5 bg-white dark:bg-emerald-900/40 p-5 sm:p-6 rounded-2xl shadow-lg shadow-emerald-100/50 dark:shadow-none border border-emerald-50 dark:border-emerald-800 transition-all hover:-translate-y-1">
-                        <div class="bg-emerald-100 dark:bg-emerald-800 p-3 rounded-xl text-emerald-600 dark:text-emerald-300 shrink-0"><i data-lucide="compass" class="w-6 h-6 sm:w-8 sm:h-8"></i></div>
-                        <div>
-                            <h4 class="font-bold text-lg sm:text-xl text-emerald-950 dark:text-emerald-50 mb-2">Misi</h4>
-                            <p class="text-slate-600 dark:text-emerald-100/70 text-sm sm:text-base leading-relaxed">Menyelenggarakan kegiatan pendidikan tahfidzul qur'an dan pembelajaran kitab kitab gundul berdasarkan ajaran ahlussunnah wal jama'ah.</p>
-                        </div>
+                    <div class="p-6 sm:p-8 flex-1 bg-white dark:bg-emerald-900/40">
+                        <p class="text-slate-600 dark:text-emerald-100/80 leading-relaxed text-lg">Terwujudnya lembaga pendidikan islam yang mencetak generasi qur'ani serta memiliki pemahaman ilmu agama islam agar menjadi hamba alloh yang bertaqwa dan berilmu.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-emerald-900/40 rounded-3xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] dark:shadow-none border border-emerald-100 dark:border-emerald-800 transition-all hover:-translate-y-2 group overflow-hidden flex flex-col">
+                    <div class="relative h-56 sm:h-64 w-full overflow-hidden">
+                        <img src="bg17.jpg" alt="Misi" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src)">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
+                        <h4 class="absolute bottom-4 left-6 font-extrabold text-3xl text-white drop-shadow-md flex items-center gap-3">
+                            <i data-lucide="compass" class="w-8 h-8 text-yellow-400"></i> MISI
+                        </h4>
+                    </div>
+                    <div class="p-6 sm:p-8 flex-1 bg-white dark:bg-emerald-900/40">
+                        <p class="text-slate-600 dark:text-emerald-100/80 leading-relaxed text-lg">Menyelenggarakan kegiatan pendidikan tahfidzul qur'an dan pembelajaran kitab kitab gundul berdasarkan ajaran ahlussunnah wal jama'ah.</p>
                     </div>
                 </div>
             </div>
+
         </div>
     </section>
 
@@ -423,26 +698,59 @@
                 <div class="w-24 h-1.5 bg-yellow-400 mx-auto mt-6 rounded-full shadow-sm"></div>
             </div>
             
-            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                <div class="bg-white dark:bg-emerald-900 rounded-3xl p-8 shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border-b-4 border-emerald-500 dark:border-emerald-600 group text-center flex flex-col">
-                    <div class="bg-emerald-50 dark:bg-emerald-800 w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-700"><i data-lucide="book-open" class="w-8 h-8 text-emerald-600 dark:text-emerald-400"></i></div>
-                    <h4 class="text-2xl font-bold text-emerald-950 dark:text-emerald-50 mb-4 transition-colors duration-300">Tahfidzul Qur'an</h4>
-                    <p class="text-slate-600 dark:text-emerald-100/70 leading-relaxed transition-colors duration-300 flex-grow">Program hafalan Al-Qur'an sebagai fokus utama untuk mencetak generasi Qur'ani yang bertaqwa.</p>
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="bg-white dark:bg-emerald-900 rounded-3xl shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border border-emerald-100 dark:border-emerald-800 group text-center flex flex-col overflow-hidden hover:-translate-y-2">
+                    <div class="relative h-48 sm:h-56 w-full overflow-hidden shrink-0">
+                        <img src="tahfidz-1.jpg" alt="Kegiatan Tahfidzul Qur'an" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src)">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
+                        <div class="absolute bottom-4 left-0 w-full flex justify-center">
+                            <div class="bg-emerald-600 text-white p-3 rounded-2xl shadow-lg border-2 border-white/20 backdrop-blur-md">
+                                <i data-lucide="book-open" class="w-7 h-7"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 md:p-8 flex-grow flex flex-col">
+                        <h4 class="text-2xl font-bold text-emerald-950 dark:text-emerald-50 mb-4 transition-colors duration-300">Tahfidzul Qur'an</h4>
+                        <p class="text-slate-600 dark:text-emerald-100/70 leading-relaxed transition-colors duration-300 flex-grow">Program hafalan Al-Qur'an sebagai fokus utama untuk mencetak generasi Qur'ani yang bertaqwa.</p>
+                    </div>
                 </div>
-                <div class="bg-white dark:bg-emerald-900 rounded-3xl p-8 shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border-b-4 border-emerald-500 dark:border-emerald-600 group text-center flex flex-col">
-                    <div class="bg-emerald-50 dark:bg-emerald-800 w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-700"><i data-lucide="book" class="w-8 h-8 text-emerald-600 dark:text-emerald-400"></i></div>
-                    <h4 class="text-2xl font-bold text-emerald-950 dark:text-emerald-50 mb-4 transition-colors duration-300">Kajian Kitab</h4>
-                    <p class="text-slate-600 dark:text-emerald-100/70 leading-relaxed transition-colors duration-300 flex-grow">Pembelajaran kitab-kitab gundul meliputi fiqih, tasawuf, dan hadist berdasarkan ajaran Ahlussunnah wal Jama'ah.</p>
+
+                <div class="bg-white dark:bg-emerald-900 rounded-3xl shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border border-emerald-100 dark:border-emerald-800 group text-center flex flex-col overflow-hidden hover:-translate-y-2">
+                    <div class="relative h-48 sm:h-56 w-full overflow-hidden shrink-0">
+                        <img src="bg28.jpg" alt="Kajian Kitab" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src)">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
+                        <div class="absolute bottom-4 left-0 w-full flex justify-center">
+                            <div class="bg-emerald-600 text-white p-3 rounded-2xl shadow-lg border-2 border-white/20 backdrop-blur-md">
+                                <i data-lucide="book" class="w-7 h-7"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 md:p-8 flex-grow flex flex-col">
+                        <h4 class="text-2xl font-bold text-emerald-950 dark:text-emerald-50 mb-4 transition-colors duration-300">Kajian Kitab</h4>
+                        <p class="text-slate-600 dark:text-emerald-100/70 leading-relaxed transition-colors duration-300 flex-grow">Pembelajaran kitab-kitab gundul meliputi fiqih, tasawuf, dan hadist berdasarkan ajaran Ahlussunnah wal Jama'ah.</p>
+                    </div>
                 </div>
-                <div class="bg-white dark:bg-emerald-900 rounded-3xl p-8 shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border-b-4 border-emerald-500 dark:border-emerald-600 group text-center flex flex-col">
-                    <div class="bg-emerald-50 dark:bg-emerald-800 w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-700"><i data-lucide="music" class="w-8 h-8 text-emerald-600 dark:text-emerald-400"></i></div>
-                    <h4 class="text-2xl font-bold text-emerald-950 dark:text-emerald-50 mb-4 transition-colors duration-300">Al Banjari</h4>
-                    <p class="text-slate-600 dark:text-emerald-100/70 leading-relaxed transition-colors duration-300 flex-grow">Kegiatan seni hadrah Al Banjari dan pembacaan sholawat diba' untuk menanamkan kecintaan kepada Rasulullah.</p>
+
+                <div class="bg-white dark:bg-emerald-900 rounded-3xl shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border border-emerald-100 dark:border-emerald-800 group text-center flex flex-col overflow-hidden hover:-translate-y-2">
+                    <div class="relative h-48 sm:h-56 w-full overflow-hidden shrink-0">
+                        <img src="bg29.jpg" alt="Al Banjari" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src)">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
+                        <div class="absolute bottom-4 left-0 w-full flex justify-center">
+                            <div class="bg-emerald-600 text-white p-3 rounded-2xl shadow-lg border-2 border-white/20 backdrop-blur-md">
+                                <i data-lucide="music" class="w-7 h-7"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 md:p-8 flex-grow flex flex-col">
+                        <h4 class="text-2xl font-bold text-emerald-950 dark:text-emerald-50 mb-4 transition-colors duration-300">Al Banjari</h4>
+                        <p class="text-slate-600 dark:text-emerald-100/70 leading-relaxed transition-colors duration-300 flex-grow">Kegiatan seni hadrah Al Banjari dan pembacaan sholawat diba' untuk menanamkan kecintaan kepada Rasulullah.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Kegiatan & Fasilitas -->
     <section id="kegiatan" class="py-20 bg-emerald-600 dark:bg-emerald-900 text-white relative overflow-hidden transition-colors duration-300">
         <div class="absolute inset-0 opacity-10 dark:opacity-5" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
         <div class="container mx-auto px-4 md:px-8 relative z-10">
@@ -556,7 +864,240 @@
         </div>
     </section>
 
-    <section id="faq" class="py-20 bg-emerald-50/30 dark:bg-emerald-900/10 transition-colors duration-300">
+    <!-- Menu Baru: Galeri Kegiatan Santri -->
+    <section id="galeri" class="py-20 bg-white dark:bg-emerald-950 transition-colors duration-300 relative">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <h2 class="text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center gap-3"><div class="w-8 h-1 bg-emerald-500 rounded-full"></div> Lensa Al-Falah <div class="w-8 h-1 bg-emerald-500 rounded-full"></div></h2>
+                <h3 class="text-3xl md:text-4xl font-extrabold text-emerald-950 dark:text-white transition-colors duration-300">Galeri Kegiatan Santri</h3>
+            </div>
+
+            <!-- Kegiatan Sehari-hari (Grid Biasa) -->
+            <h4 class="font-bold text-xl text-emerald-800 dark:text-emerald-200 mb-6 border-b border-emerald-100 dark:border-emerald-800 pb-2">Kegiatan Sehari-hari</h4>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mb-12">
+                <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer shadow-md border border-emerald-50 dark:border-emerald-800" onclick="openLightbox('tahfidz-1.jpg')">
+                    <img src="tahfidz-1.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 hd-image" alt="Setoran Qur'an">
+                    <div class="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div class="absolute bottom-4 left-4 right-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                        <span class="bg-yellow-400 text-emerald-950 text-[10px] font-bold px-2 py-1 rounded-md mb-2 inline-block">1</span>
+                        <h4 class="text-white font-bold text-sm md:text-base drop-shadow-md leading-tight">Setoran Qur'an</h4>
+                    </div>
+                </div>
+                
+                <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer shadow-md border border-emerald-50 dark:border-emerald-800" onclick="openLightbox('bg20.jpg')">
+                    <img src="bg20.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 hd-image" alt="Ngaji Kitab">
+                    <div class="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div class="absolute bottom-4 left-4 right-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                        <span class="bg-yellow-400 text-emerald-950 text-[10px] font-bold px-2 py-1 rounded-md mb-2 inline-block">2</span>
+                        <h4 class="text-white font-bold text-sm md:text-base drop-shadow-md leading-tight">Ngaji Kitab</h4>
+                    </div>
+                </div>
+
+                <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer shadow-md border border-emerald-50 dark:border-emerald-800" onclick="openLightbox('bg3.jpg')">
+                    <img src="bg3.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 hd-image" alt="Sowan Kyai">
+                    <div class="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div class="absolute bottom-4 left-4 right-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                        <span class="bg-yellow-400 text-emerald-950 text-[10px] font-bold px-2 py-1 rounded-md mb-2 inline-block">3</span>
+                        <h4 class="text-white font-bold text-sm md:text-base drop-shadow-md leading-tight">Sowan Kyai</h4>
+                    </div>
+                </div>
+
+                <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer shadow-md border border-emerald-50 dark:border-emerald-800" onclick="openLightbox('IMG_0443.jpg')">
+                    <img src="IMG_0443.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 hd-image" alt="Masak Bersama">
+                    <div class="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div class="absolute bottom-4 left-4 right-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                        <span class="bg-yellow-400 text-emerald-950 text-[10px] font-bold px-2 py-1 rounded-md mb-2 inline-block">4</span>
+                        <h4 class="text-white font-bold text-sm md:text-base drop-shadow-md leading-tight">Masak Bersama</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kategori Liburan dengan Slider Responsif HD -->
+            <div class="flex items-center justify-between mb-6 border-b border-emerald-100 dark:border-emerald-800 pb-2">
+                <h4 class="font-bold text-xl text-emerald-800 dark:text-emerald-200">Koleksi Foto Liburan</h4>
+                <div class="flex gap-2">
+                    <button onclick="scrollSliderLiburan('kiri')" class="p-2 rounded-full bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-200 hover:bg-emerald-200 dark:hover:bg-emerald-700 transition-colors shadow-sm" aria-label="Geser ke kiri">
+                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                    </button>
+                    <button onclick="scrollSliderLiburan('kanan')" class="p-2 rounded-full bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-200 hover:bg-emerald-200 dark:hover:bg-emerald-700 transition-colors shadow-sm" aria-label="Geser ke kanan">
+                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="relative w-full overflow-hidden rounded-2xl">
+                <!-- Kontainer Slider -->
+                <div id="slider-liburan" class="flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 hide-scrollbar w-full items-center">
+                    
+                    <!-- Item Poto Liburan 1 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0540.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0540.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0540.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 2 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0541.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0541.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0541.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 3 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0548.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0548.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0548.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 4 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0574.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0574.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0574.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 5 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0583.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0583.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0583.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 6 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0584.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0584.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0584.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 7 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0586.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0586.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0586.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 8 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0592.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0592.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0592.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Kebersamaan">
+                    </div>
+
+                    <!-- Item Poto Liburan 9 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0595.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0595.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0595.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 10 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0638.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0638.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0638.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Kegiatan Ziarah">
+                    </div>
+
+                    <!-- Item Poto Liburan 11 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0503.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0503.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0503.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 12 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0509.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0509.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0509.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 13 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0514.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0514.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0514.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 14 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0520.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0520.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0520.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 15 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0522.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0522.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0522.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 16 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0523.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0523.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0523.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 17 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0524.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0524.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0524.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 18 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0532.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0532.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0532.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 19 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0533.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0533.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0533.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 20 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0535.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0535.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0535.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 21 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0432.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0432.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0432.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 22 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0465.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0465.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0465.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 23 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0466.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0466.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0466.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 24 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0478.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0478.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0478.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 25 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0481.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0481.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0481.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 26 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0499.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0499.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0499.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                    <!-- Item Poto Liburan 27 -->
+                    <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('IMG_0502.jpg')">
+                        <div class="absolute inset-0 bg-[url('IMG_0502.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
+                        <img src="IMG_0502.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="faq" class="py-20 bg-emerald-50/30 dark:bg-emerald-900/10 transition-colors duration-300 border-t border-emerald-100 dark:border-emerald-900/50">
         <div class="container mx-auto px-4 md:px-8 max-w-4xl">
             <div class="text-center mb-12">
                 <h2 class="text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center gap-3"><div class="w-8 h-1 bg-emerald-500 rounded-full"></div> Informasi <div class="w-8 h-1 bg-emerald-500 rounded-full"></div></h2>
@@ -614,10 +1155,10 @@
         <div class="container mx-auto px-4 md:px-8">
             <div class="flex flex-col items-center text-center mb-8 border-b border-emerald-900 pb-12 max-w-3xl mx-auto">
                 <img 
-                    src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%22100%22%20fill%3D%22%23022c22%22%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2295%22%20fill%3D%22%23064e3b%22%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2285%22%20fill%3D%22none%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%226%204%22%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2278%22%20fill%3D%22none%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%221%22%2F%3E%3Cpath%20d%3D%22M%2040%20140%20Q%2040%2070%2C%20100%2030%20Q%20160%2070%2C%20160%20140%22%20fill%3D%22none%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%223%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22135%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2275%22%20font-weight%3D%22900%22%20fill%3D%22%23ffffff%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%224%22%3EA%3Ctspan%20fill%3D%22%23fbbf24%22%3EF%3C%2Ftspan%3E%3C%2Ftext%3E%3Cpath%20d%3D%22M%2060%20155%20L%20140%20155%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M%2080%20165%20L%20120%20165%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E" 
+                    src="bg25.jpg" 
                     alt="Logo PPTQ Al-Falah" 
                     onclick="openLightbox(this.src)"
-                    class="w-24 h-24 object-contain shrink-0 transition-transform duration-300 hover:scale-110 drop-shadow-xl cursor-pointer rounded-full bg-white border border-emerald-500 p-1 mb-6"
+                    class="h-28 w-auto object-contain shrink-0 transition-transform duration-300 hover:scale-110 drop-shadow-xl cursor-pointer mb-6 hd-image"
                     title="Klik untuk memperbesar logo"
                 />
                 <h3 class="font-bold text-3xl text-white mb-2">PPTQ Al-Falah</h3>
@@ -626,9 +1167,9 @@
                     Menyelenggarakan kegiatan pendidikan tahfidzul qur'an dan pembelajaran kitab kitab gundul berdasarkan ajaran ahlussunnah wal jama'ah.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="https://drive.google.com/drive/folders/1sIYBnArUwi8tHUZaxtYMplgcaXfl4Gwh" target="_blank" rel="noreferrer" class="inline-flex items-center justify-center gap-2 bg-emerald-800 hover:bg-emerald-700 text-white px-8 py-4 rounded-full transition-colors border border-emerald-600 shadow-lg font-bold">
-                        <i data-lucide="file-text" class="text-yellow-400 w-5 h-5"></i> Lihat Brosur Lengkap
-                    </a>
+                    <button onclick="openBrosur()" class="inline-flex items-center justify-center gap-2 bg-emerald-800 hover:bg-emerald-700 text-white px-8 py-4 rounded-full transition-colors border border-emerald-600 shadow-lg font-bold hover:scale-105 transform duration-300">
+                        <i data-lucide="file-image" class="text-yellow-400 w-5 h-5"></i> Lihat Brosur Lengkap (HD)
+                    </button>
                 </div>
             </div>
 
@@ -641,7 +1182,6 @@
         </div>
     </footer>
 
-    <!-- TOMBOL TANYA YUK DI PINDAH KE KIRI BAWAH -->
     <button onclick="toggleTanyaYuk()" id="btn-tanya-yuk" class="fixed bottom-6 left-6 z-[90] bg-white border-2 border-emerald-500 text-emerald-600 px-4 py-3 rounded-full shadow-xl hover:bg-emerald-50 transition-all duration-300 flex items-center gap-2 group animate-bounce hover:animate-none origin-bottom-left">
         <div class="relative">
             <i data-lucide="bot" class="w-6 h-6"></i>
@@ -653,7 +1193,6 @@
         <span class="font-bold text-sm">TANYA YUK</span>
     </button>
 
-    <!-- KOTAK CHAT TANYA YUK DI PINDAH KE KIRI BAWAH -->
     <div id="chat-tanya-yuk" class="fixed bottom-24 left-4 sm:bottom-24 sm:left-6 z-[100] w-[calc(100vw-2rem)] sm:w-[400px] bg-[#ece5dd] dark:bg-emerald-950 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 origin-bottom-left scale-0 opacity-0 border border-emerald-200 dark:border-emerald-800" style="height: 500px; max-height: 80vh;">
         
         <div class="bg-emerald-600 dark:bg-emerald-800 text-white px-4 py-3 flex items-center justify-between shadow-md z-10 shrink-0">
@@ -682,7 +1221,6 @@
             </div>
         </div>
 
-        <!-- TYPING INDICATOR ALA WA -->
         <div id="typing-indicator" class="hidden px-4 py-2 bg-transparent shrink-0">
             <div class="bg-white dark:bg-emerald-900 px-3 py-2 rounded-2xl rounded-bl-none shadow-sm border border-emerald-100 dark:border-emerald-800 w-fit flex items-center gap-2 animate-in">
                 <span class="text-[11px] text-slate-500 dark:text-emerald-300/70 font-medium italic">sedang mengetik</span>
@@ -819,7 +1357,8 @@
             "DEWI CANTIKA SAKTI": { alamat: "MADUARJO", ttl: "MALANG, 29 JULI 2009", kelas: "XI", ortu: "TRI RUSFANDI", status: "SANTRI" },
             "DEWA BUDIMAN SAKTI": { alamat: "MADUARJO", ttl: "MALANG, 29 JULI 2009", kelas: "XI", ortu: "TRI RUSFANDI", status: "SANTRI" },
             "MOCH HAFIDZ IHWANUDDIN": { alamat: "SUKOSARI", ttl: "MALANG, 08 JULI 2002", kelas: "KAKAP", ortu: "IMAM MAHRUS", status: "SANTRI" },
-            "JORDAN PRANATA": { alamat: "KALIMANTAN TIMUR", ttl: "SAMARINDA, 24 JUNI 2008", kelas: "XI", ortu: "WINARSEH", status: "SANTRI" }
+            "JORDAN PRANATA": { alamat: "KALIMANTAN TIMUR", ttl: "SAMARINDA, 24 JUNI 2008", kelas: "XI", ortu: "WINARSEH", status: "SANTRI" },
+            "RAVENDRA RISKI ATTALA": { alamat: "BLIMBING SARI", ttl: "SURABAYA, 01 MEI 2009", kelas: "VIII MTS", ortu: "WIDIH KURNIA WENI MIRTASARI", status: "SANTRI" }
         };
 
         window.checkAuthStatus = function() {
@@ -838,6 +1377,95 @@
                 authTextMobile.textContent = "Login Santri";
             }
         }
+
+        // Logic Modal KTS
+        window.openKTS = function() {
+            if (!loggedInSantri) return;
+            const data = registeredUsers[loggedInSantri];
+            
+            // Masukkan data Biodata ke dalam elemen KTS
+            document.getElementById('kts-nama').textContent = loggedInSantri;
+            document.getElementById('kts-alamat').textContent = data.alamat;
+            document.getElementById('kts-ttl').textContent = data.ttl;
+            document.getElementById('kts-ortu').textContent = data.ortu;
+            document.getElementById('kts-status').textContent = data.status;
+
+            window.closeDashboard(); // Tutup dashboard, buka KTS
+            setTimeout(() => {
+                document.getElementById('kts-modal').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('kts-modal').classList.remove('opacity-0');
+                    document.getElementById('kts-container').classList.remove('scale-95');
+                }, 10);
+            }, 300);
+        };
+
+        window.closeKTS = function() {
+            document.getElementById('kts-modal').classList.add('opacity-0');
+            document.getElementById('kts-container').classList.add('scale-95');
+            setTimeout(() => {
+                document.getElementById('kts-modal').classList.add('hidden');
+                if (loggedInSantri) window.openDashboard();
+            }, 300);
+        };
+
+        window.downloadKTS = function() {
+            const btn = document.getElementById('btn-download-kts');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Menyimpan KTS HD...';
+            btn.disabled = true;
+            
+            const ktsContainer = document.getElementById('kts-export-area');
+            
+            // Konversi HTML jadi Gambar PNG HD dengan scale=3
+            html2canvas(ktsContainer, { 
+                scale: 3, 
+                backgroundColor: null, // Transparent agar background membaur mulus
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `KTS_Al-Falah_${loggedInSantri.replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                btn.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5"></i> BERHASIL DIUNDUH';
+                btn.classList.replace('bg-emerald-600', 'bg-blue-600');
+                btn.classList.replace('hover:bg-emerald-500', 'hover:bg-blue-500');
+                lucide.createIcons();
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.replace('bg-blue-600', 'bg-emerald-600');
+                    btn.classList.replace('hover:bg-blue-500', 'hover:bg-emerald-500');
+                    btn.disabled = false;
+                    lucide.createIcons();
+                }, 3000);
+            }).catch(err => {
+                console.error("Gagal mendownload KTS", err);
+                alert("Ups! Gagal mengunduh kartu. Pastikan koneksi stabil.");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                lucide.createIcons();
+            });
+        };
+
+        window.openBrosur = function() {
+            document.getElementById('brosur-modal').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('brosur-modal').classList.remove('opacity-0');
+                document.getElementById('brosur-modal').children[1].classList.remove('scale-95');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeBrosur = function() {
+            document.getElementById('brosur-modal').classList.add('opacity-0');
+            document.getElementById('brosur-modal').children[1].classList.add('scale-95');
+            setTimeout(() => {
+                document.getElementById('brosur-modal').classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        };
 
         window.openLogin = function() {
             document.getElementById('login-modal').classList.remove('hidden');
@@ -925,25 +1553,16 @@
             
             if (userData.kelas) {
                 elKelasTr.classList.remove('hidden'); 
-                const kelasStr = userData.kelas.trim();
-                const isRoman = /^[IVXLCDM]+$/i.test(kelasStr);
-                
-                elKelas.className = "p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 text-sm sm:text-base tracking-wide";
-                if (isRoman) {
-                    elKelas.textContent = kelasStr.toUpperCase();
-                    elKelas.classList.add("font-bold", "uppercase");
-                } else {
-                    elKelas.textContent = kelasStr.toLowerCase();
-                    elKelas.classList.add("font-semibold", "capitalize");
-                }
+                const kelasStr = userData.kelas.trim().toUpperCase();
+                elKelas.className = "p-4 sm:p-5 text-emerald-800 dark:text-emerald-200 text-sm sm:text-base tracking-wide font-bold uppercase";
+                elKelas.textContent = kelasStr;
             } else {
                 elKelasTr.classList.add('hidden');
                 elKelas.textContent = "-";
             }
 
-            const nameWords = userClean.split(/\s+/);
-            let initials = (nameWords.length >= 2) ? nameWords[0][0] + nameWords[1][0] : nameWords[0][0];
-            document.getElementById('dash-avatar').textContent = initials.toUpperCase();
+            // Avatar pada Dashboard menggunakan logo bg25 dengan background KTS
+            document.getElementById('dash-avatar').innerHTML = `<img src="bg25.jpg" class="w-full h-full object-contain p-1 hd-image mix-blend-multiply" alt="Logo Pondok">`;
             
             document.getElementById('login-error').classList.add('hidden');
             document.getElementById('login-username').value = '';
@@ -1066,6 +1685,37 @@
         let isMobileMenuOpen = false;
         let isFabOpen = false;
 
+        // Variabel untuk Lightbox Gallery Navigation yang Dipisah
+        let galleryImages = [];
+        let currentImageIndex = -1;
+        
+        let kegiatanArray = [];
+        let liburanArray = [];
+        let brosurArray = ['bg30.jpg', 'bg31.jpg']; // Grup khusus brosur
+
+        // Kumpulkan semua gambar dari galeri (Kegiatan & Liburan) saat halaman dimuat
+        function initGallery() {
+            kegiatanArray = [];
+            liburanArray = [];
+            
+            // Pilih gambar KHUSUS dari Kegiatan Sehari-hari
+            const kegiatanImages = document.querySelectorAll('#galeri .grid img');
+            kegiatanImages.forEach(img => {
+                const src = img.getAttribute('src');
+                if (src && !kegiatanArray.includes(src)) kegiatanArray.push(src);
+            });
+
+            // Pilih gambar KHUSUS dari Slider Liburan
+            const liburanImages = document.querySelectorAll('#slider-liburan img');
+            liburanImages.forEach(img => {
+                const src = img.getAttribute('src');
+                if (src && !liburanArray.includes(src)) liburanArray.push(src);
+            });
+        }
+
+        // Panggil inisialisasi galeri
+        document.addEventListener('DOMContentLoaded', initGallery);
+
         window.toggleDarkMode = function() {
             isDarkMode = !isDarkMode;
             if (isDarkMode) document.documentElement.classList.add('dark');
@@ -1146,6 +1796,31 @@
         });
 
         window.openLightbox = function(imageSrc) {
+            // Tentukan kelompok gambar mana yang sedang dilihat berdasarkan yang diklik
+            if (kegiatanArray.includes(imageSrc)) {
+                galleryImages = kegiatanArray;
+            } else if (liburanArray.includes(imageSrc)) {
+                galleryImages = liburanArray;
+            } else if (brosurArray.includes(imageSrc)) {
+                galleryImages = brosurArray;
+            } else {
+                galleryImages = [imageSrc]; // Jika foto tidak tergabung dalam grup manapun
+            }
+
+            currentImageIndex = galleryImages.indexOf(imageSrc);
+            
+            const btnPrev = document.getElementById('lightbox-btn-prev');
+            const btnNext = document.getElementById('lightbox-btn-next');
+
+            // Tampilkan tombol navigasi HANYA jika foto dalam grup tersebut lebih dari 1
+            if (currentImageIndex !== -1 && galleryImages.length > 1) {
+                btnPrev.classList.remove('hidden');
+                btnNext.classList.remove('hidden');
+            } else {
+                btnPrev.classList.add('hidden');
+                btnNext.classList.add('hidden');
+            }
+
             document.getElementById('lightbox-img').src = imageSrc;
             document.getElementById('lightbox-modal').classList.remove('hidden');
             document.getElementById('lightbox-modal').classList.add('flex');
@@ -1156,7 +1831,26 @@
             document.getElementById('lightbox-modal').classList.add('hidden');
             document.getElementById('lightbox-modal').classList.remove('flex');
             document.body.style.overflow = 'auto';
+            currentImageIndex = -1;
             setTimeout(() => { document.getElementById('lightbox-img').src = ''; }, 300);
+        };
+
+        // Fungsi navigasi lightbox
+        window.navigateLightbox = function(direction) {
+            if (galleryImages.length <= 1 || currentImageIndex === -1) return;
+
+            // Hitung index baru, loop kembali jika melewati batas
+            currentImageIndex += direction;
+            
+            if (currentImageIndex >= galleryImages.length) {
+                currentImageIndex = 0; // Balik ke awal
+            } else if (currentImageIndex < 0) {
+                currentImageIndex = galleryImages.length - 1; // Balik ke akhir
+            }
+
+            // Ganti sumber gambar
+            const newImageSrc = galleryImages[currentImageIndex];
+            document.getElementById('lightbox-img').src = newImageSrc;
         };
 
         window.openDashboard = function() {
@@ -1199,17 +1893,36 @@
             updateAuthUI();
         };
 
+        // Fungsi untuk menggeser galeri liburan
+        window.scrollSliderLiburan = function(arah) {
+            const slider = document.getElementById('slider-liburan');
+            const jarakGeser = window.innerWidth < 640 ? window.innerWidth * 0.85 : 450; 
+            if(arah === 'kiri') {
+                slider.scrollBy({ left: -jarakGeser, behavior: 'smooth' });
+            } else {
+                slider.scrollBy({ left: jarakGeser, behavior: 'smooth' });
+            }
+        };
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                if(!document.getElementById('cp-modal').classList.contains('hidden')) window.closeChangePassword();
+                if(!document.getElementById('kts-modal').classList.contains('hidden')) window.closeKTS();
+                else if(!document.getElementById('brosur-modal').classList.contains('hidden')) window.closeBrosur();
+                else if(!document.getElementById('cp-modal').classList.contains('hidden')) window.closeChangePassword();
                 else if(!document.getElementById('logout-modal').classList.contains('hidden')) window.cancelLogout();
                 else if(!document.getElementById('dashboard-modal').classList.contains('hidden')) window.closeDashboard();
                 else if(!document.getElementById('login-modal').classList.contains('hidden')) window.closeLogin();
+                else if(!document.getElementById('lightbox-modal').classList.contains('hidden')) window.closeLightbox();
+            }
+            
+            // Navigasi Lightbox dengan keyboard (Kiri / Kanan)
+            if (!document.getElementById('lightbox-modal').classList.contains('hidden')) {
+                if (e.key === 'ArrowLeft') window.navigateLightbox(-1);
+                if (e.key === 'ArrowRight') window.navigateLightbox(1);
             }
         });
 
 
-        // ==================== LOGIKA FITUR TANYA YUK ====================
         let isChatOpen = false;
         
         const timeStartElement = document.getElementById('time-start');
@@ -1286,23 +1999,17 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // DATABASE JAWABAN SUPER LENGKAP & MENARIK
         function generateBotResponse(input) {
             const text = input.toLowerCase();
             
-            // --- Cek Pertanyaan Identitas (Siapa Saya) ---
             if (text.includes('siapa saya') || text.includes('biodata saya') || text.includes('profil saya') || text.includes('nama saya')) {
-                // Jika belum login
                 if (!loggedInSantri) {
                     return `Hmm... sepertinya kita belum berkenalan nih! 🤭<br><br>
                     <b>Silakan Login Santri dulu ya...</b> (Anda bisa klik ikon Profil di sudut kanan atas layar).<br><br>
                     Agar saya bisa terhubung ke buku induk dan menceritakan dengan jelas siapa diri Anda, dari mana asal Anda, dan doa siapa yang selama ini menyertai Anda di pondok. Ditunggu ya login-nya! 😉`;
                 } 
-                // Jika sudah login
                 else {
                     const data = registeredUsers[loggedInSantri];
-                    
-                    // Fungsi untuk merubah format menjadi Huruf Kapital di setiap awal kata (Title Case)
                     const toTitleCase = (str) => str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                     
                     const nama = toTitleCase(loggedInSantri);
@@ -1311,7 +2018,6 @@
                     const alamat = toTitleCase(data.alamat);
                     const ortu = toTitleCase(data.ortu);
                     
-                    // Memisahkan tempat dan tanggal lahir
                     let tempatLahir = data.ttl;
                     let tanggalLahir = "";
                     if(data.ttl.includes(',')) {
@@ -1330,7 +2036,6 @@
                 }
             }
 
-            // --- Cek Profil Pengasuh & Istri ---
             if (text.includes('pengasuh') || text.includes('ustadz') || text.includes('anam') || text.includes('kyai') || text.includes('istri') || text.includes('mardiyah')) {
                 return `<b>Profil Pengasuh PPTQ Al-Falah:</b><br><br>
                 Pengasuh pondok pesantren ini adalah <b>Ustadz Khoirul Anam</b>. Beliau lahir di kota Malang, tepatnya di daerah Kasin. <br><br>
@@ -1343,12 +2048,10 @@
                 Alhamdulillah, Ustadz Khoirul Anam dan Ustadzah Mardiyah telah dikaruniai 3 orang anak, yang kesemuanya adalah perempuan. 😊`;
             }
             
-            // --- Cek Sapaan ---
             if (text.includes('assalamu') || text.includes('halo') || text.includes('hai') || text.includes('ping') || text.includes('p')) {
                 return `Wa'alaikumsalam wr. wb. 😊 Ahlan wa sahlan!<br><br>Saya adalah Asisten Virtual <b>PPTQ Al-Falah</b>. Ada yang bisa saya bantu terkait:<br><br>• 💰 <b>Biaya pendaftaran</b><br>• 🏢 <b>Fasilitas pondok</b><br>• 📚 <b>Program pendidikan</b><br>• 📅 <b>Jadwal kegiatan</b><br>• 👤 <b>Profil pengasuh</b><br>• ✨ <b>Motivasi</b><br>• ❓ <b>"Siapa saya?"</b><br><br>Silakan ketik pertanyaan Anda!`;
             }
             
-            // --- Cek Biaya ---
             if (text.includes('biaya') || text.includes('bayar') || text.includes('spp') || text.includes('syahriah') || text.includes('uang')) {
                 return `<b>💰 Rincian Biaya PPTQ Al-Falah:</b><br><br>
                 • <b>Pendaftaran Awal:</b> Rp. 100.000<br>
@@ -1356,7 +2059,6 @@
                 <i>Catatan Penting:</i> Biaya syahriah bulanan tersebut sudah sangat terjangkau karena telah mencakup fasilitas asrama, makan 3x sehari, listrik, air bersih, dan akses WiFi pondok. (Belum termasuk keperluan pribadi santri dan transportasi luar pondok).`;
             }
             
-            // --- Cek Fasilitas ---
             if (text.includes('fasilitas') || text.includes('dapat apa') || text.includes('makan') || text.includes('asrama') || text.includes('wifi')) {
                 return `<b>🏢 Fasilitas di PPTQ Al-Falah:</b><br><br>
                 Untuk menunjang kenyamanan santri selama menghafal dan belajar, kami menyediakan fasilitas:<br><br>
@@ -1367,7 +2069,6 @@
                 Semua fasilitas di atas sudah termasuk di dalam biaya syahriah bulanan.`;
             }
 
-            // --- Cek Program / Pendidikan ---
             if (text.includes('program') || text.includes('belajar') || text.includes('kegiatan') || text.includes('unggulan') || text.includes('kitab') || text.includes('pendidikan')) {
                 return `<b>📚 Program Pendidikan Unggulan:</b><br><br>
                 Pondok pesantren kami mengedepankan pendidikan berbasis Ahlussunnah wal Jama'ah melalui program:<br><br>
@@ -1376,7 +2077,6 @@
                 3. 🎵 <b>Seni Al Banjari:</b> Pelatihan hadrah dan rutinan pembacaan sholawat Diba' untuk memupuk rasa cinta kepada Rasulullah ﷺ.`;
             }
 
-            // --- Cek Jadwal ---
             if (text.includes('jadwal') || text.includes('kapan') || text.includes('jam') || text.includes('rutinitas')) {
                 return `<b>📅 Ringkasan Jadwal Kegiatan Santri:</b><br><br>
                 • <b>Senin - Jum'at:</b> Setoran hafalan Al-Qur'an<br>
@@ -1389,21 +2089,18 @@
                 <i>Catatan: Jadwal kajian malam umumnya dilaksanakan setelah ibadah sholat Maghrib.</i>`;
             }
 
-            // --- Cek Lokasi / Alamat ---
             if (text.includes('alamat') || text.includes('lokasi') || text.includes('dimana') || text.includes('tempat') || text.includes('rute')) {
                 return `<b>📍 Lokasi PPTQ Al-Falah:</b><br><br>
                 Pondok pesantren kami berlokasi di daerah <b>Babaan, Ngasem, Kab. Malang</b>. Lingkungan pondok sangat asri, bersih, dan menenangkan karena dikelilingi oleh suasana khas pedesaan.<br><br>
                 🗺️ Anda bisa mengklik tombol <b>'Lokasi Maps'</b> (ikon pin map warna biru) di menu sebelah pojok kanan bawah layar untuk langsung membuka rute Google Maps menuju pondok kami.`;
             }
 
-            // --- Cek Aturan HP/Laptop ---
             if (text.includes('hp') || text.includes('laptop') || text.includes('handphone') || text.includes('gadget') || text.includes('bawa')) {
                 return `<b>📱 Aturan Penggunaan Gadget (HP/Laptop):</b><br><br>
                 Karena fokus utama santri di pondok adalah kelancaran menghafal Al-Qur'an, aturan membawa barang elektronik disesuaikan dengan <b>kebijakan dan kebijaksanaan pengurus</b>.<br><br>
                 Bagi santri yang juga sedang menempuh pendidikan formal luar (sekolah/kuliah), pengurus biasanya memberikan kelonggaran waktu khusus untuk mengakses gadget guna mengerjakan tugas akademik, namun tetap dalam pemantauan.`;
             }
 
-            // --- Cek Syarat / Kuota ---
             if (text.includes('syarat') || text.includes('siapa') || text.includes('putra') || text.includes('putri') || text.includes('terima') || text.includes('umur')) {
                 return `<b>👥 Penerimaan Santri Baru:</b><br><br>
                 Alhamdulillah, PPTQ Al-Falah senantiasa terbuka untuk menerima <b>Santri Putra maupun Santri Putri</b>.<br><br>
@@ -1411,15 +2108,13 @@
                 Untuk persyaratan berkas administrasi dan batasan usia pendaftaran, mohon hubungi admin kami secara langsung ya.`;
             }
 
-            // --- Cek Pendaftaran/Kontak ---
             if (text.includes('daftar') || text.includes('registrasi') || text.includes('kontak') || text.includes('wa') || text.includes('hubungi') || text.includes('nomer') || text.includes('nomor')) {
                 return `<b>📞 Informasi Pendaftaran & Kontak:</b><br><br>
                 Untuk melakukan pendaftaran atau menanyakan informasi lebih spesifik, silakan hubungi pengurus kami melalui:<br><br>
                 📱 <b>WhatsApp Resmi:</b> <a href="https://wa.me/6282335464928" target="_blank" class="text-emerald-700 dark:text-emerald-400 font-bold underline">082335464928</a><br>
-                📥 <b>Brosur Pendaftaran:</b> Anda bisa mengunduh brosur lengkap dengan mengklik tombol "Lihat Brosur Lengkap" di bagian paling bawah website ini.`;
+                📥 <b>Brosur Pendaftaran:</b> Anda bisa melihat brosur dengan mengklik tombol "Lihat Brosur Lengkap" di bagian bawah website.`;
             }
 
-            // --- Cek Motivasi ---
             if (text.includes('motivasi') || text.includes('semangat') || text.includes('capek') || text.includes('menyerah') || text.includes('nyerah') || text.includes('quotes') || text.includes('kata mutiara')) {
                 return `<b>✨ Sedikit Motivasi untuk Pejuang Ilmu:</b><br><br>
                 <i>"Selama niatmu benar, langkahmu tak akan pernah sia-sia."</i><br><br>
@@ -1428,7 +2123,6 @@
                 Tetap semangat, ikhlas, dan istiqomah ya! Allah sebaik-baiknya tempat bersandar. ✊😊`;
             }
 
-            // --- JAWABAN DEFAULT (Jika tidak ada kecocokan) ---
             return `Mohon maaf, saya kurang memahami pertanyaan tersebut. 🙏<br><br>
             Agar saya dapat menjawab dengan tepat, silakan gunakan kata kunci seperti di bawah ini:<br>
             • <b>"Siapa saya?"</b><br>
@@ -1443,5 +2137,20 @@
 
         lucide.createIcons();
     </script>
+    
+    <!-- Script tambahan untuk menangani gambar yang gagal dimuat dalam mode Pratinjau (Preview) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll('img').forEach(img => {
+                img.addEventListener('error', function() {
+                    if (!this.src.includes('placehold.co')) {
+                        this.src = 'https://placehold.co/600x400/e2e8f0/1e293b?text=Gambar+Tidak+Ditemukan';
+                        this.classList.remove('object-cover', 'object-contain');
+                        this.classList.add('object-cover');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
-                    </html>
+    </html>
