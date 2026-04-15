@@ -12,7 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tambahan Library untuk mengunduh HTML menjadi Gambar (KTS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <script>
@@ -65,7 +64,7 @@
         .wa-dot-2 { animation-delay: -0.16s; }
         .wa-dot-3 { animation-delay: 0s; }
 
-        /* Animasi Background Slideshow (8 Foto x 5 detik = 40 detik total) */
+        /* Animasi Background Slideshow */
         @keyframes bgSlideshow {
             0% { opacity: 0; transform: scale(1); }
             5% { opacity: 1; transform: scale(1.02); } 
@@ -82,7 +81,7 @@
             inset: 0;
         }
 
-        /* Styling Khusus KTS (Depan & Belakang) */
+        /* Styling Khusus KTS */
         .kts-front-bg {
             background-color: #ffffff;
             background-image: 
@@ -97,21 +96,17 @@
                 radial-gradient(circle at 0% 100%, rgba(16, 185, 129, 0.5) 0, transparent 50%),
                 repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 10px);
         }
-        
-        /* Background Foto KTS - Efek Abu-abu Muda yang Serasi */
         .kts-photo-bg {
-            background-color: #f1f5f9; /* Slate-100 dari Tailwind */
+            background-color: #f1f5f9;
             background-image: 
                 radial-gradient(circle at center, rgba(16, 185, 129, 0.03) 0%, transparent 60%),
                 linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(241, 245, 249, 1));
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
         }
 
-        /* Menyembunyikan scrollbar untuk fitur geser (slider) */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Fitur Lightbox Navigation */
         .lightbox-nav-btn {
             position: absolute;
             top: 50%;
@@ -128,11 +123,9 @@
             cursor: pointer;
             backdrop-filter: blur(4px);
             transition: background-color 0.3s;
-            z-index: 130;
+            z-index: 210;
         }
-        .lightbox-nav-btn:hover {
-            background-color: rgba(255, 255, 255, 0.4);
-        }
+        .lightbox-nav-btn:hover { background-color: rgba(255, 255, 255, 0.4); }
         .lightbox-prev { left: 16px; }
         .lightbox-next { right: 16px; }
     </style>
@@ -172,20 +165,17 @@
     </div>
 
     <!-- Modal Gambar Penuh -->
-    <div id="lightbox-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4 sm:p-6">
+    <div id="lightbox-modal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 sm:p-6">
         <div class="absolute inset-0 bg-emerald-950/90 backdrop-blur-md cursor-pointer" onclick="closeLightbox()"></div>
+        
+        <!-- Tombol Geser (Ditampilkan hanya di desktop/layar besar pakai 'hidden sm:flex') -->
+        <button id="lightbox-btn-prev" onclick="changeLightboxImage(-1); event.stopPropagation();" class="lightbox-nav-btn lightbox-prev hidden sm:flex z-30"><i data-lucide="chevron-left" class="w-8 h-8"></i></button>
+        <button id="lightbox-btn-next" onclick="changeLightboxImage(1); event.stopPropagation();" class="lightbox-nav-btn lightbox-next hidden sm:flex z-30"><i data-lucide="chevron-right" class="w-8 h-8"></i></button>
+        
         <div class="relative z-20 flex flex-col items-center animate-in max-w-5xl w-full">
             <button onclick="closeLightbox()" class="absolute -top-12 right-0 md:-right-12 p-2 bg-white/20 hover:bg-white/40 text-white rounded-full transition-colors shadow-lg backdrop-blur-md"><i data-lucide="x" class="w-7 h-7"></i></button>
             <img id="lightbox-img" src="" alt="Tampilan Penuh" class="w-full max-h-[85vh] object-contain drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] rounded-xl bg-transparent hd-image" />
         </div>
-        
-        <!-- Tombol Navigasi Lightbox -->
-        <button id="lightbox-btn-prev" class="lightbox-nav-btn lightbox-prev hidden" onclick="navigateLightbox(-1)" aria-label="Gambar Sebelumnya">
-            <i data-lucide="chevron-left" class="w-8 h-8"></i>
-        </button>
-        <button id="lightbox-btn-next" class="lightbox-nav-btn lightbox-next hidden" onclick="navigateLightbox(1)" aria-label="Gambar Selanjutnya">
-            <i data-lucide="chevron-right" class="w-8 h-8"></i>
-        </button>
     </div>
 
     <!-- Modal Brosur -->
@@ -198,20 +188,20 @@
             </div>
             
             <div class="p-4 sm:p-6 overflow-y-auto flex flex-col gap-8 flex-1 bg-emerald-50 dark:bg-emerald-950">
-                <!-- Brosur Halaman 1 -->
                 <div class="flex flex-col items-center gap-4 bg-white dark:bg-emerald-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 transition-all hover:shadow-md">
                     <h4 class="font-bold text-emerald-900 dark:text-emerald-100 mb-2 border-b-2 border-yellow-400 pb-2">Brosur Halaman 1</h4>
-                    <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776133504/bg31_vtz5ut.jpg" class="w-full max-w-2xl h-auto rounded-xl shadow-md hd-image cursor-pointer hover:scale-[1.01] transition-transform" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776133504/bg31_vtz5ut.jpg')" alt="Brosur Halaman 1" loading="lazy" decoding="async">
+                    <!-- Foto Brosur tidak disetting pop-up zoom -->
+                    <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776133504/bg31_vtz5ut.jpg" class="w-full max-w-2xl h-auto rounded-xl shadow-md hd-image transition-transform" alt="Brosur Halaman 1" loading="lazy" decoding="async">
                     <a href="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776133504/bg31_vtz5ut.jpg" download="Brosur_PPTQ_Al-Falah_1_HD.jpg" class="bg-yellow-400 hover:bg-yellow-500 text-emerald-950 font-bold py-3 px-6 rounded-xl flex items-center gap-2 transition-colors w-full sm:w-auto justify-center shadow-md mt-2">
                         <i data-lucide="download" class="w-5 h-5"></i> Download Kualitas HD
                     </a>
                 </div>
 
-                <!-- Brosur Halaman 2 -->
                 <div class="flex flex-col items-center gap-4 bg-white dark:bg-emerald-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 transition-all hover:shadow-md">
                     <h4 class="font-bold text-emerald-900 dark:text-emerald-100 mb-2 border-b-2 border-yellow-400 pb-2">Brosur Halaman 2</h4>
-                    <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776133503/bg30_x2nz9b.jpg" class="w-full max-w-2xl h-auto rounded-xl shadow-md hd-image cursor-pointer hover:scale-[1.01] transition-transform" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776133503/bg30_x2nz9b.jpg')" alt="Brosur Halaman 2" loading="lazy" decoding="async">
-                    <a href="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776133503/bg30_x2nz9b.jpg" download="Brosur_PPTQ_Al-Falah_2_HD.jpg" class="bg-yellow-400 hover:bg-yellow-500 text-emerald-950 font-bold py-3 px-6 rounded-xl flex items-center gap-2 transition-colors w-full sm:w-auto justify-center shadow-md mt-2">
+                    <!-- Foto Brosur tidak disetting pop-up zoom -->
+                    <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776270054/61746_jwljme.png" class="w-full max-w-2xl h-auto rounded-xl shadow-md hd-image transition-transform" alt="Brosur Halaman 2" loading="lazy" decoding="async">
+                    <a href="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776270054/61746_jwljme.png" download="Brosur_PPTQ_Al-Falah_2_HD.png" class="bg-yellow-400 hover:bg-yellow-500 text-emerald-950 font-bold py-3 px-6 rounded-xl flex items-center gap-2 transition-colors w-full sm:w-auto justify-center shadow-md mt-2">
                         <i data-lucide="download" class="w-5 h-5"></i> Download Kualitas HD
                     </a>
                 </div>
@@ -281,8 +271,8 @@
             <div class="px-6 py-6 bg-gradient-to-br from-emerald-700 to-emerald-600 text-white flex justify-between items-center relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
                 <div class="relative z-10 flex items-center gap-4">
-                    <!-- Dash Avatar -->
-                    <div id="dash-avatar" class="w-14 h-14 sm:w-16 sm:h-16 border-2 border-emerald-300 rounded-full flex items-center justify-center shadow-lg overflow-hidden shrink-0 bg-white">
+                    <!-- Foto Profil bisa di-zoom, set menjadi standalone (true) -->
+                    <div id="dash-avatar" class="w-14 h-14 sm:w-16 sm:h-16 border-2 border-emerald-300 rounded-full flex items-center justify-center shadow-lg overflow-hidden shrink-0 bg-white cursor-pointer hover:scale-105 transition-transform" onclick="openLightbox(this.querySelector('img').src, true)">
                         <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128033/bg25_ttkjux.png" class="w-full h-full object-cover hd-image" alt="Foto Profil Santri" loading="lazy" decoding="async">
                     </div>
                     <div>
@@ -356,15 +346,13 @@
 
             <div class="w-full bg-emerald-50 dark:bg-emerald-950 p-4 sm:p-6 flex flex-col items-center overflow-x-auto rounded-b-3xl shadow-2xl border border-t-0 border-emerald-100 dark:border-emerald-800">
                 
-                <!-- Area KTS (Untuk Di-Export) -->
                 <div id="kts-export-area" class="flex flex-col gap-6 p-4 bg-white rounded-xl mx-auto w-fit shadow-sm">
-                    
                     <!-- KTS DEPAN -->
                     <div class="relative w-[420px] h-[265px] min-w-[420px] min-h-[265px] shrink-0 rounded-xl shadow-[0_10px_20px_rgba(0,0,0,0.15)] overflow-hidden border border-emerald-200 hd-image flex flex-col kts-front-bg" style="box-sizing: border-box;">
-                        
                         <!-- Header Hijau -->
                         <div class="bg-gradient-to-r from-emerald-700 to-emerald-500 py-3 px-4 flex items-center gap-3 border-b border-emerald-400/30 shrink-0">
-                            <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="w-10 h-10 min-w-[40px] object-contain bg-white rounded-full p-0.5 shadow-sm shrink-0">
+                            <!-- Logo Header KTS bisa di-zoom -->
+                            <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="w-10 h-10 min-w-[40px] object-contain bg-white rounded-full p-0.5 shadow-sm shrink-0 cursor-pointer hover:scale-110 transition-transform" onclick="openLightbox(this.src, true)">
                             <div class="text-white">
                                 <h2 class="font-black text-[17px] leading-tight drop-shadow-md tracking-wide m-0">KARTU TANDA SANTRI</h2>
                                 <p class="font-bold text-[10px] leading-tight text-emerald-100 drop-shadow-md m-0">PPTQ AL-FALAH BABAAN NGASEM MALANG</p>
@@ -373,15 +361,13 @@
                         
                         <!-- Body KTS -->
                         <div class="flex-1 flex items-center px-4 py-2 gap-4 relative overflow-hidden">
-                            <!-- Watermark Background -->
                             <div class="absolute -right-12 -bottom-12 w-40 h-40 opacity-5 rotate-12 pointer-events-none">
                                 <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="w-full h-full object-contain grayscale">
                             </div>
                             
-                            <!-- Foto Santri -->
+                            <!-- Foto Santri (KTS) tidak disetting zoom sesuai instruksi -->
                             <div class="w-[95px] h-[126px] min-w-[95px] min-h-[126px] shrink-0 rounded-lg border-2 border-emerald-500 shadow-[0_4px_10px_rgba(16,185,129,0.3)] overflow-hidden flex items-center justify-center p-0 z-10 relative bg-white">
                                 <img id="kts-foto-profil" src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128033/bg25_ttkjux.png" crossorigin="anonymous" class="w-full h-full object-contain object-center drop-shadow-md hd-image relative z-10">
-                                <!-- Garis hiasan kecil di foto -->
                                 <div class="absolute bottom-0 left-0 w-full h-1.5 bg-emerald-500 z-20"></div>
                             </div>
                             
@@ -423,7 +409,6 @@
 
                     <!-- KTS BELAKANG -->
                     <div class="relative w-[420px] h-[265px] min-w-[420px] min-h-[265px] shrink-0 rounded-xl shadow-[0_10px_20px_rgba(0,0,0,0.15)] overflow-hidden border border-emerald-800 hd-image flex flex-col items-center justify-center p-5 text-center text-white kts-back-bg" style="box-sizing: border-box;">
-                        
                         <!-- Logo Watermark Tengah -->
                         <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 object-contain opacity-[0.07] pointer-events-none">
 
@@ -443,7 +428,7 @@
                             <p class="text-[12px] leading-relaxed font-medium text-emerald-50 m-0">"Menyelenggarakan kegiatan pendidikan tahfidzul qur'an dan pembelajaran kitab kitab gundul berdasarkan ajaran ahlussunnah wal jama'ah."</p>
                         </div>
                     </div>
-                </div> <!-- End KTS Export Area -->
+                </div>
 
                 <div class="mt-6 w-full max-w-sm">
                     <button onclick="downloadKTS()" id="btn-download-kts" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-emerald-500/30 transform hover:-translate-y-1">
@@ -536,10 +521,11 @@
         <div class="container mx-auto px-4 md:px-8">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-3">
+                    <!-- Logo Utama bisa di-zoom (berdiri sendiri) -->
                     <img 
                         src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128015/bg26_l8rws5.png" 
                         alt="Logo PPTQ Al-Falah" 
-                        onclick="openLightbox(this.src)"
+                        onclick="openLightbox(this.src, true)"
                         class="h-12 md:h-16 w-auto object-contain shrink-0 transition-transform duration-300 hover:scale-105 drop-shadow-md cursor-pointer hd-image"
                         title="Klik untuk memperbesar logo"
                     />
@@ -637,7 +623,7 @@
         </div>
     </section>
 
-    <!-- Profil Baru dengan Tata Letak bg16, bg5 (Visi), bg17 (Misi) -->
+    <!-- Profil Pondok -->
     <section id="profil" class="py-24 bg-white dark:bg-emerald-950 transition-colors duration-300 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-emerald-950 to-transparent opacity-10 dark:opacity-50"></div>
         <div class="container mx-auto px-4 md:px-8 relative z-10">
@@ -654,7 +640,8 @@
                 </div>
                 <div class="lg:col-span-5 order-1 lg:order-2 relative">
                     <div class="absolute -inset-4 bg-gradient-to-tr from-emerald-100 to-yellow-100 dark:from-emerald-900/50 dark:to-yellow-900/20 rounded-3xl transform rotate-3 scale-105 z-0"></div>
-                    <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127970/bg16_z5uoxv.png" alt="Profil PPTQ Al-Falah" class="relative z-10 w-full rounded-2xl shadow-2xl object-cover h-[250px] sm:h-[350px] md:h-[400px] hover:scale-[1.02] transition-transform duration-500 cursor-pointer border-4 border-white dark:border-emerald-800 hd-image" onclick="openLightbox(this.src)" loading="lazy" decoding="async">
+                    <!-- Foto Profil disetting standalone (true) -->
+                    <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127970/bg16_z5uoxv.png" alt="Profil PPTQ Al-Falah" class="relative z-10 w-full rounded-2xl shadow-2xl object-cover h-[250px] sm:h-[350px] md:h-[400px] hover:scale-[1.02] transition-transform duration-500 cursor-pointer border-4 border-white dark:border-emerald-800 hd-image" onclick="openLightbox(this.src, true)">
                 </div>
             </div>
 
@@ -662,7 +649,8 @@
             <div class="grid md:grid-cols-2 gap-8 sm:gap-12 max-w-6xl mx-auto">
                 <div class="bg-white dark:bg-emerald-900/40 rounded-3xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] dark:shadow-none border border-emerald-100 dark:border-emerald-800 transition-all hover:-translate-y-2 group overflow-hidden flex flex-col">
                     <div class="relative h-56 sm:h-64 w-full overflow-hidden">
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127946/bg5_qgegig.jpg" alt="Visi" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src)" loading="lazy" decoding="async">
+                        <!-- Foto Visi disetting standalone (true) -->
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127946/bg5_qgegig.jpg" alt="Visi" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src, true)">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
                         <h4 class="absolute bottom-4 left-6 font-extrabold text-3xl text-white drop-shadow-md flex items-center gap-3">
                             <i data-lucide="target" class="w-8 h-8 text-emerald-400"></i> VISI
@@ -675,7 +663,8 @@
 
                 <div class="bg-white dark:bg-emerald-900/40 rounded-3xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] dark:shadow-none border border-emerald-100 dark:border-emerald-800 transition-all hover:-translate-y-2 group overflow-hidden flex flex-col">
                     <div class="relative h-56 sm:h-64 w-full overflow-hidden">
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127978/bg17_rwwcfe.jpg" alt="Misi" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src)" loading="lazy" decoding="async">
+                        <!-- Foto Misi disetting standalone (true) -->
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127978/bg17_rwwcfe.jpg" alt="Misi" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src, true)">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
                         <h4 class="absolute bottom-4 left-6 font-extrabold text-3xl text-white drop-shadow-md flex items-center gap-3">
                             <i data-lucide="compass" class="w-8 h-8 text-yellow-400"></i> MISI
@@ -690,6 +679,7 @@
         </div>
     </section>
 
+    <!-- Program Unggulan -->
     <section id="program" class="py-20 bg-emerald-50/50 dark:bg-emerald-900/30 relative transition-colors duration-300 border-y border-emerald-100 dark:border-emerald-900/50">
         <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-600/5 dark:bg-emerald-500/10 rounded-full blur-3xl"></div>
         <div class="absolute bottom-0 left-0 w-64 h-64 bg-yellow-400/10 dark:bg-yellow-500/10 rounded-full blur-3xl"></div>
@@ -700,11 +690,11 @@
                 <div class="w-24 h-1.5 bg-yellow-400 mx-auto mt-6 rounded-full shadow-sm"></div>
             </div>
             
-            <!-- Grid diperbaiki menjadi 3 kolom yang simetris -->
             <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 <div class="bg-white dark:bg-emerald-900 rounded-3xl shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border border-emerald-100 dark:border-emerald-800 group text-center flex flex-col overflow-hidden hover:-translate-y-2">
                     <div class="relative h-48 sm:h-56 w-full overflow-hidden shrink-0">
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128152/tahfidz-1_i3dqqz.jpg" alt="Kegiatan Tahfidzul Qur'an" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src)" loading="lazy" decoding="async">
+                        <!-- Foto Program disetting standalone (true) -->
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128152/tahfidz-1_i3dqqz.jpg" alt="Kegiatan Tahfidzul Qur'an" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src, true)">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
                         <div class="absolute bottom-4 left-0 w-full flex justify-center">
                             <div class="bg-emerald-600 text-white p-3 rounded-2xl shadow-lg border-2 border-white/20 backdrop-blur-md">
@@ -720,7 +710,8 @@
 
                 <div class="bg-white dark:bg-emerald-900 rounded-3xl shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border border-emerald-100 dark:border-emerald-800 group text-center flex flex-col overflow-hidden hover:-translate-y-2">
                     <div class="relative h-48 sm:h-56 w-full overflow-hidden shrink-0">
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127974/bg28_kmnvvr.jpg" alt="Kajian Kitab" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src)" loading="lazy" decoding="async">
+                        <!-- Foto Program disetting standalone (true) -->
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127974/bg28_kmnvvr.jpg" alt="Kajian Kitab" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src, true)">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
                         <div class="absolute bottom-4 left-0 w-full flex justify-center">
                             <div class="bg-emerald-600 text-white p-3 rounded-2xl shadow-lg border-2 border-white/20 backdrop-blur-md">
@@ -736,7 +727,8 @@
 
                 <div class="bg-white dark:bg-emerald-900 rounded-3xl shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border border-emerald-100 dark:border-emerald-800 group text-center flex flex-col overflow-hidden hover:-translate-y-2">
                     <div class="relative h-48 sm:h-56 w-full overflow-hidden shrink-0">
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127982/bg29_lhflcb.jpg" alt="Al Banjari" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src)" loading="lazy" decoding="async">
+                        <!-- Foto Program disetting standalone (true) -->
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127982/bg29_lhflcb.jpg" alt="Al Banjari" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src, true)">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
                         <div class="absolute bottom-4 left-0 w-full flex justify-center">
                             <div class="bg-emerald-600 text-white p-3 rounded-2xl shadow-lg border-2 border-white/20 backdrop-blur-md">
@@ -753,24 +745,34 @@
         </div>
     </section>
 
-    <!-- Kegiatan & Fasilitas -->
+    <!-- Kegiatan, Fasilitas & BIAYA PENDAFTARAN -->
     <section id="kegiatan" class="py-20 bg-emerald-600 dark:bg-emerald-900 text-white relative overflow-hidden transition-colors duration-300">
         <div class="absolute inset-0 opacity-10 dark:opacity-5" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
         <div class="container mx-auto px-4 md:px-8 relative z-10">
             <div class="grid lg:grid-cols-2 gap-16 items-start">
+                
                 <div class="space-y-12">
+                    
                     <div class="bg-emerald-700/80 dark:bg-emerald-950/80 backdrop-blur-md p-5 sm:p-8 md:p-10 rounded-3xl border border-emerald-400/30 shadow-2xl relative overflow-hidden transition-colors duration-300 hover:border-yellow-400/50 transition-all">
                         <div class="absolute -top-10 -right-10 w-32 h-32 bg-yellow-400/30 rounded-full blur-3xl"></div>
                         <h3 class="text-xl sm:text-2xl font-bold text-yellow-300 mb-6 sm:mb-8 flex items-center gap-3 relative z-10 drop-shadow-md">
                             <span class="bg-yellow-400 text-emerald-900 p-2 sm:p-2.5 rounded-xl shadow-lg"><i data-lucide="wallet" class="w-5 h-5 sm:w-6 sm:h-6"></i></span> 
                             BIAYA PENDAFTARAN
                         </h3>
+                        
                         <div class="space-y-4 sm:space-y-6 relative z-10 w-full overflow-hidden">
                             <div class="flex items-end justify-between group w-full">
                                 <div class="flex items-center gap-2 sm:gap-3 shrink-0"><div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-yellow-400 group-hover:scale-150 transition-transform"></div><span class="font-medium text-sm sm:text-lg text-emerald-50 tracking-wide">Pendaftaran Awal</span></div>
                                 <div class="flex-grow border-b-2 border-dotted border-emerald-400/60 dark:border-emerald-700/60 mx-2 sm:mx-4 mb-1 sm:mb-1.5 opacity-70 min-w-[10px]"></div>
                                 <div class="font-bold text-base sm:text-2xl text-white shrink-0 drop-shadow-md whitespace-nowrap"><span class="text-yellow-300 text-xs sm:text-sm font-semibold mr-1 sm:mr-1.5">Rp.</span>100.000</div>
                             </div>
+                            
+                            <div class="flex items-end justify-between group w-full">
+                                <div class="flex items-center gap-2 sm:gap-3 shrink-0"><div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-yellow-400 group-hover:scale-150 transition-transform"></div><span class="font-medium text-sm sm:text-lg text-emerald-50 tracking-wide">Infaq Pembangunan</span></div>
+                                <div class="flex-grow border-b-2 border-dotted border-emerald-400/60 dark:border-emerald-700/60 mx-2 sm:mx-4 mb-1 sm:mb-1.5 opacity-70 min-w-[10px]"></div>
+                                <div class="font-bold text-base sm:text-2xl text-white shrink-0 drop-shadow-md whitespace-nowrap"><span class="text-yellow-300 text-xs sm:text-sm font-semibold mr-1 sm:mr-1.5">Rp.</span>200.000</div>
+                            </div>
+
                             <div class="flex items-end justify-between group w-full">
                                 <div class="flex items-center gap-2 sm:gap-3 shrink-0"><div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-yellow-400 group-hover:scale-150 transition-transform"></div><span class="font-medium text-sm sm:text-lg text-emerald-50 tracking-wide">Syahriah Bulanan</span></div>
                                 <div class="flex-grow border-b-2 border-dotted border-emerald-400/60 dark:border-emerald-700/60 mx-2 sm:mx-4 mb-1 sm:mb-1.5 opacity-70 min-w-[10px]"></div>
@@ -867,7 +869,7 @@
         </div>
     </section>
 
-    <!-- Menu Baru: Galeri Kegiatan Santri -->
+    <!-- Galeri Kegiatan Santri -->
     <section id="galeri" class="py-20 bg-white dark:bg-emerald-950 transition-colors duration-300 relative">
         <div class="container mx-auto px-4 md:px-8">
             <div class="text-center max-w-2xl mx-auto mb-12">
@@ -875,11 +877,11 @@
                 <h3 class="text-3xl md:text-4xl font-extrabold text-emerald-950 dark:text-white transition-colors duration-300">Galeri Kegiatan Santri</h3>
             </div>
 
-            <!-- Kegiatan Sehari-hari (Grid Biasa) -->
             <h4 class="font-bold text-xl text-emerald-800 dark:text-emerald-200 mb-6 border-b border-emerald-100 dark:border-emerald-800 pb-2">Kegiatan Sehari-hari</h4>
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mb-12">
-                <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer shadow-md border border-emerald-50 dark:border-emerald-800" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128152/tahfidz-1_i3dqqz.jpg')">
-                    <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128152/tahfidz-1_i3dqqz.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 hd-image" alt="Setoran Qur'an" loading="lazy" decoding="async">
+                <!-- Tambah argumen 'true' di openLightbox supaya berdiri sendiri / tak bisa digeser -->
+                <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer shadow-md border border-emerald-50 dark:border-emerald-800" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128152/tahfidz-1_i3dqqz.jpg', true)">
+                    <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128152/tahfidz-1_i3dqqz.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 hd-image" alt="Setoran Qur'an">
                     <div class="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div class="absolute bottom-4 left-4 right-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                         <span class="bg-yellow-400 text-emerald-950 text-[10px] font-bold px-2 py-1 rounded-md mb-2 inline-block">1</span>
@@ -887,8 +889,8 @@
                     </div>
                 </div>
                 
-                <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer shadow-md border border-emerald-50 dark:border-emerald-800" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127980/bg20_mwyfki.jpg')">
-                    <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127980/bg20_mwyfki.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 hd-image" alt="Ngaji Kitab" loading="lazy" decoding="async">
+                <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer shadow-md border border-emerald-50 dark:border-emerald-800" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127980/bg20_mwyfki.jpg', true)">
+                    <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127980/bg20_mwyfki.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 hd-image" alt="Ngaji Kitab">
                     <div class="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div class="absolute bottom-4 left-4 right-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                         <span class="bg-yellow-400 text-emerald-950 text-[10px] font-bold px-2 py-1 rounded-md mb-2 inline-block">2</span>
@@ -896,8 +898,8 @@
                     </div>
                 </div>
 
-                <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer shadow-md border border-emerald-50 dark:border-emerald-800" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127940/bg3_rqdw5k.jpg')">
-                    <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127940/bg3_rqdw5k.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 hd-image" alt="Sowan Kyai" loading="lazy" decoding="async">
+                <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer shadow-md border border-emerald-50 dark:border-emerald-800" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127940/bg3_rqdw5k.jpg', true)">
+                    <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127940/bg3_rqdw5k.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 hd-image" alt="Sowan Kyai">
                     <div class="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div class="absolute bottom-4 left-4 right-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                         <span class="bg-yellow-400 text-emerald-950 text-[10px] font-bold px-2 py-1 rounded-md mb-2 inline-block">3</span>
@@ -905,8 +907,8 @@
                     </div>
                 </div>
 
-                <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer shadow-md border border-emerald-50 dark:border-emerald-800" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128025/IMG_0443_moakbs.jpg')">
-                    <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128025/IMG_0443_moakbs.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 hd-image" alt="Masak Bersama" loading="lazy" decoding="async">
+                <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer shadow-md border border-emerald-50 dark:border-emerald-800" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128025/IMG_0443_moakbs.jpg', true)">
+                    <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128025/IMG_0443_moakbs.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 hd-image" alt="Masak Bersama">
                     <div class="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div class="absolute bottom-4 left-4 right-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                         <span class="bg-yellow-400 text-emerald-950 text-[10px] font-bold px-2 py-1 rounded-md mb-2 inline-block">4</span>
@@ -915,178 +917,144 @@
                 </div>
             </div>
 
-            <!-- Kategori Liburan dengan Slider Responsif HD -->
+            <!-- Kategori Liburan dengan 26 Foto -->
             <div class="flex items-center justify-between mb-6 border-b border-emerald-100 dark:border-emerald-800 pb-2">
                 <h4 class="font-bold text-xl text-emerald-800 dark:text-emerald-200">Koleksi Foto Liburan</h4>
-                <div class="flex gap-2">
-                    <button onclick="scrollSliderLiburan('kiri')" class="p-2 rounded-full bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-200 hover:bg-emerald-200 dark:hover:bg-emerald-700 transition-colors shadow-sm" aria-label="Geser ke kiri">
-                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                    </button>
-                    <button onclick="scrollSliderLiburan('kanan')" class="p-2 rounded-full bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-200 hover:bg-emerald-200 dark:hover:bg-emerald-700 transition-colors shadow-sm" aria-label="Geser ke kanan">
-                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                    </button>
-                </div>
+                <!-- Tulisan jumlah foto dihilangkan sesuai permintaan -->
             </div>
 
             <div class="relative w-full overflow-hidden rounded-2xl">
                 <!-- Kontainer Slider -->
                 <div id="slider-liburan" class="flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 hide-scrollbar w-full items-center">
                     
-                    <!-- Kumpulan Item Poto Liburan (1-26) -->
-                    <!-- Item 1 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128153/IMG_0638_spthj3.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128153/IMG_0638_spthj3.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128153/IMG_0638_spthj3.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128153/IMG_0638_spthj3.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 2 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128158/IMG_0586_xwqioi.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128158/IMG_0586_xwqioi.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128158/IMG_0586_xwqioi.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128158/IMG_0586_xwqioi.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 3 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128142/IMG_0595_qzi3ss.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128142/IMG_0595_qzi3ss.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128142/IMG_0595_qzi3ss.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128142/IMG_0595_qzi3ss.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 4 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128140/IMG_0583_ik81pi.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128140/IMG_0583_ik81pi.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128140/IMG_0583_ik81pi.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128140/IMG_0583_ik81pi.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 5 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128138/IMG_0584_zcjhhs.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128138/IMG_0584_zcjhhs.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128138/IMG_0584_zcjhhs.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128138/IMG_0584_zcjhhs.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 6 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128133/IMG_0592_b5olrz.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128133/IMG_0592_b5olrz.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128133/IMG_0592_b5olrz.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128133/IMG_0592_b5olrz.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 7 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128118/IMG_0574_jnzd8s.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128118/IMG_0574_jnzd8s.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128118/IMG_0574_jnzd8s.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128118/IMG_0574_jnzd8s.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 8 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128112/IMG_0535_kzuwel.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128112/IMG_0535_kzuwel.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128112/IMG_0535_kzuwel.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128112/IMG_0535_kzuwel.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 9 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128111/IMG_0540_fzmzeu.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128111/IMG_0540_fzmzeu.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128111/IMG_0540_fzmzeu.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128111/IMG_0540_fzmzeu.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 10 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128109/IMG_0532_bgqaed.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128109/IMG_0532_bgqaed.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128109/IMG_0532_bgqaed.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128109/IMG_0532_bgqaed.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 11 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128109/IMG_0541_ul8zpd.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128109/IMG_0541_ul8zpd.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128109/IMG_0541_ul8zpd.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128109/IMG_0541_ul8zpd.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 12 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128107/IMG_0548_xcjstg.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128107/IMG_0548_xcjstg.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128107/IMG_0548_xcjstg.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128107/IMG_0548_xcjstg.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 13 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128086/IMG_0533_ycinhu.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128086/IMG_0533_ycinhu.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128086/IMG_0533_ycinhu.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128086/IMG_0533_ycinhu.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 14 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128081/IMG_0523_l1bnlr.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128081/IMG_0523_l1bnlr.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128081/IMG_0523_l1bnlr.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128081/IMG_0523_l1bnlr.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 15 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128080/IMG_0524_nhcdw6.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128080/IMG_0524_nhcdw6.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128080/IMG_0524_nhcdw6.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128080/IMG_0524_nhcdw6.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 16 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128081/IMG_0522_bhaubb.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128081/IMG_0522_bhaubb.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128081/IMG_0522_bhaubb.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128081/IMG_0522_bhaubb.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 17 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128072/IMG_0432_kziohw.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128072/IMG_0432_kziohw.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128072/IMG_0432_kziohw.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128072/IMG_0432_kziohw.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 18 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128061/IMG_0520_nxjrc6.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128061/IMG_0520_nxjrc6.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128061/IMG_0520_nxjrc6.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128061/IMG_0520_nxjrc6.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 19 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128060/IMG_0514_nskofj.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128060/IMG_0514_nskofj.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128060/IMG_0514_nskofj.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128060/IMG_0514_nskofj.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 20 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128048/IMG_0509_cgqvvj.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128048/IMG_0509_cgqvvj.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128048/IMG_0509_cgqvvj.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128048/IMG_0509_cgqvvj.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 21 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128041/IMG_0503_xog6gd.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128041/IMG_0503_xog6gd.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128041/IMG_0503_xog6gd.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128041/IMG_0503_xog6gd.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 22 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128026/IMG_0465_kwtdwc.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128026/IMG_0465_kwtdwc.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128026/IMG_0465_kwtdwc.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128026/IMG_0465_kwtdwc.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 23 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128025/IMG_0443_moakbs.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128025/IMG_0443_moakbs.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128025/IMG_0443_moakbs.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128025/IMG_0443_moakbs.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 24 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128006/IMG_0478_kmxkjp.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128006/IMG_0478_kmxkjp.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128006/IMG_0478_kmxkjp.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128006/IMG_0478_kmxkjp.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 25 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127995/IMG_0466_fw9k5i.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127995/IMG_0466_fw9k5i.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127995/IMG_0466_fw9k5i.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127995/IMG_0466_fw9k5i.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
-                    <!-- Item 26 -->
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128027/IMG_0481_y3d5yh.jpg')">
                         <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128027/IMG_0481_y3d5yh.jpg')] bg-cover bg-center blur-xl opacity-50 scale-110 pointer-events-none"></div>
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128027/IMG_0481_y3d5yh.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128027/IMG_0481_y3d5yh.jpg" class="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 hd-image p-2" alt="Liburan Santri">
                     </div>
 
                 </div>
@@ -1095,6 +1063,7 @@
         </div>
     </section>
 
+    <!-- FAQ -->
     <section id="faq" class="py-20 bg-emerald-50/30 dark:bg-emerald-900/10 transition-colors duration-300 border-t border-emerald-100 dark:border-emerald-900/50">
         <div class="container mx-auto px-4 md:px-8 max-w-4xl">
             <div class="text-center mb-12">
@@ -1123,11 +1092,11 @@
                 </div>
                 <div class="bg-white dark:bg-emerald-900 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 overflow-hidden">
                     <button class="w-full px-6 py-5 flex items-center justify-between font-bold text-left text-emerald-900 dark:text-emerald-100 focus:outline-none" onclick="toggleFaq(this)">
-                        <span>Apakah biaya Rp 350.000 sudah termasuk semuanya?</span>
+                        <span>Apakah biaya pendaftaran dan syahriah bulanan sudah termasuk semua fasilitas?</span>
                         <i data-lucide="chevron-down" class="w-5 h-5 text-emerald-500 transition-transform duration-300 faq-icon"></i>
                     </button>
                     <div class="px-6 pb-5 hidden text-slate-600 dark:text-emerald-100/70 border-t border-emerald-50 dark:border-emerald-800/50 pt-4">
-                        Ya, biaya syahriah bulanan sebesar Rp 350.000 sudah mencakup makan 3x sehari, biaya listrik, air, dan fasilitas asrama. Biaya tersebut belum termasuk keperluan pribadi santri, alat tulis, dan transportasi luar pondok.
+                        Ya, biaya syahriah bulanan sebesar Rp 350.000 sudah mencakup makan 3x sehari, biaya listrik, air, dan fasilitas asrama. Biaya tersebut belum termasuk keperluan pribadi santri, alat tulis, dan transportasi luar pondok. Adapun di awal masuk ada tambahan biaya Pendaftaran Awal (Rp 100.000) dan Infaq Pembangunan (Rp 200.000).
                     </div>
                 </div>
                 <div class="bg-white dark:bg-emerald-900 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 overflow-hidden">
@@ -1155,7 +1124,7 @@
                 <img 
                     src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128015/bg26_l8rws5.png" 
                     alt="Logo PPTQ Al-Falah" 
-                    onclick="openLightbox(this.src)"
+                    onclick="openLightbox(this.src, true)"
                     class="h-28 w-auto object-contain shrink-0 transition-transform duration-300 hover:scale-110 drop-shadow-xl cursor-pointer mb-6 hd-image"
                     title="Klik untuk memperbesar logo"
                     loading="lazy"
@@ -1239,7 +1208,6 @@
             </button>
         </div>
     </div>
-
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -1359,7 +1327,16 @@
             "MOCH HAFIDZ IHWANUDDIN": { alamat: "SUKOSARI", ttl: "MALANG, 08 JULI 2002", kelas: "KAKAP", ortu: "IMAM MAHRUS", status: "SANTRI" },
             "JORDAN PRANATA": { alamat: "KALIMANTAN TIMUR", ttl: "SAMARINDA, 24 JUNI 2008", kelas: "XI", ortu: "WINARSEH", status: "SANTRI" },
             "RAVENDRA RISKY ATTALAH": { alamat: "BLIMBING SARI", ttl: "SURABAYA, 01 MEI 2009", kelas: "VIII", ortu: "WIDIH KURNIA WENI MIRTASARI", status: "SANTRI" },
-            "M NABIL AZMI ALMAS": { alamat: "SEBANI, GADINGREJO KOTA PASURUAN", ttl: "MALANG, 01 JANUARI 2007", kelas: "LULUS", ortu: "ABDUL QODIR (ALM)", status: "SANTRI" }
+            "M NABIL AZMI ALMAS": { alamat: "SEBANI, GADINGREJO KOTA PASURUAN", ttl: "MALANG, 01 JANUARI 2007", kelas: "LULUS", ortu: "ABDUL QODIR (ALM)", status: "SANTRI" },
+            "ANISA MEGA RAHMADANI": { alamat: "JLN RAYA PATUKSARI", ttl: "MALANG, 15 SEPTEMBER 2007", kelas: "XI", ortu: "HARIYANTO (ALM)", status: "SANTRI" },
+            "FATHIMATUZZAHRO": { alamat: "JL ARIF MARGONO GANG 8 NO.12 RT 10 RW 7 KEL.KASIN KEC.KLOJEN", ttl: "MALANG, 17 FEBRUARI 2005", kelas: "LULUS", ortu: "M.SJAIFULLAH", status: "SANTRI" },
+            "KHODIJATUL KUBRO": { alamat: "JLN BABAAN RT 3 RW 9", ttl: "MALANG, 01 SEPTEMBER 2014", kelas: "5", ortu: "KHOIRUL ANAM", status: "SANTRI" },
+            "INAROH DUJA": { alamat: "JLN BABAAN RT 3 RW 9", ttl: "MALANG, 15 OKTOBER 2016", kelas: "3", ortu: "KHOIRUL ANAM", status: "SANTRI" },
+            "LATIFATUS SHUBHI MASRUROH": { alamat: "JLN BABAAN RT 3 RW 9", ttl: "MALANG, 10 MEI 2013", kelas: "6", ortu: "MOH TAUFIQ", status: "SANTRI" },
+            "ZUMROTUL FIRDAUSI": { alamat: "BABA'AN RT 02 RW 09", ttl: "MALANG, 15 NOVEMBER 2012", kelas: "7", ortu: "IBRAHIM (ALM)", status: "SANTRI" },
+            "SARAH QUSIYAH": { alamat: "BABA'AN RT 02 RT 09", ttl: "MALANG, 03 AGUSTUS 2014", kelas: "5", ortu: "IBRAHIM (ALM)", status: "SANTRI" },
+            "BUNGA QUBAILUL F": { alamat: "BABA'AN RT 02 RW 09", ttl: "MALANG, 19 APRIL 2006", kelas: "LULUS", ortu: "IBRAHIM (ALM)", status: "SANTRI" },
+            "ASIAFA ARIVATUL NAYSILA": { alamat: "JLN BABAAN RT 2 RW 9", ttl: "MALANG, 18 MEI 2013", kelas: "7", ortu: "MUHAMMAD ASMAUL HUSNAN", status: "SANTRI" }
         };
 
         window.checkAuthStatus = function() {
@@ -1379,19 +1356,17 @@
             }
         }
 
-        // Logic Modal KTS
         window.openKTS = function() {
             if (!loggedInSantri) return;
             const data = registeredUsers[loggedInSantri];
             
-            // Masukkan data Biodata ke dalam elemen KTS (DIJADIKAN HURUF BESAR SEMUA MENGGUNAKAN toUpperCase)
             document.getElementById('kts-nama').textContent = loggedInSantri.toUpperCase();
             document.getElementById('kts-alamat').textContent = data.alamat.toUpperCase();
             document.getElementById('kts-ttl').textContent = data.ttl.toUpperCase();
             document.getElementById('kts-ortu').textContent = data.ortu.toUpperCase();
             document.getElementById('kts-status').textContent = data.status.toUpperCase();
 
-            window.closeDashboard(); // Tutup dashboard, buka KTS
+            window.closeDashboard();
             setTimeout(() => {
                 document.getElementById('kts-modal').classList.remove('hidden');
                 setTimeout(() => {
@@ -1522,7 +1497,6 @@
                 elKelas.textContent = "-";
             }
 
-            // Avatar pada Dashboard menggunakan foto profil santri yang tidak terpotong
             document.getElementById('dash-avatar').innerHTML = `<img src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128033/bg25_ttkjux.png" class="w-full h-full object-cover hd-image" alt="Foto Profil Santri">`;
             
             document.getElementById('login-error').classList.add('hidden');
@@ -1544,23 +1518,19 @@
             const ktsContainer = document.getElementById('kts-export-area');
             const fotoProfilKts = document.getElementById('kts-foto-profil');
             
-            // Trik untuk mematikan mode blend secara sementara agar render canvas tidak gagal karena bentrok warna
-            // DAN sembunyikan foto (opacity 0) agar hasil download KTS menjadi bingkai kosongan
             if(fotoProfilKts) {
                 fotoProfilKts.classList.remove('mix-blend-multiply');
                 fotoProfilKts.style.opacity = '0'; 
             }
             
-            // Konversi HTML jadi Gambar PNG HD dengan setelan windowWidth untuk anti-lonjong & warna putih
             html2canvas(ktsContainer, { 
                 scale: 3, 
-                backgroundColor: '#ffffff', // <-- Mencegah latar belakang jadi hitam di HP
+                backgroundColor: '#ffffff',
                 useCORS: true,
                 allowTaint: false,
                 logging: false,
-                windowWidth: 1024 // <-- Memaksa alat untuk membaca layout layaknya komputer agar tidak mengkerut
+                windowWidth: 1024
             }).then(canvas => {
-                // Kembalikan efek dan munculkan foto setelah berhasil ditangkap
                 if(fotoProfilKts) {
                     fotoProfilKts.classList.add('mix-blend-multiply');
                     fotoProfilKts.style.opacity = '1';
@@ -1584,12 +1554,10 @@
                     lucide.createIcons();
                 }, 3000);
             }).catch(err => {
-                // Kembalikan efek meskipun gagal
                 if(fotoProfilKts) {
                     fotoProfilKts.classList.add('mix-blend-multiply');
                     fotoProfilKts.style.opacity = '1';
                 }
-                
                 console.error("Gagal mendownload KTS", err);
                 alert("Ups! Gagal mengunduh kartu. Pastikan koneksi stabil.");
                 btn.innerHTML = originalText;
@@ -1708,27 +1676,24 @@
         let isMobileMenuOpen = false;
         let isFabOpen = false;
 
-        // Variabel untuk Lightbox Gallery Navigation yang Dipisah
         let galleryImages = [];
         let currentImageIndex = -1;
+        let currentLightboxArray = []; 
         
         let kegiatanArray = [];
         let liburanArray = [];
-        let brosurArray = ['https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776133504/bg31_vtz5ut.jpg', 'https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776133503/bg30_x2nz9b.jpg']; // Grup khusus brosur
+        let brosurArray = ['https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776133504/bg31_vtz5ut.jpg', 'https://res.cloudinary.com/dehhn4hfk/image/upload/v1776270054/61746_jwljme.png'];
 
-        // Kumpulkan semua gambar dari galeri (Kegiatan & Liburan) saat halaman dimuat
         function initGallery() {
             kegiatanArray = [];
             liburanArray = [];
             
-            // Pilih gambar KHUSUS dari Kegiatan Sehari-hari
             const kegiatanImages = document.querySelectorAll('#galeri .grid img');
             kegiatanImages.forEach(img => {
                 const src = img.getAttribute('src');
                 if (src && !kegiatanArray.includes(src)) kegiatanArray.push(src);
             });
 
-            // Pilih gambar KHUSUS dari Slider Liburan
             const liburanImages = document.querySelectorAll('#slider-liburan img');
             liburanImages.forEach(img => {
                 const src = img.getAttribute('src');
@@ -1736,7 +1701,6 @@
             });
         }
 
-        // Panggil inisialisasi galeri
         document.addEventListener('DOMContentLoaded', initGallery);
 
         window.toggleDarkMode = function() {
@@ -1818,36 +1782,57 @@
             if (mainFab && isFabOpen && !mainFab.parentNode.contains(e.target)) window.toggleFab();
         });
 
-        window.openLightbox = function(imageSrc) {
-            // Tentukan kelompok gambar mana yang sedang dilihat berdasarkan yang diklik
-            if (kegiatanArray.includes(imageSrc)) {
-                galleryImages = kegiatanArray;
-            } else if (liburanArray.includes(imageSrc)) {
-                galleryImages = liburanArray;
-            } else if (brosurArray.includes(imageSrc)) {
-                galleryImages = brosurArray;
-            } else {
-                galleryImages = [imageSrc]; // Jika foto tidak tergabung dalam grup manapun
-            }
-
-            currentImageIndex = galleryImages.indexOf(imageSrc);
+        // Logika baru untuk openLightbox: Jika argumen isStandalone = true, foto terkunci dan tak bisa digeser
+        window.openLightbox = function(imageSrc, isStandalone = false) {
+            if (!imageSrc) return;
             
+            currentLightboxArray = [];
+            currentImageIndex = -1;
+
             const btnPrev = document.getElementById('lightbox-btn-prev');
             const btnNext = document.getElementById('lightbox-btn-next');
 
-            // Tampilkan tombol navigasi HANYA jika foto dalam grup tersebut lebih dari 1
-            if (currentImageIndex !== -1 && galleryImages.length > 1) {
-                btnPrev.classList.remove('hidden');
-                btnNext.classList.remove('hidden');
-            } else {
+            if (isStandalone) {
+                currentLightboxArray = [imageSrc];
+                currentImageIndex = 0;
                 btnPrev.classList.add('hidden');
                 btnNext.classList.add('hidden');
+            } else {
+                if (liburanArray.includes(imageSrc)) {
+                    currentLightboxArray = liburanArray;
+                } else if (kegiatanArray.includes(imageSrc)) {
+                    currentLightboxArray = kegiatanArray;
+                }
+
+                if (currentLightboxArray.length > 1) {
+                    currentImageIndex = currentLightboxArray.indexOf(imageSrc);
+                    // Munculkan panah hanya jika bukan di HP (sm:flex)
+                    btnPrev.classList.remove('hidden');
+                    btnNext.classList.remove('hidden');
+                } else {
+                    btnPrev.classList.add('hidden');
+                    btnNext.classList.add('hidden');
+                }
             }
 
-            document.getElementById('lightbox-img').src = imageSrc;
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = imageSrc;
+            lightboxImg.style.display = 'block'; 
             document.getElementById('lightbox-modal').classList.remove('hidden');
             document.getElementById('lightbox-modal').classList.add('flex');
             document.body.style.overflow = 'hidden';
+        };
+
+        window.changeLightboxImage = function(direction) {
+            // Jika array kurang dari atau sama dengan 1, jangan lakukan geser
+            if (currentLightboxArray.length <= 1 || currentImageIndex === -1) return;
+            currentImageIndex += direction;
+            if (currentImageIndex < 0) {
+                currentImageIndex = currentLightboxArray.length - 1;
+            } else if (currentImageIndex >= currentLightboxArray.length) {
+                currentImageIndex = 0;
+            }
+            document.getElementById('lightbox-img').src = currentLightboxArray[currentImageIndex];
         };
 
         window.closeLightbox = function() {
@@ -1855,25 +1840,8 @@
             document.getElementById('lightbox-modal').classList.remove('flex');
             document.body.style.overflow = 'auto';
             currentImageIndex = -1;
+            currentLightboxArray = [];
             setTimeout(() => { document.getElementById('lightbox-img').src = ''; }, 300);
-        };
-
-        // Fungsi navigasi lightbox
-        window.navigateLightbox = function(direction) {
-            if (galleryImages.length <= 1 || currentImageIndex === -1) return;
-
-            // Hitung index baru, loop kembali jika melewati batas
-            currentImageIndex += direction;
-            
-            if (currentImageIndex >= galleryImages.length) {
-                currentImageIndex = 0; // Balik ke awal
-            } else if (currentImageIndex < 0) {
-                currentImageIndex = galleryImages.length - 1; // Balik ke akhir
-            }
-
-            // Ganti sumber gambar
-            const newImageSrc = galleryImages[currentImageIndex];
-            document.getElementById('lightbox-img').src = newImageSrc;
         };
 
         window.openDashboard = function() {
@@ -1916,17 +1884,6 @@
             updateAuthUI();
         };
 
-        // Fungsi untuk menggeser galeri liburan
-        window.scrollSliderLiburan = function(arah) {
-            const slider = document.getElementById('slider-liburan');
-            const jarakGeser = window.innerWidth < 640 ? window.innerWidth * 0.85 : 450; 
-            if(arah === 'kiri') {
-                slider.scrollBy({ left: -jarakGeser, behavior: 'smooth' });
-            } else {
-                slider.scrollBy({ left: jarakGeser, behavior: 'smooth' });
-            }
-        };
-
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 if(!document.getElementById('kts-modal').classList.contains('hidden')) window.closeKTS();
@@ -1936,14 +1893,30 @@
                 else if(!document.getElementById('dashboard-modal').classList.contains('hidden')) window.closeDashboard();
                 else if(!document.getElementById('login-modal').classList.contains('hidden')) window.closeLogin();
                 else if(!document.getElementById('lightbox-modal').classList.contains('hidden')) window.closeLightbox();
-            }
-            
-            // Navigasi Lightbox dengan keyboard (Kiri / Kanan)
-            if (!document.getElementById('lightbox-modal').classList.contains('hidden')) {
-                if (e.key === 'ArrowLeft') window.navigateLightbox(-1);
-                if (e.key === 'ArrowRight') window.navigateLightbox(1);
+            } else if (e.key === 'ArrowLeft' && !document.getElementById('lightbox-modal').classList.contains('hidden')) {
+                window.changeLightboxImage(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('lightbox-modal').classList.contains('hidden')) {
+                window.changeLightboxImage(1);
             }
         });
+
+        // Logika Swipe HP
+        let touchstartX = 0;
+        let touchendX = 0;
+        
+        const lightboxModal = document.getElementById('lightbox-modal');
+        lightboxModal.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        lightboxModal.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            // Di HP, swipe juga butuh memastikan bahwa array fotonya > 1
+            if (currentLightboxArray.length > 1) {
+                if (touchendX < touchstartX - 50) window.changeLightboxImage(1); 
+                if (touchendX > touchstartX + 50) window.changeLightboxImage(-1); 
+            }
+        }, { passive: true });
 
 
         let isChatOpen = false;
@@ -2025,7 +1998,6 @@
         function generateBotResponse(input) {
             const text = input.toLowerCase();
             
-            // --- FITUR BARU: ANALISA KARAKTER AI ---
             let karakter = "netral";
             if (/(sedih|capek|nyerah|nangis|pusing|beban|hancur|overthinking|kangen|pulang|insecure|down|berat|susah|galau|mental|lelah)/.test(text)) karakter = "galau";
             else if (/(semangat|gas|pengen|mau|cepat|target|cita|sukses|mutqin|lancar|bisa|yakin|berjuang|hebat|siap)/.test(text)) karakter = "ambisius";
@@ -2043,7 +2015,6 @@
                 intro = "<div class='text-[11px] bg-emerald-100 text-emerald-700 px-3 py-2 rounded-xl mb-3 border border-emerald-200 shadow-sm'>🔍 <b>Analisa AI:</b> Karaktermu sangat menjaga adab & tata krama.</div><i>MasyaAllah, tutur katamu sopan sekali. Sejuk rasanya membaca chat dari orang yang beradab tinggi seperti kamu. 🌹</i><br><br>";
             }
 
-            // Fitur Khusus: Tebak Karakter
             if (text.includes('karakter saya') || text.includes('tebak karakter') || text.includes('aku orangnya gimana') || text.includes('baca karakter')) {
                 if (karakter === "galau") return intro + "Dari intonasi ketikanmu, sepertinya kamu orang yang perasa dan gampang overthinking. Kamu peduli banget sama perasaan orang di sekitarmu sampai kadang lupa membahagiakan diri sendiri. Yuk, apresiasi dirimu, kamu hebat loh udah bertahan sejauh ini! ✨💖";
                 if (karakter === "ambisius") return intro + "Dari caramu menyusun kalimat, kamu adalah tipe pemimpin alami! Kamu visioner, tau apa yang kamu mau, dan nggak gampang nyerah. Tapi hati-hati, kadang kamu memforsir diri terlalu keras. Tetap semangat, tapi jangan lupa rebahan ya! 🚀⭐";
@@ -2105,8 +2076,9 @@
             
             if (text.includes('biaya') || text.includes('bayar') || text.includes('spp') || text.includes('syahriah') || text.includes('uang')) {
                 return intro + `<b>💰 Rincian Biaya PPTQ Al-Falah:</b><br><br>
-                • <b>Pendaftaran Awal:</b> Rp. 100.000<br>
-                • <b>Syahriah Bulanan:</b> Rp. 350.000<br><br>
+                • <b>Pendaftaran Awal:</b> Rp 100.000<br>
+                • <b>Infaq Pembangunan:</b> Rp 200.000<br>
+                • <b>Syahriah Bulanan:</b> Rp 350.000<br><br>
                 <i>Catatan Penting:</i> Biaya syahriah bulanan tersebut sudah sangat terjangkau karena telah mencakup fasilitas asrama, makan 3x sehari, listrik, air bersih, dan akses WiFi pondok. (Belum termasuk keperluan pribadi santri dan transportasi luar pondok).`;
             }
             
@@ -2166,7 +2138,6 @@
                 📥 <b>Brosur Pendaftaran:</b> Anda bisa melihat brosur dengan mengklik tombol "Lihat Brosur Lengkap" di bagian bawah website.`;
             }
 
-            // 1. Motivasi Penghafal Quran (Tahfidz, Lupa, Sad, Susah)
             if (text.includes('hafal') || text.includes('quran') || text.includes('lupa') || text.includes('mutqin') || text.includes('tahfidz') || text.includes('sad') || text.includes('nangis') || text.includes('sedih')) {
                 return intro + `Lagi sedih gara-gara hafalan hilang pas disetor ya? Rasanya kaya ditinggal pas lagi sayang-sayangnya... eh astaghfirullah! 🤭<br><br>
                 Tenang, kamu nggak sendirian. Al-Qur'an itu memang gampang lepas. Kata Nabi Muhammad ﷺ:<br>
@@ -2177,7 +2148,6 @@
                 Air matamu waktu nangis karena susah hafal itu nanti jadi saksi di akhirat lho! 😭✨ Yuk, wudhu lagi, tarik napas, bismillah muroja'ah lagi. Kamu pasti bisa! ✊`;
             }
 
-            // 2. Motivasi Menuntut Ilmu, Mengatasi Malas & Mager
             if (text.includes('malas') || text.includes('mager') || text.includes('ilmu') || text.includes('ngaji') || text.includes('futur') || text.includes('capek') || text.includes('ngantuk') || text.includes('bosan')) {
                 return intro + `Lagi kena penyakit 'Mager-itis' ya? Atau godaan ngantuk stadium 4 pas buka kitab? 😴🤭<br><br>
                 Sadar nggak, ngantuk pas ngaji itu emang nikmat banget, angin sepoi-sepoi ngalahin AC mall! Tapi awas, itu hembusan setan biar kita dijauhkan dari ilmu.<br><br>
@@ -2188,7 +2158,6 @@
                 Coba bayangin wajah bapak ibumu di rumah yang lagi banting tulang, keringatan biar kamu bisa bayar syahriah pondok. Masa kamu mau kalah sama rasa malas? Yuk, cuci muka pake air sumur pondok yang nyegerin itu, lalu kembali ke majelis! 💦🏃‍♂️💨`;
             }
 
-            // 3. Motivasi Kehidupan Santri & Pondok (Kangen, Boyong)
             if (text.includes('santri') || text.includes('pondok') || text.includes('kangen') || text.includes('rumah') || text.includes('boyong') || text.includes('orang tua') || text.includes('kehidupan')) {
                 return intro + `Lagi kangen masakan ibu di rumah ya? Atau kangen kasur empuk? 🥺<br><br>
                 Wajar kok! Nangis di pojokan asrama pas ingat rumah itu udah kaya 'sunnah muakkadah'-nya para santri baru. 🤭 Tapi ingat, tirakatmu menahan rindu ini harganya mahal banget di sisi Allah.<br><br>
@@ -2197,7 +2166,6 @@
                 Makan ngantri, mandi ngantri, tidur umpel-umpelan... itu semua kawah candradimuka. Dari situlah mental baja santri dibentuk. Percayalah, kelak kalau kamu udah sukses jadi orang hebat, kenangan ngantri sambel pondok ini yang bakal paling kamu kangenin. <br><br>Bersabar-sabar di pondok dahulu, bahagia bawa mahkota surga buat orang tua kemudian! ✨💖`;
             }
 
-            // 4. Kata Islami, Quotes, Nasehat Umum (Default Motivasi)
             if (text.includes('motivasi') || text.includes('semangat') || text.includes('menyerah') || text.includes('nyerah') || text.includes('quotes') || text.includes('kata') || text.includes('mutiara') || text.includes('nasehat') || text.includes('petuah')) {
                 return intro + `Ini nih 'Vitamin Hati' buat kamu biar semangatnya nge-recharge lagi sampai 100%! 🔋✨<br><br>
                 👳‍♂️ <b>Ali bin Abi Thalib RA:</b><br>
@@ -2220,24 +2188,5 @@
 
         lucide.createIcons();
     </script>
-    
-    <!-- Script tambahan untuk menyembunyikan gambar yang kosong/error tanpa menghapus code HTML -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            document.querySelectorAll('img').forEach(img => {
-                // Sembunyikan foto jika link fotonya kosong (tanpa menghapus code)
-                if (!img.getAttribute('src') || img.getAttribute('src').trim() === '') {
-                    const container = img.closest('.group') || img.closest('.snap-center') || img;
-                    container.style.display = 'none';
-                }
-
-                // Jika ada error pada link foto, cukup sembunyikan tampilannya (tidak dihapus kodenya)
-                img.addEventListener('error', function() {
-                    const container = this.closest('.group') || this.closest('.snap-center') || this;
-                    container.style.display = 'none';
-                });
-            });
-        });
-    </script>
 </body>
-</html>
+                                    </html>
