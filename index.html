@@ -2,7 +2,7 @@
 <html lang="id" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PPTQ Al-Falah Malang</title>
     
     <!-- Preconnect ke Cloudinary untuk mempercepat resolusi DNS gambar secara drastis -->
@@ -81,6 +81,24 @@
             inset: 0;
         }
 
+        /* Animasi Reveal Scroll Teks Elegan & Soft (Gaya Apple/Modern) */
+        .reveal-text {
+            opacity: 0;
+            filter: blur(10px);
+            transform: translateY(40px) scale(0.97);
+            /* Kurva cubic-bezier ini memberikan efek lambat di akhir yang sangat mewah */
+            transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+                        filter 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition-delay: var(--reveal-delay, 0ms);
+            will-change: opacity, transform, filter;
+        }
+        .reveal-text.reveal-visible {
+            opacity: 1;
+            filter: blur(0px);
+            transform: translateY(0) scale(1);
+        }
+
         /* Styling Khusus KTS */
         .kts-front-bg {
             background-color: #ffffff;
@@ -95,13 +113,6 @@
                 radial-gradient(circle at 100% 0%, rgba(250, 204, 21, 0.15) 0, transparent 50%),
                 radial-gradient(circle at 0% 100%, rgba(16, 185, 129, 0.5) 0, transparent 50%),
                 repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 10px);
-        }
-        .kts-photo-bg {
-            background-color: #f1f5f9;
-            background-image: 
-                radial-gradient(circle at center, rgba(16, 185, 129, 0.03) 0%, transparent 60%),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(241, 245, 249, 1));
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
         }
 
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -128,10 +139,12 @@
         .lightbox-nav-btn:hover { background-color: rgba(255, 255, 255, 0.4); }
         .lightbox-prev { left: 16px; }
         .lightbox-next { right: 16px; }
+        
     </style>
 </head>
 <body class="font-sans transition-colors duration-300 bg-emerald-50/40 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-50 overflow-x-hidden">
 
+    <!-- Tombol Mengambang (FAB) Pojok Kanan Bawah -->
     <div class="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4">
         <div id="fab-menu" class="flex flex-col gap-3 transition-all duration-300 opacity-0 translate-y-10 pointer-events-none origin-bottom">
             <a href="https://maps.app.goo.gl/dstntFC5TeM2mz778" target="_blank" rel="noreferrer" class="relative group flex items-center justify-end">
@@ -164,17 +177,17 @@
         </button>
     </div>
 
-    <!-- Modal Gambar Penuh -->
-    <div id="lightbox-modal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 sm:p-6">
-        <div class="absolute inset-0 bg-emerald-950/90 backdrop-blur-md cursor-pointer" onclick="closeLightbox()"></div>
+    <!-- Modal Gambar Penuh (Lightbox) -->
+    <div id="lightbox-modal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div class="fixed inset-0 bg-emerald-950/90 backdrop-blur-md cursor-pointer" onclick="closeLightbox()"></div>
         
-        <!-- Tombol Geser (Ditampilkan hanya di desktop/layar besar pakai 'hidden sm:flex') -->
         <button id="lightbox-btn-prev" onclick="changeLightboxImage(-1); event.stopPropagation();" class="lightbox-nav-btn lightbox-prev hidden sm:flex z-30"><i data-lucide="chevron-left" class="w-8 h-8"></i></button>
         <button id="lightbox-btn-next" onclick="changeLightboxImage(1); event.stopPropagation();" class="lightbox-nav-btn lightbox-next hidden sm:flex z-30"><i data-lucide="chevron-right" class="w-8 h-8"></i></button>
         
-        <div class="relative z-20 flex flex-col items-center animate-in max-w-5xl w-full">
-            <button onclick="closeLightbox()" class="absolute -top-12 right-0 md:-right-12 p-2 bg-white/20 hover:bg-white/40 text-white rounded-full transition-colors shadow-lg backdrop-blur-md"><i data-lucide="x" class="w-7 h-7"></i></button>
-            <img id="lightbox-img" src="" alt="Tampilan Penuh" class="w-full max-h-[85vh] object-contain drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] rounded-xl bg-transparent hd-image" />
+        <div class="relative z-20 flex flex-col items-center justify-center animate-in max-w-5xl w-full min-h-screen py-10">
+            <button onclick="closeLightbox()" class="absolute top-4 right-4 md:-top-6 md:-right-6 p-2 bg-white/20 hover:bg-white/40 text-white rounded-full transition-colors shadow-lg backdrop-blur-md z-[220]"><i data-lucide="x" class="w-7 h-7"></i></button>
+            <img id="lightbox-img" src="" alt="Tampilan Penuh" class="w-full max-h-[85vh] object-contain drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] rounded-xl bg-transparent hd-image relative z-10" />
+            <!-- Tempat instruksi simpan KTS akan muncul di sini secara dinamis melalui JS -->
         </div>
     </div>
 
@@ -190,7 +203,6 @@
             <div class="p-4 sm:p-6 overflow-y-auto flex flex-col gap-8 flex-1 bg-emerald-50 dark:bg-emerald-950">
                 <div class="flex flex-col items-center gap-4 bg-white dark:bg-emerald-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 transition-all hover:shadow-md">
                     <h4 class="font-bold text-emerald-900 dark:text-emerald-100 mb-2 border-b-2 border-yellow-400 pb-2">Brosur Halaman 1</h4>
-                    <!-- Foto Brosur tidak disetting pop-up zoom -->
                     <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776133504/bg31_vtz5ut.jpg" class="w-full max-w-2xl h-auto rounded-xl shadow-md hd-image transition-transform" alt="Brosur Halaman 1" loading="lazy" decoding="async">
                     <a href="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776133504/bg31_vtz5ut.jpg" download="Brosur_PPTQ_Al-Falah_1_HD.jpg" class="bg-yellow-400 hover:bg-yellow-500 text-emerald-950 font-bold py-3 px-6 rounded-xl flex items-center gap-2 transition-colors w-full sm:w-auto justify-center shadow-md mt-2">
                         <i data-lucide="download" class="w-5 h-5"></i> Download Kualitas HD
@@ -199,7 +211,6 @@
 
                 <div class="flex flex-col items-center gap-4 bg-white dark:bg-emerald-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 transition-all hover:shadow-md">
                     <h4 class="font-bold text-emerald-900 dark:text-emerald-100 mb-2 border-b-2 border-yellow-400 pb-2">Brosur Halaman 2</h4>
-                    <!-- Foto Brosur tidak disetting pop-up zoom -->
                     <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776270054/61746_jwljme.png" class="w-full max-w-2xl h-auto rounded-xl shadow-md hd-image transition-transform" alt="Brosur Halaman 2" loading="lazy" decoding="async">
                     <a href="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776270054/61746_jwljme.png" download="Brosur_PPTQ_Al-Falah_2_HD.png" class="bg-yellow-400 hover:bg-yellow-500 text-emerald-950 font-bold py-3 px-6 rounded-xl flex items-center gap-2 transition-colors w-full sm:w-auto justify-center shadow-md mt-2">
                         <i data-lucide="download" class="w-5 h-5"></i> Download Kualitas HD
@@ -271,9 +282,8 @@
             <div class="px-6 py-6 bg-gradient-to-br from-emerald-700 to-emerald-600 text-white flex justify-between items-center relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
                 <div class="relative z-10 flex items-center gap-4">
-                    <!-- Foto Profil bisa di-zoom, set menjadi standalone (true) -->
                     <div id="dash-avatar" class="w-14 h-14 sm:w-16 sm:h-16 border-2 border-emerald-300 rounded-full flex items-center justify-center shadow-lg overflow-hidden shrink-0 bg-white cursor-pointer hover:scale-105 transition-transform" onclick="openLightbox(this.querySelector('img').src, true)">
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128033/bg25_ttkjux.png" class="w-full h-full object-cover hd-image" alt="Foto Profil Santri" loading="lazy" decoding="async">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128033/bg25_ttkjux.png" class="w-full h-full object-cover hd-image" alt="Foto Profil Santri" loading="lazy" decoding="async">
                     </div>
                     <div>
                         <h2 class="font-extrabold text-xl md:text-2xl drop-shadow-md uppercase">BIODATA PENGGUNA</h2>
@@ -334,7 +344,7 @@
         </div>
     </div>
 
-    <!-- Modal KTS (Kartu Tanda Santri) -->
+    <!-- Modal KTS (Kartu Tanda Santri) dengan Drag & Zoom Foto -->
     <div id="kts-modal" class="fixed inset-0 z-[180] hidden items-start sm:items-center justify-center pt-8 sm:pt-0 px-2 sm:px-6 opacity-0 transition-opacity duration-300 overflow-y-auto">
         <div class="fixed inset-0 bg-emerald-950/90 backdrop-blur-md cursor-pointer" onclick="closeKTS()"></div>
         <div id="kts-container" class="relative z-10 w-full max-w-2xl flex flex-col items-center transform scale-95 transition-transform duration-300 mb-20 sm:mb-0">
@@ -351,8 +361,9 @@
                     <div class="relative w-[420px] h-[265px] min-w-[420px] min-h-[265px] shrink-0 rounded-xl shadow-[0_10px_20px_rgba(0,0,0,0.15)] overflow-hidden border border-emerald-200 hd-image flex flex-col kts-front-bg" style="box-sizing: border-box;">
                         <!-- Header Hijau -->
                         <div class="bg-gradient-to-r from-emerald-700 to-emerald-500 py-3 px-4 flex items-center gap-3 border-b border-emerald-400/30 shrink-0">
-                            <!-- Logo Header KTS bisa di-zoom -->
-                            <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="w-10 h-10 min-w-[40px] object-contain bg-white rounded-full p-0.5 shadow-sm shrink-0 cursor-pointer hover:scale-110 transition-transform" onclick="openLightbox(this.src, true)">
+                            <!-- Logo Header KTS -->
+                            <!-- Dihapus f_auto agar lebih stabil saat di-render canvas -->
+                            <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="w-10 h-10 min-w-[40px] object-contain bg-white rounded-full p-0.5 shadow-sm shrink-0">
                             <div class="text-white">
                                 <h2 class="font-black text-[17px] leading-tight drop-shadow-md tracking-wide m-0">KARTU TANDA SANTRI</h2>
                                 <p class="font-bold text-[10px] leading-tight text-emerald-100 drop-shadow-md m-0">PPTQ AL-FALAH BABAAN NGASEM MALANG</p>
@@ -362,17 +373,25 @@
                         <!-- Body KTS -->
                         <div class="flex-1 flex items-center px-4 py-2 gap-4 relative overflow-hidden">
                             <div class="absolute -right-12 -bottom-12 w-40 h-40 opacity-5 rotate-12 pointer-events-none">
-                                <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="w-full h-full object-contain grayscale">
+                                <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="w-full h-full object-contain grayscale">
                             </div>
                             
-                            <!-- Foto Santri (KTS) tidak disetting zoom sesuai instruksi -->
-                            <div class="w-[95px] h-[126px] min-w-[95px] min-h-[126px] shrink-0 rounded-lg border-2 border-emerald-500 shadow-[0_4px_10px_rgba(16,185,129,0.3)] overflow-hidden flex items-center justify-center p-0 z-10 relative bg-white">
-                                <img id="kts-foto-profil" src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128033/bg25_ttkjux.png" crossorigin="anonymous" class="w-full h-full object-contain object-center drop-shadow-md hd-image relative z-10">
-                                <div class="absolute bottom-0 left-0 w-full h-1.5 bg-emerald-500 z-20"></div>
+                            <!-- Area Foto KTS (Fitur Drag & Drop + Pinch Zoom) -->
+                            <div id="kts-photo-wrapper" class="w-[95px] h-[126px] min-w-[95px] min-h-[126px] shrink-0 rounded-lg border-2 border-emerald-500 shadow-[0_4px_10px_rgba(16,185,129,0.3)] overflow-hidden flex items-center justify-center p-0 z-10 relative bg-emerald-50 group cursor-grab touch-none" title="Sentuh & Geser/Zoom untuk menyesuaikan">
+                                <!-- max-w-none mengijinkan ukuran resolusi besar tanpa dipaksa kecil oleh CSS -->
+                                <!-- Dihapus f_auto agar lebih stabil mencegah foto putih blank -->
+                                <img id="kts-foto-profil" src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128033/bg25_ttkjux.png" crossorigin="anonymous" class="absolute max-w-none w-full h-full object-cover pointer-events-none hd-image origin-center" style="transform: translate(0px, 0px) scale(1);">
+                                
+                                <!-- Overlay Hover Petunjuk -->
+                                <div class="absolute inset-0 bg-black/40 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    <span class="text-[9px] text-white font-bold text-center flex flex-col items-center"><i data-lucide="move" class="w-4 h-4 mb-1"></i>Geser / Zoom</span>
+                                </div>
+                                
+                                <div class="absolute bottom-0 left-0 w-full h-1.5 bg-emerald-500 z-40 pointer-events-none"></div>
                             </div>
                             
                             <!-- Tabel Biodata -->
-                            <div class="flex-1 z-10 text-[12px] leading-tight w-full">
+                            <div class="flex-1 z-10 text-[12px] leading-tight w-full pointer-events-none">
                                 <table class="w-full text-left border-separate border-spacing-y-2">
                                     <tr>
                                         <td class="font-bold text-emerald-900 w-[30%] align-top m-0 p-0">NAMA</td>
@@ -404,23 +423,18 @@
                         </div>
                         
                         <!-- Footer Garis Bawah Hijau KTS -->
-                        <div class="h-2.5 min-h-[10px] shrink-0 bg-gradient-to-r from-emerald-700 via-emerald-500 to-emerald-700 w-full relative z-20"></div>
+                        <div class="h-2.5 min-h-[10px] shrink-0 bg-gradient-to-r from-emerald-700 via-emerald-500 to-emerald-700 w-full relative z-20 pointer-events-none"></div>
                     </div>
 
                     <!-- KTS BELAKANG -->
                     <div class="relative w-[420px] h-[265px] min-w-[420px] min-h-[265px] shrink-0 rounded-xl shadow-[0_10px_20px_rgba(0,0,0,0.15)] overflow-hidden border border-emerald-800 hd-image flex flex-col items-center justify-center p-5 text-center text-white kts-back-bg" style="box-sizing: border-box;">
-                        <!-- Logo Watermark Tengah -->
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 object-contain opacity-[0.07] pointer-events-none">
-
-                        <!-- Konten Visi -->
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 object-contain opacity-[0.07] pointer-events-none">
                         <div class="relative z-10 w-full mb-5">
                             <h3 class="font-black text-yellow-300 text-[16px] mb-1.5 uppercase tracking-widest flex items-center justify-center gap-3 drop-shadow-md">
                                 <span class="w-6 h-[2px] bg-yellow-300 rounded-full"></span> VISI <span class="w-6 h-[2px] bg-yellow-300 rounded-full"></span>
                             </h3>
                             <p class="text-[12px] leading-relaxed font-medium text-emerald-50 m-0">"Terwujudnya lembaga pendidikan islam yang mencetak generasi qur'ani serta memiliki pemahaman ilmu agama islam agar menjadi hamba alloh yang bertaqwa dan berilmu."</p>
                         </div>
-                        
-                        <!-- Konten Misi -->
                         <div class="relative z-10 w-full">
                             <h3 class="font-black text-yellow-300 text-[16px] mb-1.5 uppercase tracking-widest flex items-center justify-center gap-3 drop-shadow-md">
                                 <span class="w-6 h-[2px] bg-yellow-300 rounded-full"></span> MISI <span class="w-6 h-[2px] bg-yellow-300 rounded-full"></span>
@@ -430,13 +444,30 @@
                     </div>
                 </div>
 
+                <!-- PANEL EDITOR FOTO KTS -->
+                <div class="mt-4 w-full max-w-sm bg-white dark:bg-emerald-900 p-4 rounded-xl shadow-sm border border-emerald-100 dark:border-emerald-800 text-center">
+                    <h4 class="text-sm font-bold text-emerald-900 dark:text-white mb-2 flex items-center justify-center gap-2"><i data-lucide="settings-2" class="w-4 h-4 text-emerald-600"></i> Setelan Foto</h4>
+                    
+                    <p class="text-[11px] text-emerald-700 dark:text-emerald-300 mb-4 leading-relaxed bg-emerald-50 dark:bg-emerald-800/50 p-2 rounded-lg border border-emerald-100 dark:border-emerald-700 text-left">
+                        <i data-lucide="info" class="w-3.5 h-3.5 inline mb-0.5"></i> <b>Cara Edit:</b> Langsung sentuh area foto KTS lalu <b>geser</b> untuk memindah posisinya, dan <b>scroll / cubit layar</b> untuk memperbesar atau mengecilkan (*zoom in/out*).
+                    </p>
+
+                    <input type="file" id="upload-foto-kts" accept="image/*" class="hidden" onchange="handleFotoUpload(event)">
+                    
+                    <div class="flex gap-2">
+                        <button onclick="document.getElementById('upload-foto-kts').click()" class="flex-1 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-800 dark:hover:bg-emerald-700 text-emerald-800 dark:text-emerald-100 text-xs font-bold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm">
+                            <i data-lucide="image-plus" class="w-4 h-4"></i> Pilih Foto Baru
+                        </button>
+                        <button onclick="resetPhotoTransform()" class="px-4 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 text-xs font-bold py-2.5 rounded-lg transition-colors border border-red-200 dark:border-red-800 shadow-sm flex items-center gap-1" title="Reset Posisi">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Reset
+                        </button>
+                    </div>
+                </div>
+
                 <div class="mt-6 w-full max-w-sm">
                     <button onclick="downloadKTS()" id="btn-download-kts" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-emerald-500/30 transform hover:-translate-y-1">
                         <i data-lucide="download-cloud" class="w-5 h-5"></i> UNDUH KTS HD (PNG)
                     </button>
-                    <p class="text-xs text-center text-slate-500 dark:text-emerald-200/70 mt-3 font-medium flex items-center justify-center gap-1.5">
-                        <i data-lucide="info" class="w-3.5 h-3.5"></i> Dapat dicetak menggunakan kertas PVC/KTP.
-                    </p>
                 </div>
             </div>
         </div>
@@ -521,7 +552,6 @@
         <div class="container mx-auto px-4 md:px-8">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <!-- Logo Utama bisa di-zoom (berdiri sendiri) -->
                     <img 
                         src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128015/bg26_l8rws5.png" 
                         alt="Logo PPTQ Al-Falah" 
@@ -588,7 +618,6 @@
 
     <section id="beranda" class="relative h-screen flex items-center justify-center overflow-hidden">
         <div class="absolute inset-0 z-0 bg-black">
-            <!-- 8 Foto Slideshow -->
             <div class="absolute inset-0 w-full h-full">
                 <div class="slide-bg hd-image" style="background-image: url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128153/IMG_0638_spthj3.jpg'); animation-delay: 0s;"></div>
                 <div class="slide-bg hd-image" style="background-image: url('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128157/bg2_frdt5d.jpg'); animation-delay: 5s;"></div>
@@ -605,14 +634,14 @@
         </div>
         
         <div class="container relative z-10 px-4 md:px-8 text-center flex flex-col items-center mt-16">
-            <span class="inline-block py-1.5 px-6 rounded-full bg-white/20 backdrop-blur-md text-white font-bold text-sm mb-6 border border-white/40 shadow-lg tracking-wide animate-pulse">PSB TAHUN 2026/2027</span>
-            <h1 class="text-4xl md:text-5xl lg:text-7xl font-extrabold text-white leading-tight mb-6 max-w-4xl drop-shadow-lg uppercase tracking-wide">
+            <span class="reveal-text inline-block py-1.5 px-6 rounded-full bg-white/20 backdrop-blur-md text-white font-bold text-sm mb-6 border border-white/40 shadow-lg tracking-wide animate-pulse">PSB TAHUN 2026/2027</span>
+            <h1 class="reveal-text text-4xl md:text-5xl lg:text-7xl font-extrabold text-white leading-tight mb-6 max-w-4xl drop-shadow-lg uppercase tracking-wide">
                 BUKA PELUANG UNTUK BEKAL <span class="text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]">MASA DEPAN UMMAT</span>
             </h1>
-            <p class="text-lg md:text-xl text-emerald-50 mb-10 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
+            <p class="reveal-text text-lg md:text-xl text-emerald-50 mb-10 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
                 Pesantren Tahfidzul Qur'an Al Falah adalah tempat belajar untuk menunjang proses KBM agar lebih efektif, serta memberikan fasilitas tempat belajar yang memadai dengan suasana asri, bersih, dan nyaman.
             </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-2xl mx-auto">
+            <div class="reveal-text flex flex-col sm:flex-row gap-4 justify-center w-full max-w-2xl mx-auto">
                 <a href="#pendaftaran" class="w-full sm:w-auto flex-1 bg-yellow-400 text-emerald-950 font-bold py-3.5 px-8 rounded-full hover:bg-yellow-300 transition-transform hover:scale-105 shadow-[0_0_20px_rgba(250,204,21,0.4)] flex items-center justify-center gap-2 text-lg">
                     Info Pendaftaran <i data-lucide="chevron-right" class="w-5 h-5"></i>
                 </a>
@@ -630,26 +659,23 @@
 
             <div class="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center max-w-6xl mx-auto mb-20">
                 <div class="lg:col-span-7 text-center md:text-left order-2 lg:order-1">
-                    <h2 class="text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center md:justify-start gap-3">
+                    <h2 class="reveal-text text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center md:justify-start gap-3">
                         <div class="w-10 h-1 bg-emerald-500 rounded-full"></div> Profil Singkat
                     </h2>
-                    <h3 class="text-3xl md:text-4xl font-extrabold text-emerald-950 dark:text-white mb-6 transition-colors duration-300 leading-tight">Mencetak Generasi Bertaqwa dan Berilmu</h3>
-                    <p class="text-slate-600 dark:text-emerald-100/80 text-lg leading-relaxed border-l-4 border-emerald-400 pl-5 bg-emerald-50/50 dark:bg-emerald-900/20 p-5 rounded-r-2xl italic transition-colors duration-300">
+                    <h3 class="reveal-text text-3xl md:text-4xl font-extrabold text-emerald-950 dark:text-white mb-6 transition-colors duration-300 leading-tight">Mencetak Generasi Bertaqwa dan Berilmu</h3>
+                    <p class="reveal-text text-slate-600 dark:text-emerald-100/80 text-lg leading-relaxed border-l-4 border-emerald-400 pl-5 bg-emerald-50/50 dark:bg-emerald-900/20 p-5 rounded-r-2xl italic transition-colors duration-300">
                         "Pesantren tahfidzul qur'an al falah adalah tempat belajar untuk menunjang proses KBM agar lebih efektif, serta memberikan fasilitas tempat belajar yang cukup memadai dengan suasana khas pedesaan yang asri, bersih, dan nyaman."
                     </p>
                 </div>
-                <div class="lg:col-span-5 order-1 lg:order-2 relative">
+                <div class="lg:col-span-5 order-1 lg:order-2 relative reveal-text">
                     <div class="absolute -inset-4 bg-gradient-to-tr from-emerald-100 to-yellow-100 dark:from-emerald-900/50 dark:to-yellow-900/20 rounded-3xl transform rotate-3 scale-105 z-0"></div>
-                    <!-- Foto Profil disetting standalone (true) -->
                     <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127970/bg16_z5uoxv.png" alt="Profil PPTQ Al-Falah" class="relative z-10 w-full rounded-2xl shadow-2xl object-cover h-[250px] sm:h-[350px] md:h-[400px] hover:scale-[1.02] transition-transform duration-500 cursor-pointer border-4 border-white dark:border-emerald-800 hd-image" onclick="openLightbox(this.src, true)">
                 </div>
             </div>
 
-            <!-- Visi Misi Cards Premium -->
             <div class="grid md:grid-cols-2 gap-8 sm:gap-12 max-w-6xl mx-auto">
-                <div class="bg-white dark:bg-emerald-900/40 rounded-3xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] dark:shadow-none border border-emerald-100 dark:border-emerald-800 transition-all hover:-translate-y-2 group overflow-hidden flex flex-col">
+                <div class="reveal-text bg-white dark:bg-emerald-900/40 rounded-3xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] dark:shadow-none border border-emerald-100 dark:border-emerald-800 transition-all hover:-translate-y-2 group overflow-hidden flex flex-col">
                     <div class="relative h-56 sm:h-64 w-full overflow-hidden">
-                        <!-- Foto Visi disetting standalone (true) -->
                         <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127946/bg5_qgegig.jpg" alt="Visi" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src, true)">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
                         <h4 class="absolute bottom-4 left-6 font-extrabold text-3xl text-white drop-shadow-md flex items-center gap-3">
@@ -661,9 +687,8 @@
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-emerald-900/40 rounded-3xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] dark:shadow-none border border-emerald-100 dark:border-emerald-800 transition-all hover:-translate-y-2 group overflow-hidden flex flex-col">
+                <div class="reveal-text bg-white dark:bg-emerald-900/40 rounded-3xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] dark:shadow-none border border-emerald-100 dark:border-emerald-800 transition-all hover:-translate-y-2 group overflow-hidden flex flex-col">
                     <div class="relative h-56 sm:h-64 w-full overflow-hidden">
-                        <!-- Foto Misi disetting standalone (true) -->
                         <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127978/bg17_rwwcfe.jpg" alt="Misi" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src, true)">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
                         <h4 class="absolute bottom-4 left-6 font-extrabold text-3xl text-white drop-shadow-md flex items-center gap-3">
@@ -685,15 +710,14 @@
         <div class="absolute bottom-0 left-0 w-64 h-64 bg-yellow-400/10 dark:bg-yellow-500/10 rounded-full blur-3xl"></div>
         <div class="container mx-auto px-4 md:px-8 relative z-10">
             <div class="text-center max-w-2xl mx-auto mb-16">
-                <h2 class="text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center gap-3"><div class="w-8 h-1 bg-emerald-500 rounded-full"></div> Pendidikan Pesantren <div class="w-8 h-1 bg-emerald-500 rounded-full"></div></h2>
-                <h3 class="text-3xl md:text-5xl font-extrabold text-emerald-950 dark:text-white transition-colors duration-300">Program Unggulan</h3>
+                <h2 class="reveal-text text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center gap-3"><div class="w-8 h-1 bg-emerald-500 rounded-full"></div> Pendidikan Pesantren <div class="w-8 h-1 bg-emerald-500 rounded-full"></div></h2>
+                <h3 class="reveal-text text-3xl md:text-5xl font-extrabold text-emerald-950 dark:text-white transition-colors duration-300">Program Unggulan</h3>
                 <div class="w-24 h-1.5 bg-yellow-400 mx-auto mt-6 rounded-full shadow-sm"></div>
             </div>
             
             <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <div class="bg-white dark:bg-emerald-900 rounded-3xl shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border border-emerald-100 dark:border-emerald-800 group text-center flex flex-col overflow-hidden hover:-translate-y-2">
+                <div class="reveal-text bg-white dark:bg-emerald-900 rounded-3xl shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border border-emerald-100 dark:border-emerald-800 group text-center flex flex-col overflow-hidden hover:-translate-y-2">
                     <div class="relative h-48 sm:h-56 w-full overflow-hidden shrink-0">
-                        <!-- Foto Program disetting standalone (true) -->
                         <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128152/tahfidz-1_i3dqqz.jpg" alt="Kegiatan Tahfidzul Qur'an" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src, true)">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
                         <div class="absolute bottom-4 left-0 w-full flex justify-center">
@@ -708,9 +732,8 @@
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-emerald-900 rounded-3xl shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border border-emerald-100 dark:border-emerald-800 group text-center flex flex-col overflow-hidden hover:-translate-y-2">
+                <div class="reveal-text bg-white dark:bg-emerald-900 rounded-3xl shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border border-emerald-100 dark:border-emerald-800 group text-center flex flex-col overflow-hidden hover:-translate-y-2">
                     <div class="relative h-48 sm:h-56 w-full overflow-hidden shrink-0">
-                        <!-- Foto Program disetting standalone (true) -->
                         <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127974/bg28_kmnvvr.jpg" alt="Kajian Kitab" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src, true)">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
                         <div class="absolute bottom-4 left-0 w-full flex justify-center">
@@ -725,9 +748,8 @@
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-emerald-900 rounded-3xl shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border border-emerald-100 dark:border-emerald-800 group text-center flex flex-col overflow-hidden hover:-translate-y-2">
+                <div class="reveal-text bg-white dark:bg-emerald-900 rounded-3xl shadow-xl shadow-emerald-100/50 dark:shadow-none hover:shadow-2xl transition-all duration-300 border border-emerald-100 dark:border-emerald-800 group text-center flex flex-col overflow-hidden hover:-translate-y-2">
                     <div class="relative h-48 sm:h-56 w-full overflow-hidden shrink-0">
-                        <!-- Foto Program disetting standalone (true) -->
                         <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776127982/bg29_lhflcb.jpg" alt="Al Banjari" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer hd-image" onclick="openLightbox(this.src, true)">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
                         <div class="absolute bottom-4 left-0 w-full flex justify-center">
@@ -752,8 +774,7 @@
             <div class="grid lg:grid-cols-2 gap-16 items-start">
                 
                 <div class="space-y-12">
-                    
-                    <div class="bg-emerald-700/80 dark:bg-emerald-950/80 backdrop-blur-md p-5 sm:p-8 md:p-10 rounded-3xl border border-emerald-400/30 shadow-2xl relative overflow-hidden transition-colors duration-300 hover:border-yellow-400/50 transition-all">
+                    <div class="reveal-text bg-emerald-700/80 dark:bg-emerald-950/80 backdrop-blur-md p-5 sm:p-8 md:p-10 rounded-3xl border border-emerald-400/30 shadow-2xl relative overflow-hidden transition-colors duration-300 hover:border-yellow-400/50 transition-all">
                         <div class="absolute -top-10 -right-10 w-32 h-32 bg-yellow-400/30 rounded-full blur-3xl"></div>
                         <h3 class="text-xl sm:text-2xl font-bold text-yellow-300 mb-6 sm:mb-8 flex items-center gap-3 relative z-10 drop-shadow-md">
                             <span class="bg-yellow-400 text-emerald-900 p-2 sm:p-2.5 rounded-xl shadow-lg"><i data-lucide="wallet" class="w-5 h-5 sm:w-6 sm:h-6"></i></span> 
@@ -781,7 +802,7 @@
                         </div>
                     </div>
                     
-                    <div>
+                    <div class="reveal-text">
                         <h3 class="text-3xl font-bold text-white mb-8 flex items-center gap-3 drop-shadow-md"><i data-lucide="building" class="w-8 h-8 text-yellow-300"></i> Fasilitas Pondok</h3>
                         <div class="grid sm:grid-cols-2 gap-4">
                             <div class="bg-emerald-700/60 dark:bg-emerald-950/60 p-5 rounded-2xl flex items-start gap-4 hover:bg-emerald-500/60 dark:hover:bg-emerald-800/60 transition-colors border border-emerald-500/30">
@@ -804,7 +825,7 @@
                     </div>
                 </div>
 
-                <div id="jadwal-kegiatan" class="bg-white dark:bg-emerald-950 text-emerald-950 dark:text-emerald-50 p-8 md:p-10 rounded-3xl shadow-2xl transition-colors duration-300 border border-emerald-100 dark:border-emerald-800">
+                <div id="jadwal-kegiatan" class="reveal-text bg-white dark:bg-emerald-950 text-emerald-950 dark:text-emerald-50 p-8 md:p-10 rounded-3xl shadow-2xl transition-colors duration-300 border border-emerald-100 dark:border-emerald-800">
                     <h3 class="text-2xl md:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mb-8 flex items-center gap-3 border-b-2 border-emerald-100 dark:border-emerald-900 pb-6 transition-colors duration-300">
                         <i data-lucide="calendar-days" class="w-8 h-8"></i> JADWAL KEGIATAN
                     </h3>
@@ -873,13 +894,12 @@
     <section id="galeri" class="py-20 bg-white dark:bg-emerald-950 transition-colors duration-300 relative">
         <div class="container mx-auto px-4 md:px-8">
             <div class="text-center max-w-2xl mx-auto mb-12">
-                <h2 class="text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center gap-3"><div class="w-8 h-1 bg-emerald-500 rounded-full"></div> Lensa Al-Falah <div class="w-8 h-1 bg-emerald-500 rounded-full"></div></h2>
-                <h3 class="text-3xl md:text-4xl font-extrabold text-emerald-950 dark:text-white transition-colors duration-300">Galeri Kegiatan Santri</h3>
+                <h2 class="reveal-text text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center gap-3"><div class="w-8 h-1 bg-emerald-500 rounded-full"></div> Lensa Al-Falah <div class="w-8 h-1 bg-emerald-500 rounded-full"></div></h2>
+                <h3 class="reveal-text text-3xl md:text-4xl font-extrabold text-emerald-950 dark:text-white transition-colors duration-300">Galeri Kegiatan Santri</h3>
             </div>
 
-            <h4 class="font-bold text-xl text-emerald-800 dark:text-emerald-200 mb-6 border-b border-emerald-100 dark:border-emerald-800 pb-2">Kegiatan Sehari-hari</h4>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mb-12">
-                <!-- Tambah argumen 'true' di openLightbox supaya berdiri sendiri / tak bisa digeser -->
+            <h4 class="reveal-text font-bold text-xl text-emerald-800 dark:text-emerald-200 mb-6 border-b border-emerald-100 dark:border-emerald-800 pb-2">Kegiatan Sehari-hari</h4>
+            <div class="reveal-text grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mb-12">
                 <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer shadow-md border border-emerald-50 dark:border-emerald-800" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128152/tahfidz-1_i3dqqz.jpg', true)">
                     <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128152/tahfidz-1_i3dqqz.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 hd-image" alt="Setoran Qur'an">
                     <div class="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -917,14 +937,11 @@
                 </div>
             </div>
 
-            <!-- Kategori Liburan dengan 26 Foto -->
-            <div class="flex items-center justify-between mb-6 border-b border-emerald-100 dark:border-emerald-800 pb-2">
+            <div class="reveal-text flex items-center justify-between mb-6 border-b border-emerald-100 dark:border-emerald-800 pb-2">
                 <h4 class="font-bold text-xl text-emerald-800 dark:text-emerald-200">Koleksi Foto Liburan</h4>
-                <!-- Tulisan jumlah foto dihilangkan sesuai permintaan -->
             </div>
 
-            <div class="relative w-full overflow-hidden rounded-2xl">
-                <!-- Kontainer Slider -->
+            <div class="reveal-text relative w-full overflow-hidden rounded-2xl">
                 <div id="slider-liburan" class="flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 hide-scrollbar w-full items-center">
                     
                     <div class="snap-center shrink-0 relative w-[85vw] sm:w-[450px] md:w-[500px] h-[350px] sm:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 dark:border-emerald-800 group bg-emerald-100/50 dark:bg-emerald-900/50 flex items-center justify-center cursor-pointer" onclick="openLightbox('https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128153/IMG_0638_spthj3.jpg')">
@@ -1067,11 +1084,11 @@
     <section id="faq" class="py-20 bg-emerald-50/30 dark:bg-emerald-900/10 transition-colors duration-300 border-t border-emerald-100 dark:border-emerald-900/50">
         <div class="container mx-auto px-4 md:px-8 max-w-4xl">
             <div class="text-center mb-12">
-                <h2 class="text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center gap-3"><div class="w-8 h-1 bg-emerald-500 rounded-full"></div> Informasi <div class="w-8 h-1 bg-emerald-500 rounded-full"></div></h2>
-                <h3 class="text-3xl md:text-4xl font-extrabold text-emerald-950 dark:text-white transition-colors duration-300">Pertanyaan Umum (FAQ)</h3>
+                <h2 class="reveal-text text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center gap-3"><div class="w-8 h-1 bg-emerald-500 rounded-full"></div> Informasi <div class="w-8 h-1 bg-emerald-500 rounded-full"></div></h2>
+                <h3 class="reveal-text text-3xl md:text-4xl font-extrabold text-emerald-950 dark:text-white transition-colors duration-300">Pertanyaan Umum (FAQ)</h3>
             </div>
 
-            <div class="space-y-4">
+            <div class="reveal-text space-y-4">
                 <div class="bg-white dark:bg-emerald-900 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 overflow-hidden">
                     <button class="w-full px-6 py-5 flex items-center justify-between font-bold text-left text-emerald-900 dark:text-emerald-100 focus:outline-none" onclick="toggleFaq(this)">
                         <span>Siapa saja yang bisa mendaftar di PPTQ Al-Falah?</span>
@@ -1121,21 +1138,22 @@
 
         <div class="container mx-auto px-4 md:px-8">
             <div class="flex flex-col items-center text-center mb-8 border-b border-emerald-900 pb-12 max-w-3xl mx-auto">
+                <!-- Dihapus f_auto agar rendering html2canvas dari logo stabil -->
                 <img 
-                    src="https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776128015/bg26_l8rws5.png" 
+                    src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128015/bg26_l8rws5.png" 
                     alt="Logo PPTQ Al-Falah" 
                     onclick="openLightbox(this.src, true)"
-                    class="h-28 w-auto object-contain shrink-0 transition-transform duration-300 hover:scale-110 drop-shadow-xl cursor-pointer mb-6 hd-image"
+                    class="reveal-text h-28 w-auto object-contain shrink-0 transition-transform duration-300 hover:scale-110 drop-shadow-xl cursor-pointer mb-6 hd-image"
                     title="Klik untuk memperbesar logo"
                     loading="lazy"
                     decoding="async"
                 />
-                <h3 class="font-bold text-3xl text-white mb-2">PPTQ Al-Falah</h3>
-                <p class="text-emerald-400 font-medium text-lg mb-6">Pesantren Tahfidzul Qur'an</p>
-                <p class="leading-relaxed mb-8">
+                <h3 class="reveal-text font-bold text-3xl text-white mb-2">PPTQ Al-Falah</h3>
+                <p class="reveal-text text-emerald-400 font-medium text-lg mb-6">Pesantren Tahfidzul Qur'an</p>
+                <p class="reveal-text leading-relaxed mb-8">
                     Menyelenggarakan kegiatan pendidikan tahfidzul qur'an dan pembelajaran kitab kitab gundul berdasarkan ajaran ahlussunnah wal jama'ah.
                 </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <div class="reveal-text flex flex-col sm:flex-row gap-4 justify-center">
                     <button onclick="openBrosur()" class="inline-flex items-center justify-center gap-2 bg-emerald-800 hover:bg-emerald-700 text-white px-8 py-4 rounded-full transition-colors border border-emerald-600 shadow-lg font-bold hover:scale-105 transform duration-300">
                         <i data-lucide="file-image" class="text-yellow-400 w-5 h-5"></i> Lihat Brosur Lengkap (HD)
                     </button>
@@ -1357,6 +1375,159 @@
             }
         }
 
+        // ==========================================
+        // FITUR BARU: DRAG & PINCH ZOOM FOTO KTS
+        // ==========================================
+        let photoTranslateX = 0;
+        let photoTranslateY = 0;
+        let photoScale = 1;
+        let isDraggingKts = false;
+        let startDragX = 0;
+        let startDragY = 0;
+        
+        function updatePhotoTransform() {
+            const img = document.getElementById('kts-foto-profil');
+            img.style.transform = `translate(${photoTranslateX}px, ${photoTranslateY}px) scale(${photoScale})`;
+        }
+
+        window.resetPhotoTransform = function() {
+            photoTranslateX = 0;
+            photoTranslateY = 0;
+            photoScale = 1;
+            updatePhotoTransform();
+        };
+
+        function setBaseImageSize(imgEl) {
+            const wrapper = document.getElementById('kts-photo-wrapper');
+            if(!imgEl.naturalWidth) return;
+            
+            const wRatio = wrapper.clientWidth / imgEl.naturalWidth;
+            const hRatio = wrapper.clientHeight / imgEl.naturalHeight;
+            const coverRatio = Math.max(wRatio, hRatio);
+            
+            imgEl.style.width = (imgEl.naturalWidth * coverRatio) + 'px';
+            imgEl.style.height = (imgEl.naturalHeight * coverRatio) + 'px';
+            imgEl.style.objectFit = 'fill'; 
+        }
+
+        function initDragEditor() {
+            const wrapper = document.getElementById('kts-photo-wrapper');
+            
+            // Mouse Drag
+            wrapper.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                isDraggingKts = true;
+                startDragX = e.clientX - photoTranslateX;
+                startDragY = e.clientY - photoTranslateY;
+                wrapper.style.cursor = 'grabbing';
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (!isDraggingKts) return;
+                photoTranslateX = e.clientX - startDragX;
+                photoTranslateY = e.clientY - startDragY;
+                updatePhotoTransform();
+            });
+            window.addEventListener('mouseup', () => {
+                isDraggingKts = false;
+                wrapper.style.cursor = 'grab';
+            });
+
+            // Scroll Zoom
+            wrapper.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const zoomSpeed = 0.05;
+                const delta = e.deltaY < 0 ? 1 : -1;
+                photoScale += delta * zoomSpeed;
+                photoScale = Math.max(0.5, Math.min(photoScale, 5));
+                updatePhotoTransform();
+            }, { passive: false });
+
+            // Touch Drag & Pinch Zoom (HP)
+            let initialPinchDist = 0;
+            let initialScale = 1;
+
+            wrapper.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDraggingKts = true;
+                    startDragX = e.touches[0].clientX - photoTranslateX;
+                    startDragY = e.touches[0].clientY - photoTranslateY;
+                } else if (e.touches.length === 2) {
+                    isDraggingKts = false;
+                    initialPinchDist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    initialScale = photoScale;
+                }
+            }, { passive: false });
+
+            wrapper.addEventListener('touchmove', (e) => {
+                e.preventDefault(); 
+                if (isDraggingKts && e.touches.length === 1) {
+                    photoTranslateX = e.touches[0].clientX - startDragX;
+                    photoTranslateY = e.touches[0].clientY - startDragY;
+                    updatePhotoTransform();
+                } else if (e.touches.length === 2 && initialPinchDist) {
+                    const currentDist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    photoScale = initialScale * (currentDist / initialPinchDist);
+                    photoScale = Math.max(0.5, Math.min(photoScale, 5));
+                    updatePhotoTransform();
+                }
+            }, { passive: false });
+
+            wrapper.addEventListener('touchend', () => {
+                isDraggingKts = false;
+                initialPinchDist = 0;
+            });
+        }
+
+        window.addEventListener('load', () => {
+            const defaultImg = document.getElementById('kts-foto-profil');
+            if(defaultImg.complete) setBaseImageSize(defaultImg);
+            else defaultImg.onload = () => setBaseImageSize(defaultImg);
+            initDragEditor();
+        });
+
+        window.handleFotoUpload = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('kts-foto-profil');
+                    
+                    const tempImg = new Image();
+                    tempImg.onload = function() {
+                        const wrapper = document.getElementById('kts-photo-wrapper');
+                        const wRatio = wrapper.clientWidth / tempImg.width;
+                        const hRatio = wrapper.clientHeight / tempImg.height;
+                        const coverRatio = Math.max(wRatio, hRatio);
+                        
+                        img.style.width = (tempImg.width * coverRatio) + 'px';
+                        img.style.height = (tempImg.height * coverRatio) + 'px';
+                        img.style.objectFit = 'fill';
+                        
+                        // FIX HTML2CANVAS: Menghapus crossorigin agar data:image base64 tidak diblokir sistem browser saat didownload
+                        img.removeAttribute('crossorigin'); 
+                        img.src = e.target.result;
+                        
+                        const imgDash = document.querySelector('#dash-avatar img');
+                        if(imgDash) {
+                            imgDash.removeAttribute('crossorigin');
+                            imgDash.src = e.target.result;
+                        }
+
+                        window.resetPhotoTransform();
+                    }
+                    tempImg.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        };
+        // ==========================================
+
         window.openKTS = function() {
             if (!loggedInSantri) return;
             const data = registeredUsers[loggedInSantri];
@@ -1498,7 +1669,20 @@
                 elKelas.textContent = "-";
             }
 
-            document.getElementById('dash-avatar').innerHTML = `<img src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128033/bg25_ttkjux.png" class="w-full h-full object-cover hd-image" alt="Foto Profil Santri">`;
+            const imgDash = document.querySelector('#dash-avatar img');
+            if(imgDash) {
+                imgDash.setAttribute('crossorigin', 'anonymous');
+                imgDash.src = "https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128033/bg25_ttkjux.png";
+            }
+            
+            const imgKTS = document.getElementById('kts-foto-profil');
+            imgKTS.setAttribute('crossorigin', 'anonymous');
+            imgKTS.src = "https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128033/bg25_ttkjux.png";
+            
+            if(imgKTS.complete) setBaseImageSize(imgKTS);
+            else imgKTS.onload = () => setBaseImageSize(imgKTS);
+            
+            window.resetPhotoTransform();
             
             document.getElementById('login-error').classList.add('hidden');
             document.getElementById('login-username').value = '';
@@ -1510,19 +1694,18 @@
             }, 300);
         };
 
+        // --- FUNGSI DOWNLOAD KTS (DIPERBARUI TOTAL) ---
         window.downloadKTS = function() {
             const btn = document.getElementById('btn-download-kts');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Menyimpan KTS HD...';
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Memproses KTS HD...';
             btn.disabled = true;
             
             const ktsContainer = document.getElementById('kts-export-area');
-            const fotoProfilKts = document.getElementById('kts-foto-profil');
             
-            if(fotoProfilKts) {
-                fotoProfilKts.classList.remove('mix-blend-multiply');
-                fotoProfilKts.style.opacity = '0'; 
-            }
+            // Perbaikan agar saat discroll ke bawah, html2canvas tidak memotong gambar
+            const ktsModal = document.getElementById('kts-modal');
+            ktsModal.scrollTop = 0; 
             
             html2canvas(ktsContainer, { 
                 scale: 3, 
@@ -1530,42 +1713,115 @@
                 useCORS: true,
                 allowTaint: false,
                 logging: false,
-                windowWidth: 1024
+                windowWidth: 1024,
+                onclone: function(clonedDoc) {
+                    const clonedImg = clonedDoc.getElementById('kts-foto-profil');
+                    if (clonedImg) {
+                        clonedImg.style.transformOrigin = 'center center';
+                    }
+                }
             }).then(canvas => {
-                if(fotoProfilKts) {
-                    fotoProfilKts.classList.add('mix-blend-multiply');
-                    fotoProfilKts.style.opacity = '1';
-                }
                 
-                const link = document.createElement('a');
-                link.download = `KTS_Al-Falah_${loggedInSantri.replace(/\s+/g, '_')}.png`;
-                link.href = canvas.toDataURL('image/png', 1.0);
-                link.click();
-                
-                btn.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5"></i> BERHASIL DIUNDUH';
-                btn.classList.replace('bg-emerald-600', 'bg-blue-600');
-                btn.classList.replace('hover:bg-emerald-500', 'hover:bg-blue-500');
-                lucide.createIcons();
-                
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.classList.replace('bg-blue-600', 'bg-emerald-600');
-                    btn.classList.replace('hover:bg-blue-500', 'hover:bg-emerald-500');
-                    btn.disabled = false;
+                // MENGGUNAKAN BLOB: Ini mencegah browser memblokir Base64 yang terlalu panjang,
+                // sehingga gambar dianggap sebagai "File" asli dan bisa "Simpan Gambar" (Long Press).
+                canvas.toBlob(function(blob) {
+                    if(!blob) {
+                        alert("Ups! Gagal merender gambar. Coba muat ulang halaman.");
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        return;
+                    }
+                    
+                    const fileName = `KTS_Al-Falah_${loggedInSantri.replace(/\s+/g, '_')}.png`;
+                    const blobUrl = URL.createObjectURL(blob);
+                    
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+                    if (isMobile) {
+                        btn.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5"></i> BERHASIL DIPROSES';
+                        btn.classList.replace('bg-emerald-600', 'bg-blue-600');
+                        btn.classList.replace('hover:bg-emerald-500', 'hover:bg-blue-500');
+                        
+                        setTimeout(() => {
+                            window.closeKTS(); 
+                            setTimeout(() => {
+                                window.openLightbox(blobUrl, true);
+                                
+                                const lightboxImg = document.getElementById('lightbox-img');
+                                
+                                const oldIns = document.getElementById('instruksi-simpan');
+                                if(oldIns) oldIns.remove();
+                                
+                                // SOLUSI NAMA FILE: 
+                                // Menambahkan TOMBOL DOWNLOAD khusus di HP, karena opsi "Simpan Gambar" bawaan HP
+                                // tidak pernah mengizinkan website mengatur nama filenya (Pasti diacak HP).
+                                const actionHTML = `
+                                <div id="instruksi-simpan" class="mt-6 flex flex-col items-center gap-3 relative z-[250] w-full max-w-sm mx-auto px-4 animate-in" style="--reveal-delay: 100ms;">
+                                    <a href="${blobUrl}" download="${fileName}" class="bg-yellow-400 hover:bg-yellow-500 text-emerald-950 font-extrabold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 w-full shadow-[0_0_20px_rgba(250,204,21,0.4)] transition-all active:scale-95 text-sm sm:text-base border border-yellow-300">
+                                        <i data-lucide="download" class="w-5 h-5"></i> SIMPAN KTS KE GALERI
+                                    </a>
+                                    <div class="bg-black/60 text-emerald-50 px-4 py-2.5 rounded-xl text-[11px] sm:text-xs font-medium text-center backdrop-blur-md shadow-md border border-white/20 leading-relaxed">
+                                        💡 Tekan tombol di atas untuk mengunduh dengan nama:<br><b class="text-yellow-300">${fileName}</b><br><br>
+                                        <span class="opacity-70">(Opsi lain: Tahan gambar dan pilih "Simpan Gambar")</span>
+                                    </div>
+                                </div>
+                                `;
+                                
+                                lightboxImg.insertAdjacentHTML('afterend', actionHTML);
+                                lucide.createIcons();
+                                
+                                const observer = new MutationObserver((mutations) => {
+                                    mutations.forEach((mutation) => {
+                                        if(document.getElementById('lightbox-modal').classList.contains('hidden')){
+                                            const ins = document.getElementById('instruksi-simpan');
+                                            if(ins) ins.remove();
+                                            URL.revokeObjectURL(blobUrl); // Bersihkan memori HP
+                                            observer.disconnect();
+                                        }
+                                    });
+                                });
+                                observer.observe(document.getElementById('lightbox-modal'), { attributes: true, attributeFilter: ['class'] });
+
+                            }, 400); 
+                        }, 1000);
+
+                    } else {
+                        // JIKA DI LAPTOP/PC: Langsung terdownload
+                        const link = document.createElement('a');
+                        link.download = fileName;
+                        link.href = blobUrl;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+                        
+                        btn.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5"></i> BERHASIL DIUNDUH';
+                        btn.classList.replace('bg-emerald-600', 'bg-blue-600');
+                        btn.classList.replace('hover:bg-emerald-500', 'hover:bg-blue-500');
+                    }
+                    
                     lucide.createIcons();
-                }, 3000);
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.classList.replace('bg-blue-600', 'bg-emerald-600');
+                        btn.classList.replace('hover:bg-blue-500', 'hover:bg-emerald-500');
+                        btn.disabled = false;
+                        lucide.createIcons();
+                    }, 3000);
+                    
+                }, 'image/png', 1.0); // .toBlob() END
+
             }).catch(err => {
-                if(fotoProfilKts) {
-                    fotoProfilKts.classList.add('mix-blend-multiply');
-                    fotoProfilKts.style.opacity = '1';
-                }
-                console.error("Gagal mendownload KTS", err);
-                alert("Ups! Gagal mengunduh kartu. Pastikan koneksi stabil.");
+                console.error("Gagal memproses KTS", err);
+                alert("Ups! Gagal memproses kartu. Pastikan koneksi internet stabil.");
                 btn.innerHTML = originalText;
                 btn.disabled = false;
                 lucide.createIcons();
             });
         };
+        // -----------------------------------------------------------
 
         window.openChangePassword = function() {
             window.closeDashboard();
@@ -1683,7 +1939,6 @@
         
         let kegiatanArray = [];
         let liburanArray = [];
-        let brosurArray = ['https://res.cloudinary.com/dehhn4hfk/image/upload/f_auto,q_auto/v1776133504/bg31_vtz5ut.jpg', 'https://res.cloudinary.com/dehhn4hfk/image/upload/v1776270054/61746_jwljme.png'];
 
         function initGallery() {
             kegiatanArray = [];
@@ -1702,7 +1957,46 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', initGallery);
+        // INIT INTERSECTION OBSERVER FOR SCROLL ANIMATION (Apple Style & Cascade)
+        document.addEventListener('DOMContentLoaded', () => {
+            initGallery();
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '-5% 0px -10% 0px', // Trigger sedikit masuk ke dalam layar agar animasi tidak langsung muncul di ujung banget
+                threshold: 0.1
+            };
+
+            let delayCounter = 0;
+            let delayTimer = null;
+
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Cascade effect: Beri jeda jika banyak elemen masuk layar bersamaan
+                        entry.target.style.setProperty('--reveal-delay', `${delayCounter * 120}ms`);
+                        delayCounter++;
+                        
+                        // Reset counter jika elemen tidak masuk bersamaan (jeda 150ms)
+                        clearTimeout(delayTimer);
+                        delayTimer = setTimeout(() => { delayCounter = 0; }, 150);
+
+                        // Gunakan requestAnimationFrame untuk memastikan CSS variable delay ter-apply sebelum class ditambahkan
+                        requestAnimationFrame(() => {
+                            entry.target.classList.add('reveal-visible');
+                        });
+                    } else {
+                        // Sesuai permintaan: Hilang saat dilewati/menjauh
+                        entry.target.classList.remove('reveal-visible');
+                        // Hilangkan delay agar proses menghilang memudar seragam tanpa jeda aneh
+                        entry.target.style.removeProperty('--reveal-delay');
+                    }
+                });
+            }, observerOptions);
+
+            const revealElements = document.querySelectorAll('.reveal-text');
+            revealElements.forEach(el => revealObserver.observe(el));
+        });
 
         window.toggleDarkMode = function() {
             isDarkMode = !isDarkMode;
@@ -1783,7 +2077,6 @@
             if (mainFab && isFabOpen && !mainFab.parentNode.contains(e.target)) window.toggleFab();
         });
 
-        // Logika baru untuk openLightbox: Jika argumen isStandalone = true, foto terkunci dan tak bisa digeser
         window.openLightbox = function(imageSrc, isStandalone = false) {
             if (!imageSrc) return;
             
@@ -1807,7 +2100,6 @@
 
                 if (currentLightboxArray.length > 1) {
                     currentImageIndex = currentLightboxArray.indexOf(imageSrc);
-                    // Munculkan panah hanya jika bukan di HP (sm:flex)
                     btnPrev.classList.remove('hidden');
                     btnNext.classList.remove('hidden');
                 } else {
@@ -1825,7 +2117,6 @@
         };
 
         window.changeLightboxImage = function(direction) {
-            // Jika array kurang dari atau sama dengan 1, jangan lakukan geser
             if (currentLightboxArray.length <= 1 || currentImageIndex === -1) return;
             currentImageIndex += direction;
             if (currentImageIndex < 0) {
@@ -1901,7 +2192,6 @@
             }
         });
 
-        // Logika Swipe HP
         let touchstartX = 0;
         let touchendX = 0;
         
@@ -1912,7 +2202,6 @@
         
         lightboxModal.addEventListener('touchend', e => {
             touchendX = e.changedTouches[0].screenX;
-            // Di HP, swipe juga butuh memastikan bahwa array fotonya > 1
             if (currentLightboxArray.length > 1) {
                 if (touchendX < touchstartX - 50) window.changeLightboxImage(1); 
                 if (touchendX > touchstartX + 50) window.changeLightboxImage(-1); 
@@ -1944,250 +2233,71 @@
         };
 
         window.handleChatEnter = function(e) {
-            if (e.key === 'Enter') {
-                sendChatMessage();
-            }
+            if (e.key === 'Enter') sendChatMessage();
         };
 
-        window.sendChatMessage = function() {
-            const inputEl = document.getElementById('chat-input');
-            const message = inputEl.value.trim();
-            if (!message) return;
-
-            appendMessage(message, 'user');
-            inputEl.value = '';
+        window.sendChatMessage = async function() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
 
             const chatMessages = document.getElementById('chat-messages');
             const typingIndicator = document.getElementById('typing-indicator');
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+            // Render Pesan User
+            chatMessages.innerHTML += `
+                <div class="flex items-end gap-2 max-w-[85%] self-end animate-in">
+                    <div class="bg-emerald-500 text-white px-4 py-2.5 rounded-2xl rounded-br-none shadow-sm text-sm leading-relaxed">
+                        ${msg}
+                        <span class="text-[10px] text-emerald-100 block text-right mt-1">${timeStr} <i data-lucide="check-check" class="w-3 h-3 inline"></i></span>
+                    </div>
+                </div>
+            `;
+            
+            input.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            lucide.createIcons();
+
+            // Munculkan indikator sedang mengetik
             typingIndicator.classList.remove('hidden');
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
+            // Balasan Bot Otomatis
             setTimeout(() => {
                 typingIndicator.classList.add('hidden');
-                const reply = generateBotResponse(message);
-                appendMessage(reply, 'bot');
-            }, 3000);
+                
+                let reply = "Maaf, saya robot yang masih belajar. Untuk info lebih detail, silakan hubungi kontak WhatsApp resmi kami ya! 😊";
+                const lowerMsg = msg.toLowerCase();
+                
+                if (lowerMsg.includes('biaya') || lowerMsg.includes('daftar') || lowerMsg.includes('bayar')) {
+                    reply = "Untuk pendaftaran awal biayanya Rp 100.000, infaq pembangunan Rp 200.000, dan syahriah (SPP bulanan) sebesar Rp 350.000 (sudah termasuk makan 3x sehari dan asrama). Ada yang kurang jelas? 😊";
+                } else if (lowerMsg.includes('lokasi') || lowerMsg.includes('alamat') || lowerMsg.includes('dimana')) {
+                    reply = "Pondok kami beralamat di Babaan, Ngasem, Malang. Anda bisa klik tombol 'Lokasi Maps' di menu utama untuk rute Google Maps-nya ya! 🗺️";
+                } else if (lowerMsg.includes('bawa hp') || lowerMsg.includes('laptop') || lowerMsg.includes('elektronik')) {
+                    reply = "Terkait barang elektronik seperti HP/Laptop, ada kebijakan khusus untuk menjaga fokus hafalan santri. Biasanya boleh digunakan di waktu-waktu tertentu saja. 📱";
+                } else if (lowerMsg.includes('assalamu') || lowerMsg.includes('salam') || lowerMsg.includes('halo') || lowerMsg.includes('hai')) {
+                    reply = "Wa'alaikumsalam warahmatullahi wabarakatuh! Halo! Ada yang bisa saya bantu terkait pendaftaran atau info pondok? 😊";
+                }
+
+                const botTimeStr = new Date().getHours().toString().padStart(2, '0') + ':' + new Date().getMinutes().toString().padStart(2, '0');
+                
+                chatMessages.innerHTML += `
+                    <div class="flex items-end gap-2 max-w-[85%] self-start animate-in">
+                        <div class="bg-white dark:bg-emerald-900 text-emerald-950 dark:text-emerald-50 px-4 py-2.5 rounded-2xl rounded-bl-none shadow-sm text-sm border border-emerald-100 dark:border-emerald-800 leading-relaxed">
+                            ${reply}
+                            <span class="text-[10px] text-slate-400 block text-right mt-1">${botTimeStr}</span>
+                        </div>
+                    </div>
+                `;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                lucide.createIcons();
+            }, 1500);
         };
 
-        function appendMessage(text, sender) {
-            const chatMessages = document.getElementById('chat-messages');
-            const time = new Date().getHours().toString().padStart(2, '0') + ':' + new Date().getMinutes().toString().padStart(2, '0');
-            const msgDiv = document.createElement('div');
-            
-            if (sender === 'user') {
-                msgDiv.className = "flex items-end justify-end gap-2 max-w-[85%] self-end animate-in shrink-0";
-                msgDiv.innerHTML = `
-                    <div class="bg-[#dcf8c6] dark:bg-emerald-700 text-emerald-950 dark:text-emerald-50 px-4 py-2.5 rounded-2xl rounded-br-none shadow-sm text-sm leading-relaxed">
-                        ${text}
-                        <span class="text-[10px] text-emerald-700/60 dark:text-emerald-200/60 block text-right mt-1">${time} <i data-lucide="check-check" class="w-3 h-3 inline"></i></span>
-                    </div>`;
-            } else {
-                msgDiv.className = "flex items-end gap-2 max-w-[85%] self-start animate-in shrink-0";
-                msgDiv.innerHTML = `
-                    <div class="bg-white dark:bg-emerald-900 text-emerald-950 dark:text-emerald-50 px-4 py-2.5 rounded-2xl rounded-bl-none shadow-sm text-sm border border-emerald-100 dark:border-emerald-800 leading-relaxed">
-                        ${text}
-                        <span class="text-[10px] text-slate-400 block text-right mt-1">${time}</span>
-                    </div>`;
-            }
-            
-            chatMessages.appendChild(msgDiv);
-            
-            lucide.createIcons();
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function generateBotResponse(input) {
-            const text = input.toLowerCase();
-            
-            let karakter = "netral";
-            if (/(sedih|capek|nyerah|nangis|pusing|beban|hancur|overthinking|kangen|pulang|insecure|down|berat|susah|galau|mental|lelah)/.test(text)) karakter = "galau";
-            else if (/(semangat|gas|pengen|mau|cepat|target|cita|sukses|mutqin|lancar|bisa|yakin|berjuang|hebat|siap)/.test(text)) karakter = "ambisius";
-            else if (/(bro|min|wkwk|haha|cuy|ngab|gaes|dong|sih|mager|ygy|gue|lu|anjay|jir|hehe|bang)/.test(text)) karakter = "santai";
-            else if (/(assalamu|punten|permisi|maaf|izin|ustadz|kyai|admin|terima kasih|tolong|mohon|syukron)/.test(text)) karakter = "sopan";
-
-            let intro = "";
-            if (karakter === "galau") {
-                intro = "<div class='text-[11px] bg-red-100 text-red-700 px-3 py-2 rounded-xl mb-3 border border-red-200 shadow-sm'>🔍 <b>Analisa AI:</b> Karaktermu sedang dalam fase sensitif/lelah.</div><i>Hei... tarik napas pelan-pelan ya. Nggak apa-apa kok ngerasa capek, kamu kan manusia biasa. Sini aku temenin ngobrol. 🫂</i><br><br>";
-            } else if (karakter === "ambisius") {
-                intro = "<div class='text-[11px] bg-yellow-100 text-yellow-700 px-3 py-2 rounded-xl mb-3 border border-yellow-200 shadow-sm'>🔍 <b>Analisa AI:</b> Karaktermu sangat positif & punya aura pejuang.</div><i>MasyaAllah! Energi semangatnya kerasa banget sampai ke sistem saya nih! 🔥 Keren, pertahankan terus ya!</i><br><br>";
-            } else if (karakter === "santai") {
-                intro = "<div class='text-[11px] bg-blue-100 text-blue-700 px-3 py-2 rounded-xl mb-3 border border-blue-200 shadow-sm'>🔍 <b>Analisa AI:</b> Karaktermu ekstrovert, friendly & asik.</div><i>Wih, gaya bahasanya asik bener nih! Keliatannya kamu gampang akrab sama siapa aja ya. Siap, mari kita bahas ngab! 🤙</i><br><br>";
-            } else if (karakter === "sopan") {
-                intro = "<div class='text-[11px] bg-emerald-100 text-emerald-700 px-3 py-2 rounded-xl mb-3 border border-emerald-200 shadow-sm'>🔍 <b>Analisa AI:</b> Karaktermu sangat menjaga adab & tata krama.</div><i>MasyaAllah, tutur katamu sopan sekali. Sejuk rasanya membaca chat dari orang yang beradab tinggi seperti kamu. 🌹</i><br><br>";
-            }
-
-            if (text.includes('karakter saya') || text.includes('tebak karakter') || text.includes('aku orangnya gimana') || text.includes('baca karakter')) {
-                if (karakter === "galau") return intro + "Dari intonasi ketikanmu, sepertinya kamu orang yang perasa dan gampang overthinking. Kamu peduli banget sama perasaan orang di sekitarmu sampai kadang lupa membahagiakan diri sendiri. Yuk, apresiasi dirimu, kamu hebat loh udah bertahan sejauh ini! ✨💖";
-                if (karakter === "ambisius") return intro + "Dari caramu menyusun kalimat, kamu adalah tipe pemimpin alami! Kamu visioner, tau apa yang kamu mau, dan nggak gampang nyerah. Tapi hati-hati, kadang kamu memforsir diri terlalu keras. Tetap semangat, tapi jangan lupa rebahan ya! 🚀⭐";
-                if (karakter === "santai") return intro + "Dari ketikanmu, keliatan banget kamu tipe orang yang fleksibel, humoris, dan chill. Masalah seberat apapun sering kamu bawa becanda (walau di kamar malam-malam nangis juga wkwk). Kamu jago nyairin suasana dan bikin orang betah di dekatmu! 😎🔥";
-                if (karakter === "sopan") return intro + "Kamu adalah tipe orang yang berhati-hati dalam bertindak, sangat menghargai orang tua, serta punya kedewasaan emosional yang baik. Kamu lebih suka mengalah daripada memicu ribut. Orang tuamu pasti bangga banget mendidik anak sepertimu! 🌺😇";
-                
-                return "<div class='text-[11px] bg-slate-100 text-slate-700 px-3 py-2 rounded-xl mb-3 border border-slate-200 shadow-sm'>🔍 <b>Analisa AI:</b> Membutuhkan lebih banyak data.</div>Hmm.. karaktermu masih misterius nih! Coba ketik sesuatu yang mencerminkan dirimu (misal ketik keluh kesahmu, tunjukkan semangatmu, awali dengan salam, atau pakai bahasa gaul), lalu tanyakan lagi ya! 🤖🔍";
-            }
-
-            if (text.includes('siapa saya') || text.includes('biodata saya') || text.includes('profil saya') || text.includes('nama saya')) {
-                if (!loggedInSantri) {
-                    return `Hmm... sepertinya kita belum berkenalan nih! 🤭<br><br>
-                    <b>Silakan Login Santri dulu ya...</b> (Anda bisa klik ikon Profil di sudut kanan atas layar).<br><br>
-                    Agar saya bisa terhubung ke buku induk dan menceritakan dengan jelas siapa diri Anda, dari mana asal Anda, dan doa siapa yang selama ini menyertai Anda di pondok. Ditunggu ya login-nya! 😉`;
-                } 
-                else {
-                    const data = registeredUsers[loggedInSantri];
-                    const toTitleCase = (str) => str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                    
-                    const nama = toTitleCase(loggedInSantri);
-                    const status = toTitleCase(data.status);
-                    const kelas = data.kelas ? data.kelas.toUpperCase() : '-';
-                    const alamat = toTitleCase(data.alamat);
-                    const ortu = toTitleCase(data.ortu);
-                    
-                    let tempatLahir = data.ttl;
-                    let tanggalLahir = "";
-                    if(data.ttl.includes(',')) {
-                        let parts = data.ttl.split(',');
-                        tempatLahir = toTitleCase(parts[0].trim());
-                        tanggalLahir = toTitleCase(parts.slice(1).join(',').trim());
-                    } else {
-                        tempatLahir = toTitleCase(data.ttl);
-                    }
-
-                    return intro + `Tentu saja saya kenal! Anda adalah seseorang yang istimewa. ✨<br><br>
-                    Nama Anda adalah <b>${nama}</b>. Berdasarkan catatan sistem informasi pondok, Anda adalah seorang <b>${status}</b> yang hebat dan saat ini tercatat duduk di kelas <b>${kelas}</b>.<br><br>
-                    Anda berasal dari daerah <b>${alamat}</b>, dan dilahirkan di <b>${tempatLahir}</b> pada tanggal <b>${tanggalLahir}</b>.<br><br>
-                    Tahukah Anda? Di setiap lembar Al-Qur'an yang Anda hafal dan di setiap kitab kuning yang Anda kaji di PPTQ Al-Falah ini, diyakini ada rentetan doa mustajab dari orang tua tercinta, <b>Bapak/Ibu ${ortu}</b>, yang senantiasa mengiringi setiap langkah kesuksesan Anda dari jauh.<br><br>
-                    Tetap semangat mengaji ya, ${nama.split(' ')[0]}! Jadikan niat belajarmu <i>Lillah</i> (karena Allah semata), dan jangan pernah menyerah pada rasa lelah. Kamu pasti bisa! ✊😊`;
-                }
-            }
-
-            if (text.includes('pengasuh') || text.includes('ustadz') || text.includes('anam') || text.includes('kyai') || text.includes('istri') || text.includes('mardiyah')) {
-                return intro + `<b>Profil Pengasuh PPTQ Al-Falah:</b><br><br>
-                Pengasuh pondok pesantren ini adalah <b>Ustadz Khoirul Anam</b>. Beliau lahir di kota Malang, tepatnya di daerah Kasin. <br><br>
-                🎓 <b>Riwayat Pendidikan Beliau:</b><br>
-                • Merupakan alumni Pondok Pesantren Langitan, Tuban.<br>
-                • Telah menyelesaikan hafalan Al-Qur'an 30 Juz.<br>
-                • Telah menyelesaikan studi jenjang S1 di Al-Hikam Malang.<br><br>
-                👨‍👩‍👧‍👧 <b>Keluarga:</b><br>
-                Istri beliau bernama <b>Ustadzah Mardiyah</b>, yang berasal dari Desa Babaan, Kec. Ngajum, Kab. Malang.<br>
-                Alhamdulillah, Ustadz Khoirul Anam dan Ustadzah Mardiyah telah dikaruniai 3 orang anak, yang kesemuanya adalah perempuan. 😊`;
-            }
-            
-            if (text.includes('assalamu') || text.includes('halo') || text.includes('hai') || text.includes('ping') || text.includes('p')) {
-                return intro + `Wa'alaikumsalam wr. wb. 😊 Ahlan wa sahlan!<br><br>Saya adalah Asisten Virtual <b>PPTQ Al-Falah</b>. Ada yang bisa saya bantu terkait:<br><br>• 👤 <b>Pengasuh</b><br>• 💰 <b>Biaya</b><br>• 📅 <b>Jadwal</b><br>• 🏢 <b>Fasilitas</b><br>• 📝 <b>Daftar</b><br><br>Silakan ketik pertanyaan Anda!`;
-            }
-            
-            if (text.includes('biaya') || text.includes('bayar') || text.includes('spp') || text.includes('syahriah') || text.includes('uang')) {
-                return intro + `<b>💰 Rincian Biaya PPTQ Al-Falah:</b><br><br>
-                • <b>Pendaftaran Awal:</b> Rp 100.000<br>
-                • <b>Infaq Pembangunan:</b> Rp 200.000<br>
-                • <b>Syahriah Bulanan:</b> Rp 350.000<br><br>
-                <i>Catatan Penting:</i> Biaya syahriah bulanan tersebut sudah sangat terjangkau karena telah mencakup fasilitas asrama, makan 3x sehari, listrik, air bersih, dan akses WiFi pondok. (Belum termasuk keperluan pribadi santri dan transportasi luar pondok).`;
-            }
-            
-            if (text.includes('fasilitas') || text.includes('dapat apa') || text.includes('makan') || text.includes('asrama') || text.includes('wifi')) {
-                return intro + `<b>🏢 Fasilitas di PPTQ Al-Falah:</b><br><br>
-                Untuk menunjang kenyamanan santri selama menghafal dan belajar, kami menyediakan fasilitas:<br><br>
-                🍽️ <b>Makan 3x sehari</b> (menu bergizi dan sehat)<br>
-                🛏️ <b>Asrama yang nyaman</b> dengan lingkungan pedesaan yang asri dan tenang<br>
-                ⚡ <b>Air bersih dan Listrik</b> yang memadai<br>
-                🌐 <b>Akses WiFi</b> (waktu penggunaan menyesuaikan kebijakan pengurus)<br><br>
-                Semua fasilitas di atas sudah termasuk di dalam biaya syahriah bulanan.`;
-            }
-
-            if (text.includes('program') || text.includes('belajar') || text.includes('kegiatan') || text.includes('unggulan') || text.includes('kitab') || text.includes('pendidikan')) {
-                return intro + `<b>📚 Program Pendidikan Unggulan:</b><br><br>
-                Pondok pesantren kami mengedepankan pendidikan berbasis Ahlussunnah wal Jama'ah melalui program:<br><br>
-                1. 📖 <b>Tahfidzul Qur'an:</b> Merupakan program fokus utama menghafal Al-Qur'an untuk mencetak generasi Qur'ani yang bertaqwa.<br>
-                2. 📚 <b>Kajian Kitab Kuning:</b> Pembelajaran kitab-kitab gundul meliputi ilmu Fiqih, Tasawuf, dan Hadist.<br>
-                3. 🎵 <b>Seni Al Banjari:</b> Pelatihan hadrah dan rutinan pembacaan sholawat Diba' untuk memupuk rasa cinta kepada Rasulullah ﷺ.`;
-            }
-
-            if (text.includes('jadwal') || text.includes('kapan') || text.includes('jam') || text.includes('rutinitas')) {
-                return intro + `<b>📅 Ringkasan Jadwal Kegiatan Santri:</b><br><br>
-                • <b>Senin - Jum'at:</b> Setoran hafalan Al-Qur'an<br>
-                • <b>Senin Malam:</b> Tahsin Al-Qur'an bersama<br>
-                • <b>Selasa Malam:</b> Kajian Kitab Fiqih<br>
-                • <b>Rabu Malam:</b> Kajian Kitab Tasawuf<br>
-                • <b>Kamis Malam:</b> Rutinan Sholawat Diba'<br>
-                • <b>Jum'at Malam:</b> Kajian Kitab Hadist<br>
-                • <b>Sabtu & Minggu Malam:</b> Sima'an 1/4 Juz (Putra/Putri)<br><br>
-                <i>Catatan: Jadwal kajian malam umumnya dilaksanakan setelah ibadah sholat Maghrib.</i>`;
-            }
-
-            if (text.includes('alamat') || text.includes('lokasi') || text.includes('dimana') || text.includes('tempat') || text.includes('rute')) {
-                return intro + `<b>📍 Lokasi PPTQ Al-Falah:</b><br><br>
-                Pondok pesantren kami berlokasi di daerah <b>Babaan, Ngasem, Kab. Malang</b>. Lingkungan pondok sangat asri, bersih, dan menenangkan karena dikelilingi oleh suasana khas pedesaan.<br><br>
-                🗺️ Anda bisa mengklik tombol <b>'Lokasi Maps'</b> (ikon pin map warna biru) di menu sebelah pojok kanan bawah layar untuk langsung membuka rute Google Maps menuju pondok kami.`;
-            }
-
-            if (text.includes('hp') || text.includes('laptop') || text.includes('handphone') || text.includes('gadget') || text.includes('bawa')) {
-                return intro + `<b>📱 Aturan Penggunaan Gadget (HP/Laptop):</b><br><br>
-                Karena fokus utama santri di pondok adalah kelancaran menghafal Al-Qur'an, aturan membawa barang elektronik disesuaikan dengan <b>kebijakan dan kebijaksanaan pengurus</b>.<br><br>
-                Bagi santri yang juga sedang menempuh pendidikan formal luar (sekolah/kuliah), pengurus biasanya memberikan kelonggaran waktu khusus untuk mengakses gadget guna mengerjakan tugas akademik, namun tetap dalam pemantauan.`;
-            }
-
-            if (text.includes('syarat') || text.includes('siapa') || text.includes('putra') || text.includes('putri') || text.includes('terima') || text.includes('umur')) {
-                return intro + `<b>👥 Penerimaan Santri Baru:</b><br><br>
-                Alhamdulillah, PPTQ Al-Falah senantiasa terbuka untuk menerima <b>Santri Putra maupun Santri Putri</b>.<br><br>
-                Syarat yang paling kami utamakan adalah calon santri wajib memiliki <b>tekad yang kuat, niat yang lurus dan tulus, serta akhlak yang baik</b> untuk siap menghafal kalam-kalam Al-Qur'an.<br>
-                Untuk persyaratan berkas administrasi dan batasan usia pendaftaran, mohon hubungi admin kami secara langsung ya.`;
-            }
-
-            if (text.includes('daftar') || text.includes('registrasi') || text.includes('kontak') || text.includes('wa') || text.includes('hubungi') || text.includes('nomer') || text.includes('nomor')) {
-                return intro + `<b>📞 Informasi Pendaftaran & Kontak:</b><br><br>
-                Untuk melakukan pendaftaran atau menanyakan informasi lebih spesifik, silakan hubungi pengurus kami melalui:<br><br>
-                📱 <b>WhatsApp Resmi:</b> <a href="https://wa.me/6282335464928" target="_blank" class="text-emerald-700 dark:text-emerald-400 font-bold underline">082335464928</a><br>
-                📥 <b>Brosur Pendaftaran:</b> Anda bisa melihat brosur dengan mengklik tombol "Lihat Brosur Lengkap" di bagian bawah website.`;
-            }
-
-            if (text.includes('hafal') || text.includes('quran') || text.includes('lupa') || text.includes('mutqin') || text.includes('tahfidz') || text.includes('sad') || text.includes('nangis') || text.includes('sedih')) {
-                return intro + `Lagi sedih gara-gara hafalan hilang pas disetor ya? Rasanya kaya ditinggal pas lagi sayang-sayangnya... eh astaghfirullah! 🤭<br><br>
-                Tenang, kamu nggak sendirian. Al-Qur'an itu memang gampang lepas. Kata Nabi Muhammad ﷺ:<br>
-                <i>"Jagalah Al-Qur'an ini, demi Dzat yang jiwa Muhammad berada di tangan-Nya, sungguh Al-Qur'an itu lebih cepat lepasnya daripada unta dari ikatannya."</i> (HR. Bukhari)<br><br>
-                Kyai Maimoen Zubair (Mbah Moen) pernah dawuh: <b>"Sing penting ngaji, ora usah mikir pinter apa ora."</b> Begitu juga menghafal. Lupa itu manusiawi, Allah nggak cuma menilai mutqin-nya, tapi Allah menilai lelahnya bibirmu saat mengulang-ulang (muroja'ah) ayat-Nya.<br><br>
-                Ingat janji Allah di Surah Al-Qamar ayat 17:<br>
-                <i>"Dan sesungguhnya telah Kami mudahkan Al-Quran untuk pelajaran, maka adakah orang yang mengambil pelajaran?"</i><br><br>
-                Air matamu waktu nangis karena susah hafal itu nanti jadi saksi di akhirat lho! 😭✨ Yuk, wudhu lagi, tarik napas, bismillah muroja'ah lagi. Kamu pasti bisa! ✊`;
-            }
-
-            if (text.includes('malas') || text.includes('mager') || text.includes('ilmu') || text.includes('ngaji') || text.includes('futur') || text.includes('capek') || text.includes('ngantuk') || text.includes('bosan')) {
-                return intro + `Lagi kena penyakit 'Mager-itis' ya? Atau godaan ngantuk stadium 4 pas buka kitab? 😴🤭<br><br>
-                Sadar nggak, ngantuk pas ngaji itu emang nikmat banget, angin sepoi-sepoi ngalahin AC mall! Tapi awas, itu hembusan setan biar kita dijauhkan dari ilmu.<br><br>
-                Coba ingat tamparan keras dari <b>Imam Syafi'i</b> ini:<br>
-                <i>"Barangsiapa yang tidak mampu menahan lelahnya belajar, maka ia harus siap menanggung perihnya kebodohan."</i><br><br>
-                Rasulullah ﷺ juga ngasih garansi VIP lho buat penuntut ilmu:<br>
-                <i>"Barangsiapa menempuh jalan untuk menuntut ilmu, maka Allah akan mudahkan baginya jalan menuju Surga."</i> (HR. Muslim)<br><br>
-                Coba bayangin wajah bapak ibumu di rumah yang lagi banting tulang, keringatan biar kamu bisa bayar syahriah pondok. Masa kamu mau kalah sama rasa malas? Yuk, cuci muka pake air sumur pondok yang nyegerin itu, lalu kembali ke majelis! 💦🏃‍♂️💨`;
-            }
-
-            if (text.includes('santri') || text.includes('pondok') || text.includes('kangen') || text.includes('rumah') || text.includes('boyong') || text.includes('orang tua') || text.includes('kehidupan')) {
-                return intro + `Lagi kangen masakan ibu di rumah ya? Atau kangen kasur empuk? 🥺<br><br>
-                Wajar kok! Nangis di pojokan asrama pas ingat rumah itu udah kaya 'sunnah muakkadah'-nya para santri baru. 🤭 Tapi ingat, tirakatmu menahan rindu ini harganya mahal banget di sisi Allah.<br><br>
-                Umar bin Khattab RA pernah berkata:<br>
-                <i>"Tidak ada kebaikan bagi orang yang tidak pernah merasakan pahitnya hidup (berjuang)."</i><br><br>
-                Makan ngantri, mandi ngantri, tidur umpel-umpelan... itu semua kawah candradimuka. Dari situlah mental baja santri dibentuk. Percayalah, kelak kalau kamu udah sukses jadi orang hebat, kenangan ngantri sambel pondok ini yang bakal paling kamu kangenin. <br><br>Bersabar-sabar di pondok dahulu, bahagia bawa mahkota surga buat orang tua kemudian! ✨💖`;
-            }
-
-            if (text.includes('motivasi') || text.includes('semangat') || text.includes('menyerah') || text.includes('nyerah') || text.includes('quotes') || text.includes('kata') || text.includes('mutiara') || text.includes('nasehat') || text.includes('petuah')) {
-                return intro + `Ini nih 'Vitamin Hati' buat kamu biar semangatnya nge-recharge lagi sampai 100%! 🔋✨<br><br>
-                👳‍♂️ <b>Ali bin Abi Thalib RA:</b><br>
-                <i>"Janganlah engkau bersedih atas apa yang telah berlalu, karena itu hanya akan mencuri waktu masa depanmu."</i><br><br>
-                👳‍♂️ <b>Imam Al-Ghazali:</b><br>
-                <i>"Menuntut ilmu adalah taqwa. Menyampaikannya adalah ibadah. Mengulang-ulangnya adalah zikir. Mencari-carinya adalah jihad."</i><br><br>
-                Lelah itu wajar, kamu manusia, bukan robot AI kaya saya! 🤖 Tapi ingat mahfudzot andalan kita: <b>"Man Jadda Wajada"</b>. Siapa yang bersungguh-sungguh, dia yang akan berhasil.<br><br>
-                Jangan jadikan gagal atau capek sebagai titik akhir, tapi jadikan sebagai tanda koma, biar ceritamu terus berlanjut sampai sukses! 🚀🌟`;
-            }
-
-            return intro + `Mohon maaf, saya kurang memahami pertanyaan tersebut. 🙏<br><br>
-            Agar saya dapat menjawab dengan tepat, silakan gunakan kata kunci seperti di bawah ini:<br>
-            • <b>"Pengasuh"</b><br>
-            • <b>"Biaya"</b><br>
-            • <b>"Jadwal"</b><br>
-            • <b>"Fasilitas"</b><br>
-            • <b>"Daftar"</b><br><br>
-            Atau jika Anda ingin penjelasan yang lebih mendalam, silakan klik tombol WhatsApp berwarna hijau di menu kanan bawah. 😊`;
-        }
-
+        // Inisialisasi ikon Lucide
         lucide.createIcons();
     </script>
 </body>
-</html>
+    </html>
