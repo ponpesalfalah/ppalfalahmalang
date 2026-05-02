@@ -81,22 +81,19 @@
             inset: 0;
         }
 
-        /* Animasi Reveal Scroll Teks Elegan & Soft (Gaya Apple/Modern) */
+        /* UPDATE: Animasi Reveal Scroll Teks Lebih Smooth, Ringan & Elegan */
         .reveal-text {
             opacity: 0;
-            filter: blur(10px);
-            transform: translateY(40px) scale(0.97);
-            /* Kurva cubic-bezier ini memberikan efek lambat di akhir yang sangat mewah */
-            transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
-                        transform 1.2s cubic-bezier(0.16, 1, 0.3, 1),
-                        filter 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(25px);
+            /* Kurva cubic-bezier ini memberikan efek nge-spring yang sangat smooth & tidak memberatkan HP karena tanpa filter blur */
+            transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
             transition-delay: var(--reveal-delay, 0ms);
-            will-change: opacity, transform, filter;
+            will-change: opacity, transform;
         }
         .reveal-text.reveal-visible {
             opacity: 1;
-            filter: blur(0px);
-            transform: translateY(0) scale(1);
+            transform: translateY(0);
         }
 
         /* Styling Khusus KTS */
@@ -139,6 +136,13 @@
         .lightbox-nav-btn:hover { background-color: rgba(255, 255, 255, 0.4); }
         .lightbox-prev { left: 16px; }
         .lightbox-next { right: 16px; }
+        
+        /* Blocker agar long-press gambar KTS tidak berfungsi */
+        .anti-long-press {
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+            user-select: none !important;
+        }
         
     </style>
 </head>
@@ -186,8 +190,15 @@
         
         <div class="relative z-20 flex flex-col items-center justify-center animate-in max-w-5xl w-full min-h-screen py-10">
             <button onclick="closeLightbox()" class="absolute top-4 right-4 md:-top-6 md:-right-6 p-2 bg-white/20 hover:bg-white/40 text-white rounded-full transition-colors shadow-lg backdrop-blur-md z-[220]"><i data-lucide="x" class="w-7 h-7"></i></button>
-            <img id="lightbox-img" src="" alt="Tampilan Penuh" class="w-full max-h-[85vh] object-contain drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] rounded-xl bg-transparent hd-image relative z-10" />
-            <!-- Tempat instruksi simpan KTS akan muncul di sini secara dinamis melalui JS -->
+            
+            <div class="relative flex justify-center items-center w-full max-h-[85vh]">
+                <img id="lightbox-img" src="" alt="Tampilan Penuh" class="max-w-full max-h-[85vh] object-contain drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] rounded-xl bg-transparent hd-image relative z-10" />
+                <!-- Overlay Pelindung Khusus saat Tampil KTS (Untuk mencegah Long Press HP) -->
+                <div id="kts-protect-overlay" class="absolute inset-0 z-20 hidden pointer-events-auto" style="-webkit-touch-callout: none; -webkit-user-select: none;"></div>
+            </div>
+            
+            <!-- Area tombol dinamis -->
+            <div id="lightbox-action-area" class="w-full max-w-sm"></div>
         </div>
     </div>
 
@@ -358,12 +369,11 @@
                 
                 <div id="kts-export-area" class="flex flex-col gap-6 p-4 bg-white rounded-xl mx-auto w-fit shadow-sm">
                     <!-- KTS DEPAN -->
-                    <div class="relative w-[420px] h-[265px] min-w-[420px] min-h-[265px] shrink-0 rounded-xl shadow-[0_10px_20px_rgba(0,0,0,0.15)] overflow-hidden border border-emerald-200 hd-image flex flex-col kts-front-bg" style="box-sizing: border-box;">
+                    <div class="relative w-[420px] h-[265px] min-w-[420px] min-h-[265px] shrink-0 rounded-xl shadow-[0_10px_20px_rgba(0,0,0,0.15)] overflow-hidden border border-emerald-200 flex flex-col kts-front-bg" style="box-sizing: border-box;">
                         <!-- Header Hijau -->
                         <div class="bg-gradient-to-r from-emerald-700 to-emerald-500 py-3 px-4 flex items-center gap-3 border-b border-emerald-400/30 shrink-0">
-                            <!-- Logo Header KTS -->
-                            <!-- Dihapus f_auto agar lebih stabil saat di-render canvas -->
-                            <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="w-10 h-10 min-w-[40px] object-contain bg-white rounded-full p-0.5 shadow-sm shrink-0">
+                            <!-- Logo Header KTS HD -->
+                            <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="w-10 h-10 min-w-[40px] object-contain bg-white rounded-full p-0.5 shadow-sm shrink-0 hd-image">
                             <div class="text-white">
                                 <h2 class="font-black text-[17px] leading-tight drop-shadow-md tracking-wide m-0">KARTU TANDA SANTRI</h2>
                                 <p class="font-bold text-[10px] leading-tight text-emerald-100 drop-shadow-md m-0">PPTQ AL-FALAH BABAAN NGASEM MALANG</p>
@@ -373,14 +383,13 @@
                         <!-- Body KTS -->
                         <div class="flex-1 flex items-center px-4 py-2 gap-4 relative overflow-hidden">
                             <div class="absolute -right-12 -bottom-12 w-40 h-40 opacity-5 rotate-12 pointer-events-none">
-                                <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="w-full h-full object-contain grayscale">
+                                <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="w-full h-full object-contain grayscale hd-image">
                             </div>
                             
                             <!-- Area Foto KTS (Fitur Drag & Drop + Pinch Zoom) -->
                             <div id="kts-photo-wrapper" class="w-[95px] h-[126px] min-w-[95px] min-h-[126px] shrink-0 rounded-lg border-2 border-emerald-500 shadow-[0_4px_10px_rgba(16,185,129,0.3)] overflow-hidden flex items-center justify-center p-0 z-10 relative bg-emerald-50 group cursor-grab touch-none" title="Sentuh & Geser/Zoom untuk menyesuaikan">
                                 <!-- max-w-none mengijinkan ukuran resolusi besar tanpa dipaksa kecil oleh CSS -->
-                                <!-- Dihapus f_auto agar lebih stabil mencegah foto putih blank -->
-                                <img id="kts-foto-profil" src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128033/bg25_ttkjux.png" crossorigin="anonymous" class="absolute max-w-none w-full h-full object-cover pointer-events-none hd-image origin-center" style="transform: translate(0px, 0px) scale(1);">
+                                <img id="kts-foto-profil" src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128033/bg25_ttkjux.png" crossorigin="anonymous" class="absolute max-w-none w-full h-full object-cover pointer-events-none origin-center hd-image" style="transform: translate(0px, 0px) scale(1);">
                                 
                                 <!-- Overlay Hover Petunjuk -->
                                 <div class="absolute inset-0 bg-black/40 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
@@ -427,8 +436,8 @@
                     </div>
 
                     <!-- KTS BELAKANG -->
-                    <div class="relative w-[420px] h-[265px] min-w-[420px] min-h-[265px] shrink-0 rounded-xl shadow-[0_10px_20px_rgba(0,0,0,0.15)] overflow-hidden border border-emerald-800 hd-image flex flex-col items-center justify-center p-5 text-center text-white kts-back-bg" style="box-sizing: border-box;">
-                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 object-contain opacity-[0.07] pointer-events-none">
+                    <div class="relative w-[420px] h-[265px] min-w-[420px] min-h-[265px] shrink-0 rounded-xl shadow-[0_10px_20px_rgba(0,0,0,0.15)] overflow-hidden border border-emerald-800 flex flex-col items-center justify-center p-5 text-center text-white kts-back-bg" style="box-sizing: border-box;">
+                        <img src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128015/bg26_l8rws5.png" crossorigin="anonymous" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 object-contain opacity-[0.07] pointer-events-none hd-image">
                         <div class="relative z-10 w-full mb-5">
                             <h3 class="font-black text-yellow-300 text-[16px] mb-1.5 uppercase tracking-widest flex items-center justify-center gap-3 drop-shadow-md">
                                 <span class="w-6 h-[2px] bg-yellow-300 rounded-full"></span> VISI <span class="w-6 h-[2px] bg-yellow-300 rounded-full"></span>
@@ -466,7 +475,7 @@
 
                 <div class="mt-6 w-full max-w-sm">
                     <button onclick="downloadKTS()" id="btn-download-kts" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-emerald-500/30 transform hover:-translate-y-1">
-                        <i data-lucide="download-cloud" class="w-5 h-5"></i> UNDUH KTS HD (PNG)
+                        <i data-lucide="download-cloud" class="w-5 h-5"></i> PROSES KTS HD (CETAK)
                     </button>
                 </div>
             </div>
@@ -712,7 +721,7 @@
             <div class="text-center max-w-2xl mx-auto mb-16">
                 <h2 class="reveal-text text-emerald-500 dark:text-emerald-400 font-bold tracking-widest uppercase text-sm mb-3 flex items-center justify-center gap-3"><div class="w-8 h-1 bg-emerald-500 rounded-full"></div> Pendidikan Pesantren <div class="w-8 h-1 bg-emerald-500 rounded-full"></div></h2>
                 <h3 class="reveal-text text-3xl md:text-5xl font-extrabold text-emerald-950 dark:text-white transition-colors duration-300">Program Unggulan</h3>
-                <div class="w-24 h-1.5 bg-yellow-400 mx-auto mt-6 rounded-full shadow-sm"></div>
+                <div class="reveal-text w-24 h-1.5 bg-yellow-400 mx-auto mt-6 rounded-full shadow-sm"></div>
             </div>
             
             <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -1138,7 +1147,6 @@
 
         <div class="container mx-auto px-4 md:px-8">
             <div class="flex flex-col items-center text-center mb-8 border-b border-emerald-900 pb-12 max-w-3xl mx-auto">
-                <!-- Dihapus f_auto agar rendering html2canvas dari logo stabil -->
                 <img 
                     src="https://res.cloudinary.com/dehhn4hfk/image/upload/v1776128015/bg26_l8rws5.png" 
                     alt="Logo PPTQ Al-Falah" 
@@ -1694,7 +1702,7 @@
             }, 300);
         };
 
-        // --- FUNGSI DOWNLOAD KTS (DIPERBARUI TOTAL) ---
+        // --- FUNGSI DOWNLOAD KTS (DIPERBARUI: KUALITAS HD CETAK & ANTI LONG-PRESS) ---
         window.downloadKTS = function() {
             const btn = document.getElementById('btn-download-kts');
             const originalText = btn.innerHTML;
@@ -1707,8 +1715,9 @@
             const ktsModal = document.getElementById('kts-modal');
             ktsModal.scrollTop = 0; 
             
+            // UPDATE: Scale ditingkatkan menjadi 4 untuk kualitas cetak (Print/HD), agar logo & foto sangat tajam
             html2canvas(ktsContainer, { 
-                scale: 3, 
+                scale: 4, 
                 backgroundColor: '#ffffff',
                 useCORS: true,
                 allowTaint: false,
@@ -1722,8 +1731,7 @@
                 }
             }).then(canvas => {
                 
-                // MENGGUNAKAN BLOB: Ini mencegah browser memblokir Base64 yang terlalu panjang,
-                // sehingga gambar dianggap sebagai "File" asli dan bisa "Simpan Gambar" (Long Press).
+                // MENGGUNAKAN BLOB: mencegah browser memblokir Base64 yang terlalu panjang
                 canvas.toBlob(function(blob) {
                     if(!blob) {
                         alert("Ups! Gagal merender gambar. Coba muat ulang halaman.");
@@ -1745,37 +1753,32 @@
                         setTimeout(() => {
                             window.closeKTS(); 
                             setTimeout(() => {
+                                // Membuka preview KTS
                                 window.openLightbox(blobUrl, true);
                                 
-                                const lightboxImg = document.getElementById('lightbox-img');
+                                const actionArea = document.getElementById('lightbox-action-area');
+                                const protectOverlay = document.getElementById('kts-protect-overlay');
                                 
-                                const oldIns = document.getElementById('instruksi-simpan');
-                                if(oldIns) oldIns.remove();
+                                // UPDATE: Mengaktifkan Overlay Pelindung untuk Memblokir Long-Press di HP
+                                protectOverlay.classList.remove('hidden');
                                 
-                                // SOLUSI NAMA FILE: 
-                                // Menambahkan TOMBOL DOWNLOAD khusus di HP, karena opsi "Simpan Gambar" bawaan HP
-                                // tidak pernah mengizinkan website mengatur nama filenya (Pasti diacak HP).
-                                const actionHTML = `
-                                <div id="instruksi-simpan" class="mt-6 flex flex-col items-center gap-3 relative z-[250] w-full max-w-sm mx-auto px-4 animate-in" style="--reveal-delay: 100ms;">
-                                    <a href="${blobUrl}" download="${fileName}" class="bg-yellow-400 hover:bg-yellow-500 text-emerald-950 font-extrabold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 w-full shadow-[0_0_20px_rgba(250,204,21,0.4)] transition-all active:scale-95 text-sm sm:text-base border border-yellow-300">
+                                // UPDATE: Menghapus teks instruksi tahan gambar, murni hanya tombol
+                                actionArea.innerHTML = `
+                                <div id="instruksi-simpan" class="mt-6 flex flex-col items-center gap-3 relative z-[250] w-full animate-in" style="--reveal-delay: 100ms;">
+                                    <a href="${blobUrl}" download="${fileName}" class="bg-yellow-400 hover:bg-yellow-500 text-emerald-950 font-extrabold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 w-full shadow-[0_0_20px_rgba(250,204,21,0.4)] transition-all active:scale-95 text-sm sm:text-base border border-yellow-300 pointer-events-auto">
                                         <i data-lucide="download" class="w-5 h-5"></i> SIMPAN KTS KE GALERI
                                     </a>
-                                    <div class="bg-black/60 text-emerald-50 px-4 py-2.5 rounded-xl text-[11px] sm:text-xs font-medium text-center backdrop-blur-md shadow-md border border-white/20 leading-relaxed">
-                                        💡 Tekan tombol di atas untuk mengunduh dengan nama:<br><b class="text-yellow-300">${fileName}</b><br><br>
-                                        <span class="opacity-70">(Opsi lain: Tahan gambar dan pilih "Simpan Gambar")</span>
-                                    </div>
                                 </div>
                                 `;
-                                
-                                lightboxImg.insertAdjacentHTML('afterend', actionHTML);
                                 lucide.createIcons();
                                 
+                                // Observer untuk membersihkan memori dan menghapus overlay saat ditutup
                                 const observer = new MutationObserver((mutations) => {
                                     mutations.forEach((mutation) => {
                                         if(document.getElementById('lightbox-modal').classList.contains('hidden')){
-                                            const ins = document.getElementById('instruksi-simpan');
-                                            if(ins) ins.remove();
-                                            URL.revokeObjectURL(blobUrl); // Bersihkan memori HP
+                                            actionArea.innerHTML = '';
+                                            protectOverlay.classList.add('hidden'); // Sembunyikan pelindung long press
+                                            URL.revokeObjectURL(blobUrl);
                                             observer.disconnect();
                                         }
                                     });
@@ -1786,7 +1789,7 @@
                         }, 1000);
 
                     } else {
-                        // JIKA DI LAPTOP/PC: Langsung terdownload
+                        // JIKA DI LAPTOP/PC: Langsung terdownload dengan kualitas cetak HD
                         const link = document.createElement('a');
                         link.download = fileName;
                         link.href = blobUrl;
@@ -1957,13 +1960,13 @@
             });
         }
 
-        // INIT INTERSECTION OBSERVER FOR SCROLL ANIMATION (Apple Style & Cascade)
+        // INIT INTERSECTION OBSERVER FOR SCROLL ANIMATION (Update: Jeda dipercepat agar lebih smooth)
         document.addEventListener('DOMContentLoaded', () => {
             initGallery();
 
             const observerOptions = {
                 root: null,
-                rootMargin: '-5% 0px -10% 0px', // Trigger sedikit masuk ke dalam layar agar animasi tidak langsung muncul di ujung banget
+                rootMargin: '-5% 0px -10% 0px', 
                 threshold: 0.1
             };
 
@@ -1973,22 +1976,18 @@
             const revealObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        // Cascade effect: Beri jeda jika banyak elemen masuk layar bersamaan
-                        entry.target.style.setProperty('--reveal-delay', `${delayCounter * 120}ms`);
+                        // Jeda dipercepat menjadi 100ms agar lebih terasa snappy
+                        entry.target.style.setProperty('--reveal-delay', `${delayCounter * 100}ms`);
                         delayCounter++;
                         
-                        // Reset counter jika elemen tidak masuk bersamaan (jeda 150ms)
                         clearTimeout(delayTimer);
                         delayTimer = setTimeout(() => { delayCounter = 0; }, 150);
 
-                        // Gunakan requestAnimationFrame untuk memastikan CSS variable delay ter-apply sebelum class ditambahkan
                         requestAnimationFrame(() => {
                             entry.target.classList.add('reveal-visible');
                         });
                     } else {
-                        // Sesuai permintaan: Hilang saat dilewati/menjauh
                         entry.target.classList.remove('reveal-visible');
-                        // Hilangkan delay agar proses menghilang memudar seragam tanpa jeda aneh
                         entry.target.style.removeProperty('--reveal-delay');
                     }
                 });
@@ -2133,6 +2132,11 @@
             document.body.style.overflow = 'auto';
             currentImageIndex = -1;
             currentLightboxArray = [];
+            
+            // Bersihkan action area & overlay jika menutup dari tampilan KTS
+            document.getElementById('lightbox-action-area').innerHTML = '';
+            document.getElementById('kts-protect-overlay').classList.add('hidden');
+            
             setTimeout(() => { document.getElementById('lightbox-img').src = ''; }, 300);
         };
 
@@ -2300,4 +2304,4 @@
         lucide.createIcons();
     </script>
 </body>
-    </html>
+                    </html>
